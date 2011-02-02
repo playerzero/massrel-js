@@ -1,25 +1,40 @@
-= Read Me =
+# Read Me
 
-== Basic examples ==
+## Basic examples
 
+    // get data for stream "bdainton/kindle"
     var stream = new tweetriver.Stream('bdainton', 'kindle');
+
     stream.poller({
-      limit: 10, // 
+      limit: 10,    // number of tweets per poll
       frequency: 30 // how often to get new tweets
     }).batch(function(tweets) {
+        // resort so tweets on top are the newest
         reorder = [];
         while(tweets.length > 0) {
           reorder.push(tweets.pop());
         }
-        twttr.brdcast.showStatuses(reorder);
+        
+        // print array of new tweets
+        console.log(reorder);
     }).start();
 
-== Advanced examples ==
+## Advanced examples
+
+### Create stream
 
     var stream = new tweetriver.Stream('bdainton', 'kindle');
 
+### Create pollers
+
     //gets a NEW poller for the stream
     var poller = stream.poller();
+
+For each poller instance usually a callback is either added to .each or .batch but not both
+
+#### Poller enumerator
+
+Callback invoked for each tweet as they come in from oldest tweet to newest
 
     poller.each(function(tweet) {
       // invoke for every tweet that is return from the api
@@ -29,6 +44,10 @@
       // "this" is the poller instance
     })
 
+#### Poller batch
+
+Callback invoked for each poll that has more than zero tweets
+
     poller.batch(function(tweets) {
       // all tweets from each poll that have > 0 tweets
       console.log(tweets);
@@ -36,14 +55,20 @@
       // "this" is the poller instance
     })
 
+#### Start poller
+
     // start grabbing tweets
     poller.start();
+
+#### Stop poller
 
     setTimeout(function() {
       // in 1 minute, stop getting tweets
       poller.stop();
     }, 60000);
 
+
+#### Poller example
 
     // the best part is that it is chainable
     stream.poller({ frequency: 30 }).each(function(tweet) {
@@ -54,8 +79,9 @@
       container.insertBefore(ptag, container.firstChild);
     }).start();
 
+### Delayed queue example
 
-
+Basically if you want to display tweets on a regular interval
 
     // here is an example of delayed queue
     var poller = stream.poller();
