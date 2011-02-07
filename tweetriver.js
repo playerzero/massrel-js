@@ -1,5 +1,5 @@
 (function() {
-  var tweetriver = window.tweetriver = {};
+  var tweetriver = window.tweetriver = window.tweetriver || {};
   tweetriver.host = 'tweetriver.com';
 
   var json_callbacks_counter = 0;
@@ -233,10 +233,8 @@
   
   
   // public api
-  window.tweetriver = {
-    Stream: Stream,
-    Poller: Poller,
-    PollerQueue: PollerQueue
-  };
+  tweetriver.Stream = Stream;
+  tweetriver.Poller = Poller;
+  tweetriver.PollerQueue = PollerQueue;
   
 })();
