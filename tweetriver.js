@@ -2,6 +2,7 @@
   var tweetriver = window.tweetriver = window.tweetriver || {};
   tweetriver.host = 'tweetriver.com';
 
+  var _enc = encodeURIComponent;
   var json_callbacks_counter = 0;
 
   function Stream() {
@@ -13,10 +14,10 @@
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    return 'http://'+ tweetriver.host +'/' + encodeURIComponent(this.account) + '/'+ encodeURIComponent(this.stream_name) +'.json';
+    return 'http://'+ tweetriver.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'.json';
   };
   Stream.prototype.meta_url = function() {
-    return 'http://'+ tweetriver.host +'/' + encodeURIComponent(this.account) + '/'+ encodeURIComponent(this.stream_name) +'/meta.json';
+    return 'http://'+ tweetriver.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'/meta.json';
   };
   Stream.prototype.load = function(opts, fn) {
     opts = extend(opts || {}, {
@@ -30,9 +31,12 @@
     if(opts.since_id) {
       params.push(['since_id', opts.since_id]);
     }
+    if(opts.replies) {
+      params.push(['replies', opts.replies]);
+    }
     
     var self = this;
-    var callback_id = ++json_callbacks_counter;
+    var callback_id = '_'+(++json_callbacks_counter);
     Stream._json_callbacks[callback_id] = function(tweets) {
       if(typeof fn === 'function') {
         fn(tweets);
@@ -43,7 +47,7 @@
       
       delete Stream._json_callbacks[callback_id];
     };
-    params.push(['jsonp', 'tweetriver.Stream._json_callbacks['+callback_id+']']);
+    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
     
     load(this.stream_url() + '?' + to_qs(params));
     
@@ -66,7 +70,7 @@
       
       delete Stream._json_callbacks[callback_id];
     };
-    params.push(['jsonp', 'tweetriver.Stream._json_callbacks['+callback_id+']']);
+    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
     
     load(this.meta_url() + '?' + to_qs(params));
     
@@ -95,8 +99,20 @@
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
+    this.replies = opts.replies || null;
     this.frequency = (opts.frequency || 30) * 1000;
+    this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
+    this.enabled = false;
+    this.alive = true;
+    this.alive_instance = 0;
   }
+  Poller.prototype._poke = function() {
+    if(this.alive === false) {
+      this._t = null;
+      this.start();
+    }
+    return this;
+  };
   Poller.prototype.batch = function(fn) {
     this._callbacks.push(fn);
     return this;
@@ -109,26 +125,36 @@
     if(this._t) {
       return this;
     }
+    this.enabled = true;
+    var instance_id = this.alive_instance = this.alive_instance + 1;
     
     var self = this;
     function poll() {
+      self.alive = false;
+      
+      if(!self.enabled || instance_id !== self.alive_instance) { return; }
+      
       self.stream.load({
         limit: self.limit,
-        since_id: self.since_id
+        since_id: self.since_id,
+        replies: self.replies
       }, function(tweets) {
+        self.alive = true;
+        var catch_up = self.catch_up && tweets.length === self.limit;
+        
         if(tweets.length > 0) {
           self.since_id = tweets[0].order_id;
           
           // invoke all bacth handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
-            self._callbacks[i].call(self, tweets);
+            self._callbacks[i].call(self, tweets); // we might need to pass in a copy of tweets array
           }
           
           // invoke all enumerators on this poller
           Stream.step_through(tweets, self._enumerators, self);
         }
 
-        self._t = setTimeout(poll, self.frequency);
+        self._t = setTimeout(poll, catch_up ? 0 : self.frequency);
       });
     }
     
@@ -139,13 +165,14 @@
   Poller.prototype.stop = function() {
     clearTimeout(this._t);
     this._t = null;
+    this.enabled = false;
     return this;
   };
   Poller.prototype.queue = function(fn) {
     var queue = new PollerQueue(this);
     queue.next(fn);
     return this;
-  }
+  };
   
   function PollerQueue(poller, opts) {
     this.poller = poller;
@@ -213,10 +240,9 @@
   };
   
   function to_qs(params) {
-    var enc = encodeURIComponent;
     var query = [];
     for(var i = 0, len = params.length; i < len; i++) {
-      query.push(enc(params[i][0]) + (params[i][1] !== undefined ? '='+enc(params[i][1]) : ''));
+      query.push(_enc(params[i][0]) + (params[i][1] !== undefined ? '='+_enc(params[i][1]) : ''));
     }
     return query.join('&');
   }
