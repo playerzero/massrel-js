@@ -19,7 +19,7 @@
   Stream.prototype.meta_url = function() {
     return 'http://'+ tweetriver.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'/meta.json';
   };
-  Stream.prototype.load = function(opts, fn) {
+  Stream.prototype.load = function(opts, fn, error) {
     opts = extend(opts || {}, {
       // put defaults
     });
@@ -34,23 +34,9 @@
     if(opts.replies) {
       params.push(['replies', opts.replies]);
     }
-    
-    var self = this;
-    var callback_id = '_'+(++json_callbacks_counter);
-    Stream._json_callbacks[callback_id] = function(tweets) {
-      if(typeof fn === 'function') {
-        fn(tweets);
-      }
-      else if(this._enumerators.length > 0) {
-        Stream.step_through(tweets, this._enumerators, self);
-      }
-      
-      delete Stream._json_callbacks[callback_id];
-    };
-    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
-    
-    load(this.stream_url() + '?' + to_qs(params));
-    
+
+    jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error); 
+
     return this;
   };
   Stream.prototype.each = function(fn) {
@@ -60,19 +46,9 @@
   Stream.prototype.poller = function(opts) {
     return new Poller(this, opts);
   };
-  Stream.prototype.meta = function(fn) {
-    var params = [];
-    
-    var self = this;
-    var callback_id = ++json_callbacks_counter;
-    Stream._json_callbacks[callback_id] = function(data) {
-      fn.call(self, data);
-      
-      delete Stream._json_callbacks[callback_id];
-    };
-    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
-    
-    load(this.meta_url() + '?' + to_qs(params));
+  Stream.prototype.meta = function(fn, error) {
+    var params = [];    
+    jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
   };
@@ -105,9 +81,13 @@
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
+    this.consecutive_errors = 0;
   }
-  Poller.prototype._poke = function() {
-    if(this.alive === false) {
+  Poller.prototype.poke = function(fn) {
+    // this method should not be called externally...
+    // it basically restarts the poll loop if it stopped for network errors
+    // we call this if a request takes longer than 10sec
+    if(this.alive == false) {
       this._t = null;
       this.start();
     }
@@ -131,21 +111,22 @@
     var self = this;
     function poll() {
       self.alive = false;
-      
+
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
-      
+
       self.stream.load({
         limit: self.limit,
         since_id: self.since_id,
         replies: self.replies
       }, function(tweets) {
         self.alive = true;
+        self.consecutive_errors = 0;
         var catch_up = self.catch_up && tweets.length === self.limit;
         
         if(tweets.length > 0) {
           self.since_id = tweets[0].order_id;
           
-          // invoke all bacth handlers on this poller
+          // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
             self._callbacks[i].call(self, tweets); // we might need to pass in a copy of tweets array
           }
@@ -153,11 +134,14 @@
           // invoke all enumerators on this poller
           Stream.step_through(tweets, self._enumerators, self);
         }
-
         self._t = setTimeout(poll, catch_up ? 0 : self.frequency);
+      }, function() {
+        self.consecutive_errors += 1;
+        self.poke();
       });
+
     }
-    
+  
     poll();
     
     return this;
@@ -182,22 +166,29 @@
     var queue = [];
     var callback = null;
     var locked = false;
+
+    this.total = 0;
+    this.enqueued = 0;
     
     var self = this;
     poller.batch(function(tweets) {
-      var i = tweets.length - 1;
-      for(; i >= 0; i--) {
+      var len = tweets.length;
+      var i = len - 1;
+      for(; i >= 0; i--) { // looping through from bottom to top to queue tweets from oldest to newest
         queue.push(tweets[i]);
       }
+      self.total += len;
+      self.enqueued += len;
       
       step();
     });
     
     function step() {
       if(!locked && queue.length > 0 && typeof callback === 'function') {
+        self.enqueued -= 1;
         var tweet = queue.shift();
         locked = true
-        callback.call(this, tweet, function() {
+        callback.call(self, tweet, function() {
           locked = false;
           setTimeout(step, 0);
         });
@@ -216,7 +207,7 @@
   // UTILS
   
   var root = document.getElementsByTagName('head')[0] || document.body;
-  function load(url) {
+  function load(url, fn) {
     var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = url;
@@ -226,18 +217,68 @@
     script.onload = script.onreadystatechange = function() {
       if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
         done = true;
-
         // handle memory leak in IE
         script.onload = script.onreadystatechange = null;
         if (root && script.parentNode) {
           root.removeChild(script);
+        }
+        
+        if(typeof fn === 'function') {
+          fn();
         }
       }
     };
 
     // use insertBefore instead of appendChild to not efff up ie6
     root.insertBefore(script, root.firstChild);
+
+    return {
+      stop: function() {
+        script.onload = script.onreadystatechange = null;
+        if(root && script.parentNode) {
+          root.removeChild(script);
+        }
+        script.src = "#";
+      }
+    };
+
   };
+
+  function jsonp_factory(url, params, jsonp_prefix, obj, callback, error) {
+    var callback_id = jsonp_prefix+(++json_callbacks_counter);
+    var fulfilled = false;
+    var timeout;
+
+    Stream._json_callbacks[callback_id] = function(data) {
+      if(typeof callback === 'function') {
+        callback(data);
+      }
+      else if(is_array(callback) && callback.length > 0) {
+        Stream.step_through(data, callback, obj);
+      }
+      
+      delete Stream._json_callbacks[callback_id];
+
+      fulfilled = true;
+      clearTimeout(timeout);
+    };
+    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
+
+    var ld = load(url + '?' + to_qs(params));
+
+    // in 10 seconds if the request hasn't been loaded, cancel request
+    timeout = setTimeout(function() {
+      if(!fulfilled) {
+        Stream._json_callbacks[callback_id] = function() {
+          delete Stream._json_callbacks[callback_id];
+        };
+        if(typeof error === 'function') {
+          error();
+        }
+        ld.stop();
+      }
+    }, 10 * 1000);
+  }
   
   function to_qs(params) {
     var query = [];
@@ -256,11 +297,20 @@
     
     return to_obj;
   }
-  
+
+  var is_array = Array.isArray || function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+  };
   
   // public api
   tweetriver.Stream = Stream;
   tweetriver.Poller = Poller;
   tweetriver.PollerQueue = PollerQueue;
+  tweetriver.helpers = {
+    load: load,
+    to_qs: to_qs,
+    extend: extend,
+    is_array: is_array 
+  };
   
 })();
