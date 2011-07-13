@@ -303,6 +303,10 @@
     return to_obj;
   }
 
+  var is_array = Array.isArray || function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+  }
+
   function fix_twitter_date(date) {
     date = date.split(' ');
     var year = date.pop();
