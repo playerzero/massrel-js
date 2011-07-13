@@ -34,6 +34,9 @@
     if(opts.replies) {
       params.push(['replies', opts.replies]);
     }
+    if(opts.geo_hint) {
+      params.push(['geo_hint', opts.geo_hint]);
+    }
 
     jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error); 
 
@@ -76,6 +79,7 @@
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
     this.replies = opts.replies || null;
+    this.geo_hint = opts.geo_hint || null;
     this.frequency = (opts.frequency || 30) * 1000;
     this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
     this.enabled = false;
@@ -117,7 +121,8 @@
       self.stream.load({
         limit: self.limit,
         since_id: self.since_id,
-        replies: self.replies
+        replies: self.replies,
+        geo_hint: self.geo_hint
       }, function(tweets) {
         self.alive = true;
         self.consecutive_errors = 0;
@@ -298,8 +303,11 @@
     return to_obj;
   }
 
-  var is_array = Array.isArray || function(obj) {
-    return Object.prototype.toString.call(obj) === '[object Array]';
+  function fix_twitter_date(date) {
+    date = date.split(' ');
+    var year = date.pop();
+    date.splice(3, 0, year);
+    return date.join(' ');
   };
   
   // public api
@@ -308,9 +316,11 @@
   tweetriver.PollerQueue = PollerQueue;
   tweetriver.helpers = {
     load: load,
+    jsonp_factory: jsonp_factory,
     to_qs: to_qs,
     extend: extend,
-    is_array: is_array 
+    is_array: is_array,
+    fix_twitter_date: fix_twitter_date
   };
   
 })();
