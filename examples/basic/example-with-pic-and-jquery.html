@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Simple | Examples</title>
+  <script type="text/javascript" src="../../tweetriver.js"></script>
+  <style type="text/css">
+    body {
+      font-size: 13px;
+      font-family: 'helvetica neue', 'helvetica', 'arial', 'verdana', sans-serif;
+    }
+
+    #stream {
+      width: 450px;
+      margin: 0 auto; /* center in page */
+    }
+
+    .status {
+      min-height: 48px; /* not going to work in IE6, but this is just an example */
+      margin: 0;
+      padding: 15px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .avatar {
+      float: left;
+    }
+    .avatar img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .text {
+      margin: 0 0 0 58px;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="stream"></div>
+
+<script type="text/javascript">
+
+// instance of a stream
+var stream = new tweetriver.Stream('massrelevance/glee');
+
+// create new poller
+var poller = stream.poller();
+
+// method you pass in will be called for each new status (i.e. tweet) as they
+// come in from oldest to newest
+poller.each(function(status) {
+  var text = status.text;
+  var screen_name = status.user.screen_name;
+  var avatar_url = status.user.profile_image_url;
+
+  var html = '';
+
+  // author avatar
+  // make sure to encode the screen name correctly incase there are bogus characters in it
+  // twitter recommends linking to the secure (https) version of its site
+  html += '<a href="https://twitter.com/'+encodeURIComponent( screen_name )+'" class="avatar"><img src="'+avatar_url+'" /></a>';
+
+  // status text
+  html += '<p class="text">'+text+'</p>';
+
+  // create status element
+  $('<div />')
+    .addClass('status')
+    .html(html)
+    .prependTo('#stream'); // add div to the top of the stream element (each new status is newer)
+
+  // add div to the top of the stream element (each new status is newer)
+  document.getElementById('stream').insertBefore(div, document.getElementById('stream').firstChild);
+
+});
+
+// now start the poller
+poller.start();
+
+</script>
+
+</body>
+</html>
