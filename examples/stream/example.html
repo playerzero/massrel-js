@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Stream | Examples</title>
+  <style type="text/css">
+     /* some very basic style reset/normalization */
+    .stream {
+      font-size: 12px;
+      font-family: "Helvetica Neue",Arial,sans-serif;
+    }
+    .stream a {
+      text-decoration: none;
+    }
+    .stream a:hover {
+      text-decoration: underline;
+    }
+    .stream a img {
+      border: 0;
+    }
+
+    /* stream styles */
+    .stream {
+      overflow: auto;
+      width: 300px; /* typical side column ad unit width */
+      height: 400px;
+    }
+    .status {
+      border-bottom: 1px solid #e8e8e8;
+      padding: 10px;
+    }
+    .avatar,
+    .avatar img {
+      width: 32px;
+      height: 32px;
+    }
+    .avatar {
+      display: block;
+      float: left;
+    }
+    .content {
+      margin-left: 38px;
+      word-wrap: break-word;
+    }
+    .author {
+      margin-bottom: 3px;
+    }
+    .screen-name {
+      color: #000;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .real-name,
+    .meta,
+    .meta a,
+    .retweeted-by,
+    .retweeted-by a  {
+      color: #999;
+    }
+    .real-name {
+      font-size: 11px;
+    }
+    .text {
+      line-height: 17px;
+    }
+    .meta {
+      margin-top: 5px;
+      font-size: 11px;
+    }
+    .permalink,
+    .retweeted-by {
+      display: inline;
+    }
+    .twitter-logo {
+      margin-right: 3px;
+    }
+    .twitter-logo img {
+      width: 16px;
+      height: 16px;
+      vertical-align: top;
+    }
+    .intent {
+      display: inline-block; /* not in IE :( */
+      min-height: 16px; /* not in IE */
+      margin-left: 5px;
+      padding-left: 17px;
+      background-repeat: no-repeat;
+      background-position: 0 -2px;
+    }
+      .intent:hover { color: #000; }
+
+      .intent-reply { background-image: url('./reply.png'); }
+      .intent-retweet { background-image: url('./retweet.png'); }
+      .intent-favorite { background-image: url('./favorite.png'); }
+
+      .intent-reply:hover { background-image: url('./reply_hover.png'); }
+      .intent-retweet:hover { background-image: url('./retweet_hover.png'); }
+      .intent-favorite:hover { background-image: url('./favorite_hover.png'); }
+
+    .retweeted-by {
+      margin-left: 7px;
+    }
+    .retweeted-by img {
+      width: 16px;
+      height: 16px;
+      vertical-align: top;
+    }
+    
+  </style>
+  <script type="text/javascript" src="../../tweetriver.js"></script>
+  <script type="text/javascript" src="../../tweetriver.handlebars.js"></script>
+  <script type="text/javascript" src="../../lib/handlebars.js"></script>
+  <script type="text/javascript" src="../../lib/twitter-text.js"></script>
+  <script type="text/javascript" src="../../lib/prettydate.js"></script>
+</head>
+<body>
+
+
+<div id="stream" class="stream"></div>
+
+
+<!-- Handlebars is a template syntax. It's very helpful (http://www.handlebarsjs.com/) -->
+<script id="status-template" type="text/x-handlebars-template">
+ <div class="status">
+   <a href="https://twitter.com/{{status.user.screen_name}}" class="avatar"><img src="{{status.user.profile_image_url}}" alt="" /></a>
+   <div class="content">
+     <div class="author">
+       <a href="https://twitter.com/{{status.user.screen_name}}" class="screen-name">{{status.user.screen_name}}</a>
+       <span class="real-name">{{status.user.name}}</span>
+     </div>
+     <div class="text">{{{autoLink status.text}}}</div>
+     <div class="meta">
+       <!--
+       <div class="intents">
+          <a href="https://twitter.com/intent/tweet?in_reply_to={{status.id_str}}" class="intent intent-reply">reply</a>
+          <a href="https://twitter.com/intent/retweet?tweet_id={{status.id_str}}" class="intent intent-retweet">retweet</a>
+          <a href="https://twitter.com/intent/favorite?tweet_id={{status.id_str}}" class="intent intent-favorite">favorite</a>
+       </div>
+       -->
+       <div class="permalink">
+         <a href="https://twitter.com/{{status.user.screen_name}}/status/{{status.id_str}}" class="twitter-logo"><img src="./bird.png" /></a>
+         <a href="https://twitter.com/{{status.user.screen_name}}/status/{{status.id_str}}" class="created-at relative-date">{{prettyDate status.created_at}}
+       </div>
+       {{#if retweet}}
+       <div class="retweeted-by"><img src="./retweet_hover.png" alt="retweeted" /> by <a href="https://twitter.com/{{retweeted_by_user.screen_name}}" class="retweeted-by-user">{{retweeted_by_user.screen_name}}</div>
+       {{/if}}
+     </div>
+   </div>
+ </div>
+</script>
+
+
+<script type="text/javascript">
+
+// register Handlebars hooks
+tweetriver.handlebars.register(Handlebars);
+
+// instance of a stream
+var stream = new tweetriver.Stream('massrelevance/glee');
+
+// list to be used when pruning the stream from being too long
+var elements = [];
+
+// compile template
+var template = Handlebars.compile(document.getElementById('status-template').text);
+
+// create new poller (it's chained!)
+var poller = stream.poller({
+  limit: 20
+}).each(function(status) {
+  // create template context
+  var context = tweetriver.handlebars.prepare_context(status);
+
+  // create DOM element
+  var div = document.createElement('div');
+  div.innerHTML = template(context);
+
+  // add div to the top of the stream element (each new status is newer)
+  document.getElementById('stream').insertBefore(div, document.getElementById('stream').firstChild);
+
+  // prune list
+  while(elements.length > this.limit) { // not very performant
+    var remove = elements.shift();
+    remove.parentNode.removeChild(remove);
+  }
+  elements.push(div);
+
+}).start();
+
+</script>
+
+</body>
+</html>
