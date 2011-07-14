@@ -29,11 +29,9 @@ var stream = new tweetriver.Stream('massrelevance/glee');
 // create new poller
 var poller = stream.poller();
 
-// create queue (basically a buffer for tweets when they come in)
-poller.queue(function(status, next) {
-
-  // method you pass in will be called for each new status (i.e. tweet) as they
-  // come in from oldest to newest
+// method you pass in will be called for each new status (i.e. tweet) as they
+// come in from oldest to newest
+poller.each(function(status) {
 
   // create DOM element
   var div = document.createElement('div');
@@ -42,10 +40,6 @@ poller.queue(function(status, next) {
 
   // add div to the top of the stream element (each new status is newer)
   document.getElementById('stream').insertBefore(div, document.getElementById('stream').firstChild);
-
-  // calling "next" lets the queue know that you are ready for
-  // another status. usually you just want to call it immediaty
-  next();
 
 });
 
