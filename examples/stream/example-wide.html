@@ -178,8 +178,6 @@ var poller = stream.poller({
 }).each(function(status) {
   // create template context
   var context = tweetriver.handlebars.prepare_context(status);
-  context.retweet = true;
-  context.retweeted_by_user = context.status.user;
 
   // create DOM element
   var div = document.createElement('div');
