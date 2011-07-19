@@ -314,6 +314,21 @@
     return date.join(' ');
   };
   
+  function parse_params() {
+    var params = {};
+    var e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&;=]+)=?([^&;]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+        q = window.location.search.substring(1);
+        
+    while (e = r.exec(q)) {
+      params[d(e[1])] = d(e[2]);
+    }    
+    return params;
+  }
+
+  
   // public api
   tweetriver.Stream = Stream;
   tweetriver.Poller = Poller;
@@ -324,7 +339,8 @@
     to_qs: to_qs,
     extend: extend,
     is_array: is_array,
-    fix_twitter_date: fix_twitter_date
+    fix_twitter_date: fix_twitter_date,
+    parse_params: parse_params
   };
   
 })();
