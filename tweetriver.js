@@ -1,6 +1,6 @@
 (function() {
-  var tweetriver = window.tweetriver = window.tweetriver || {};
-  tweetriver.host = 'tweetriver.com';
+  var massrel = window.massrel = window.massrel || {};
+  massrel.host = 'tweetriver.com';
 
   var _enc = encodeURIComponent;
   var json_callbacks_counter = 0;
@@ -14,10 +14,10 @@
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    return 'http://'+ tweetriver.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'.json';
+    return 'http://'+ massrel.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'.json';
   };
   Stream.prototype.meta_url = function() {
-    return 'http://'+ tweetriver.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'/meta.json';
+    return 'http://'+ massrel.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'/meta.json';
   };
   Stream.prototype.load = function(opts, fn, error) {
     opts = extend(opts || {}, {
@@ -267,7 +267,7 @@
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push(['jsonp', 'tweetriver.Stream._json_callbacks.'+callback_id]);
+    params.push(['jsonp', 'massrel.Stream._json_callbacks.'+callback_id]);
 
     var ld = load(url + '?' + to_qs(params));
 
@@ -330,10 +330,10 @@
 
   
   // public api
-  tweetriver.Stream = Stream;
-  tweetriver.Poller = Poller;
-  tweetriver.PollerQueue = PollerQueue;
-  tweetriver.helpers = {
+  massrel.Stream = Stream;
+  massrel.Poller = Poller;
+  massrel.PollerQueue = PollerQueue;
+  massrel.helpers = {
     load: load,
     jsonp_factory: jsonp_factory,
     to_qs: to_qs,

@@ -22,8 +22,8 @@
  */
  
 (function() {
-  var tweetriver = window.tweetriver = window.tweetriver || {};
-  var m = tweetriver.media = tweetriver.media || {};
+  var massrel = window.massrel = window.massrel || {};
+  var m = massrel.media = massrel.media || {};
   
   var MEDIA = m.MEDIA = {};
   

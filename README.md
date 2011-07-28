@@ -3,7 +3,7 @@
 ## Basic examples
 
     // get data for stream "bdainton/kindle"
-    var stream = new tweetriver.Stream('bdainton', 'kindle');
+    var stream = new massrel.Stream('bdainton', 'kindle');
 
     stream.poller({
       limit: 10,    // number of tweets per poll
@@ -23,7 +23,7 @@
 
 ### Create stream
 
-    var stream = new tweetriver.Stream('bdainton', 'kindle');
+    var stream = new massrel.Stream('bdainton', 'kindle');
 
 ### Create pollers
 
@@ -85,7 +85,7 @@ Basically if you want to display tweets on a regular interval
 
     // here is an example of delayed queue
     var poller = stream.poller();
-    var queue = new tweetriver.PollerQueue(poller);
+    var queue = new massrel.PollerQueue(poller);
 
     poller.start();
 
@@ -97,3 +97,14 @@ Basically if you want to display tweets on a regular interval
       container.insertBefore(ptag, container.firstChild);
       setTimeout(step, 1000);
     });
+
+Shorthand
+
+    var poller = stream.poller().queue(function() {
+      var container = document.getElementById('tweet-delay');
+  
+      var ptag = document.createElement('p');
+      ptag.innerHTML = tweet.text;
+      container.insertBefore(ptag, container.firstChild);
+      setTimeout(step, 1000);
+    }).start();

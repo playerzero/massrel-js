@@ -1,68 +1,68 @@
 /* resets */
-.massrl-status a {
+.massrel-status a {
   text-decoration: none;
 }
-.massrl-status a:hover {
+.massrel-status a:hover {
   text-decoration: underline;
 }
-.massrl-status a img {
+.massrel-status a img {
   border: 0;
 }
 
 /* layout & container */
-.massrl-status {
+.massrel-status {
   padding: 10px;
   border-bottom-width: 1px;
 }
-.massrl-avatar,
-.massrl-avatar img {
+.massrel-avatar,
+.massrel-avatar img {
   width: 48px;
   height: 48px;
 }
-  .massrl-narrow .massrl-avatar,
-  .massrl-narrow .massrl-avatar img {
+  .massrel-narrow .massrel-avatar,
+  .massrel-narrow .massrel-avatar img {
     width: 32px;
     height: 32px;
   }
-.massrl-avatar {
+.massrel-avatar {
   display: block;
   float: left;
 }
-.massrl-content {
+.massrel-content {
   margin-left: 58px;
 }
-  .massrl-narrow .massrl-content {
+  .massrel-narrow .massrel-content {
     margin-left: 38px;
   }
-.massrl-author {
+.massrel-author {
   margin-bottom: 3px;
   position: relative;
 }
-.massrl-meta {
+.massrel-meta {
   margin-top: 5px;
 }
-.massrl-permalink,
-.massrl-retweeted-by,
-.massrl-status:hover .massrl-intents{
+.massrel-permalink,
+.massrel-retweeted-by,
+.massrel-status:hover .massrel-intents{
   display: inline;
 }
-.massrl-twitter-logo {
+.massrel-twitter-logo {
   margin-right: 3px;
 }
-.massrl-twitter-logo img {
+.massrel-twitter-logo img {
   width: 16px;
   height: 16px;
   vertical-align: top;
 }
-.massrl-intents {
+.massrel-intents {
   display: none;
 }
-.massrl-retweeted-by {
+.massrel-retweeted-by {
   position: absolute;
   top: 2px;
   right: 0;
 }
-  .massrl-narrow .massrl-retweeted-by {
+  .massrel-narrow .massrel-retweeted-by {
     margin-left: 7px;
 
     /* reseting base */
@@ -70,12 +70,12 @@
     top: 0;
     right: 0;
   }
-.massrl-retweeted-by img {
+.massrel-retweeted-by img {
   width: 16px;
   height: 16px;
   vertical-align: top;
 }
-.massrl-intent {
+.massrel-intent {
   display: inline-block; /* not in IE :( */
   min-height: 16px; /* not in IE */
   margin-left: 5px;
@@ -86,32 +86,32 @@
 
 /* font & text */
 
-.massrl-screen-name {
+.massrel-screen-name {
   /* set to default page +1 font size */
   font-size: 14px;
 }
-.massrl-real-name,
-.massrl-narrow .massrl-screen-name {
+.massrel-real-name,
+.massrel-narrow .massrel-screen-name {
   /* set to default page standard font size */
   font-size: 12px;
 }
-.massrl-meta,
-.massrl-retweeted-by,
-.massrl-narrow .massrl-real-name {
+.massrel-meta,
+.massrel-retweeted-by,
+.massrel-narrow .massrel-real-name {
   /* set to default page -1 font size */
   font-size: 11px;
 }
-.massrl-content {
+.massrel-content {
   word-wrap: break-word; /* prevents long words from breaking layout in newer browsers */
 }
-.massrl-screen-name {
+.massrel-screen-name {
   font-weight: bold;
 }
 
-.massrl-text {
+.massrel-text {
   line-height: 19px;
 }
-  .massrl-narrow .massrl-text {
+  .massrel-narrow .massrel-text {
     line-height: 17px;
   }
 
@@ -119,40 +119,40 @@
 
 /* style & colors */
 
-.massrl-screen-name,
-.massrl-intent:hover {
+.massrel-screen-name,
+.massrel-intent:hover {
    /* set to default page text color */
    color: #000;
  }
-.massrl-retweeted-by {
+.massrel-retweeted-by {
    /* set to stream bg color, will prevent some ugliness */
   background-color: #fff;
 }
-  .massrl-narrow .massrl-retweeted-by {
+  .massrel-narrow .massrel-retweeted-by {
     /* reseting base */
     background-color: transparent;
   }
-.massrl-real-name,
-.massrl-meta,
-.massrl-meta a,
-.massrl-retweeted-by,
-.massrl-retweeted-by a  {
+.massrel-real-name,
+.massrel-meta,
+.massrel-meta a,
+.massrel-retweeted-by,
+.massrel-retweeted-by a  {
   /* set to default page light grey */
   color: #999;
 }
-.massrl-status {
+.massrel-status {
   border-bottom-color: #e8e8e8;
   border-bottom-style: solid;
 }
-.massrl-intent {
+.massrel-intent {
   background-repeat: no-repeat;
   background-position: 0 -2px;
 }
   
-  .massrl-intent-reply { background-image: url('./img/reply.png'); }
-  .massrl-intent-retweet { background-image: url('./img/retweet.png'); }
-  .massrl-intent-favorite { background-image: url('./img/favorite.png'); }
+  .massrel-intent-reply { background-image: url('./img/reply.png'); }
+  .massrel-intent-retweet { background-image: url('./img/retweet.png'); }
+  .massrel-intent-favorite { background-image: url('./img/favorite.png'); }
 
-  .massrl-intent-reply:hover { background-image: url('./img/reply_hover.png'); }
-  .massrl-intent-retweet:hover { background-image: url('./img/retweet_hover.png'); }
-  .massrl-intent-favorite:hover { background-image: url('./img/favorite_hover.png'); }
+  .massrel-intent-reply:hover { background-image: url('./img/reply_hover.png'); }
+  .massrel-intent-retweet:hover { background-image: url('./img/retweet_hover.png'); }
+  .massrel-intent-favorite:hover { background-image: url('./img/favorite_hover.png'); }
