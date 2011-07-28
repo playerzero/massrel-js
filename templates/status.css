@@ -23,36 +23,37 @@
 }
 .massrl-avatar,
 .massrl-avatar img {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
 }
+  .massrl-narrow .massrl-avatar,
+  .massrl-narrow .massrl-avatar img {
+    width: 32px;
+    height: 32px;
+  }
+
 .massrl-avatar {
   display: block;
   float: left;
 }
-  .massrl-status-wide .massrl-avatar,
-  .massrl-status-wide .massrl-avatar img {
-    width: 48px;
-    height: 48px;
-  }
 .massrl-content {
-  margin-left: 38px;
+  margin-left: 58px;
   word-wrap: break-word;
 }
-  .massrl-status-wide .massrl-content {
-    margin-left: 58px;
-  }
+.massrl-narrow .massrl-content {
+  margin-left: 38px;
+}
 .massrl-author {
   margin-bottom: 3px;
   position: relative;
 }
 .massrl-screen-name {
   color: #000;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
 }
-  .massrl-status-wide .massrl-screen-name {
-    font-size: 14px;
+  .massrl-narrow .massrl-screen-name {
+    font-size: 12px;
   }
 .massrl-real-name,
 .massrl-meta,
@@ -62,19 +63,17 @@
   color: #999;
 }
 .massrl-real-name {
-  font-size: 11px;
+  font-size: 12px;
 }
-  .massrl-status-wide .massrl-real-name {
-    font-size: 12px;
+  .massrl-narrow .massrl-real-name {
+    font-size: 11px;
   }
-
 .massrl-text {
-  line-height: 17px;
+  line-height: 19px;
 }
-  .massrl-status-wide .massrl-text {
-    line-height: 19px;
+  .massrl-narrow .massrl-text {
+    line-height: 17px;
   }
-
 .massrl-meta {
   margin-top: 5px;
   font-size: 11px;
@@ -114,16 +113,21 @@
   .massrl-intent-favorite:hover { background-image: url('./img/favorite_hover.png'); }
 
 .massrl-retweeted-by {
-  margin-left: 7px;
+  position: absolute;
+  top: 2px;
+  right: 0;
+  font-size: 11px;
+  background-color: #fff; /* same color as stream bg, will make space issues less ugly */
 }
-  .massrl-status-wide .massrl-retweeted-by {
-    position: absolute;
-    top: 2px;
-    right: 0;
-    font-size: 11px;
-    background-color: #fff; /* same color as stream bg, will make space issues less ugly */
-  }
+  .massrl-narrow .massrl-retweeted-by {
+    margin-left: 7px;
 
+    /* reseting base */
+    position: static;
+    top: 0;
+    right: 0;
+    background-color: transparent;
+  }
 
 .massrl-retweeted-by img {
   width: 16px;
