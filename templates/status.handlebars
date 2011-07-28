@@ -1,0 +1,24 @@
+<div class="massrl-status massrl-status-wide">
+  <a href="https://twitter.com/{{status.user.screen_name}}" class="massrl-avatar"><img src="{{status.user.profile_image_url}}" alt="" /></a>
+  <div class="massrl-content">
+    <div class="massrl-author">
+      {{#if retweet}}
+      <div class="massrl-retweeted-by"><img src="./retweet_hover.png" alt="retweeted" /> by <a href="https://twitter.com/{{retweeted_by_user.screen_name}}" class="massrl-retweeted-by-user">{{retweeted_by_user.screen_name}}</div>
+      {{/if}}
+      <a href="https://twitter.com/{{status.user.screen_name}}" class="massrl-screen-name">{{status.user.screen_name}}</a>
+      <span class="massrl-real-name">{{status.user.name}}</span>
+    </div>
+    <div class="massrl-text">{{{autoLink status.text}}}</div>
+    <div class="massrl-meta">
+      <div class="massrl-permalink">
+        <a href="https://twitter.com/{{status.user.screen_name}}/status/{{status.id_str}}" class="massrl-twitter-logo"><img src="../../templates/img/bird.png" /></a>
+        <a href="https://twitter.com/{{status.user.screen_name}}/status/{{status.id_str}}" data-date="{{status.created_at}}" class="massrl-created-at massrl-relative-date">{{prettyDate status.created_at}}
+      </div>
+      <div class="massrl-intents">
+         <a href="https://twitter.com/intent/tweet?in_reply_to={{status.id_str}}" class="massrl-intent massrl-intent-reply">reply</a>
+         <a href="https://twitter.com/intent/retweet?tweet_id={{status.id_str}}" class="massrl-intent massrl-intent-retweet">retweet</a>
+         <a href="https://twitter.com/intent/favorite?tweet_id={{status.id_str}}" class="massrl-intent massrl-intent-favorite">favorite</a>
+      </div>
+    </div>
+  </div>
+</div>

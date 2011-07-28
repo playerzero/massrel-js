@@ -1,0 +1,124 @@
+/* resets */
+
+
+/* containers */
+
+
+/* font & text */
+
+
+/* colors */
+
+.massrl-status {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px;
+}
+.massrl-avatar,
+.massrl-avatar img {
+  width: 32px;
+  height: 32px;
+}
+.massrl-avatar {
+  display: block;
+  float: left;
+}
+  .massrl-status-wide .massrl-avatar,
+  .massrl-status-wide .massrl-avatar img {
+    width: 48px;
+    height: 48px;
+  }
+.massrl-content {
+  margin-left: 38px;
+  word-wrap: break-word;
+}
+  .massrl-status-wide .massrl-content {
+    margin-left: 58px;
+  }
+.massrl-author {
+  margin-bottom: 3px;
+  position: relative;
+}
+.massrl-screen-name {
+  color: #000;
+  font-size: 12px;
+  font-weight: bold;
+}
+  .massrl-status-wide .massrl-screen-name {
+    font-size: 14px;
+  }
+.massrl-real-name,
+.massrl-meta,
+.massrl-meta a,
+.massrl-retweeted-by,
+.massrl-retweeted-by a  {
+  color: #999;
+}
+.massrl-real-name {
+  font-size: 11px;
+}
+  .massrl-status-wide .massrl-real-name {
+    font-size: 12px;
+  }
+
+.massrl-text {
+  line-height: 17px;
+}
+  .massrl-status-wide .massrl-text {
+    line-height: 19px;
+  }
+
+.massrl-meta {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.massrl-permalink,
+.massrl-retweeted-by,
+.massrl-status:hover .massrl-intents{
+  display: inline;
+}
+.massrl-twitter-logo {
+  margin-right: 3px;
+}
+.massrl-twitter-logo img {
+  width: 16px;
+  height: 16px;
+  vertical-align: top;
+}
+.massrl-intents {
+  display: none;
+}
+.massrl-intent {
+  display: inline-block; /* not in IE :( */
+  min-height: 16px; /* not in IE */
+  margin-left: 5px;
+  padding-left: 17px;
+  background-repeat: no-repeat;
+  background-position: 0 -2px;
+}
+  .massrl-intent:hover { color: #000; }
+
+  .massrl-intent-reply { background-image: url('./img/reply.png'); }
+  .massrl-intent-retweet { background-image: url('./img/retweet.png'); }
+  .massrl-intent-favorite { background-image: url('./img/favorite.png'); }
+
+  .massrl-intent-reply:hover { background-image: url('./img/reply_hover.png'); }
+  .massrl-intent-retweet:hover { background-image: url('./img/retweet_hover.png'); }
+  .massrl-intent-favorite:hover { background-image: url('./img/favorite_hover.png'); }
+
+.massrl-retweeted-by {
+  margin-left: 7px;
+}
+  .massrl-status-wide .massrl-retweeted-by {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    font-size: 11px;
+    background-color: #fff; /* same color as stream bg, will make space issues less ugly */
+  }
+
+
+.massrl-retweeted-by img {
+  width: 16px;
+  height: 16px;
+  vertical-align: top;
+}
