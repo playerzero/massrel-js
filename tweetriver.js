@@ -57,7 +57,7 @@
   };
   Stream.step_through = function(tweets, enumerators, context) {
     var i = tweets.length - 1;
-    if(i > 0) {
+    if(i >= 0) {
       for(;i >= 0; i--) {
         var tweet = tweets[i];
         for(var j = 0, len = enumerators.length; j < len; j++) {
