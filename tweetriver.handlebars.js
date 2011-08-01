@@ -19,15 +19,22 @@ function register(Handlebars) {
 }
 
 
-function prepare_context(status) {
+function prepare_context(status, opts) {
   if(status.retweeted_status) {
-    var context = massrel.handlebars.prepare_context(status.retweeted_status);
+    var context = massrel.handlebars.prepare_context(status.retweeted_status, opts);
     context.retweet = true;
     context.retweeted_by_user = status.user;
     return context;
   }
 
-  var context = { status: status };
+  opts = massrel.helpers.extend(opts || {}, {
+    intents: true
+  });
+
+  var context = {
+    status: status,
+    intents: opts.intents
+  };
   return context;
 };
 

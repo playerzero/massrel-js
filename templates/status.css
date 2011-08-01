@@ -43,7 +43,7 @@
 }
 .massrel-permalink,
 .massrel-retweeted-by,
-.massrel-status:hover .massrel-intents{
+.massrel-status:hover .massrel-intents {
   display: inline;
 }
 .massrel-twitter-logo {
@@ -57,6 +57,25 @@
 .massrel-intents {
   display: none;
 }
+  .massrel-narrow .massrel-intents,
+  .massrel-narrow .massrel-status:hover .massrel-intents {
+    display: block !important;
+  }
+  .massrel-narrow .massrel-intents {
+    margin-bottom: 3px;
+  }
+.massrel-intent {
+  display: inline-block; /* not in IE :( */
+  min-height: 16px; /* not in IE */
+  margin-left: 5px;
+  padding-left: 17px;
+}
+  .massrel-narrow .massrel-intent {
+    margin-right: 5px;
+
+    /* reseting base */
+    margin-left: 0;
+  }
 .massrel-retweeted-by {
   position: absolute;
   top: 2px;
@@ -74,12 +93,6 @@
   width: 16px;
   height: 16px;
   vertical-align: top;
-}
-.massrel-intent {
-  display: inline-block; /* not in IE :( */
-  min-height: 16px; /* not in IE */
-  margin-left: 5px;
-  padding-left: 17px;
 }
 
 
