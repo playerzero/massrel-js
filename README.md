@@ -108,3 +108,9 @@ Shorthand
       container.insertBefore(ptag, container.firstChild);
       setTimeout(step, 1000);
     }).start();
+
+# TO DO
+
+* conversations/reply-to in status UI
+* better abstraction to update relative time in status periodically
+* tests
