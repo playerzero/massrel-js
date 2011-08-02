@@ -286,9 +286,22 @@
   }
   
   function to_qs(params) {
-    var query = [];
+    var query = [], val;
     for(var i = 0, len = params.length; i < len; i++) {
-      query.push(_enc(params[i][0]) + (params[i][1] !== undefined ? '='+_enc(params[i][1]) : ''));
+      val = params[i][1];
+      if(is_array(val)) {
+        for(var j = 0, len2 = val.length; j < len2; j++) {
+          val[j] = _enc(val[j] || '');
+        }
+        val = val.join(',');
+      }
+      else if(val !== undefined && val !== null) {
+        val = _enc(val);
+      }
+      else {
+        val = '';
+      }
+      query.push(_enc(params[i][0])+'='+ val);
     }
     return query.join('&');
   }
