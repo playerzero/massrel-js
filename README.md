@@ -113,4 +113,5 @@ Shorthand
 
 * conversations/reply-to in status UI
 * better abstraction to update relative time in status periodically
+* include optional param to show author location in status UI
 * tests
