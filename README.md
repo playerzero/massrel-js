@@ -111,7 +111,8 @@ Shorthand
 
 # TO DO
 
+* tests
 * conversations/reply-to in status UI
 * better abstraction to update relative time in status periodically
 * include optional param to show author location in status UI
-* tests
+* break out *jsonp_factory* to be a replaceable io transport, so we can use XHR or CORS easily in future
