@@ -129,7 +129,7 @@
         var catch_up = self.catch_up && tweets.length === self.limit;
         
         if(tweets.length > 0) {
-          self.since_id = tweets[0].order_id;
+          self.since_id = tweets[0].id_str;
           
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
