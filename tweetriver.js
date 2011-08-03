@@ -1,6 +1,7 @@
 (function() {
   var massrel = window.massrel = window.massrel || {};
   massrel.host = 'tweetriver.com';
+  massrel.timeout = 10 * 1000;
 
   var _enc = encodeURIComponent;
   var json_callbacks_counter = 0;
@@ -301,7 +302,7 @@
         }
         ld.stop();
       }
-    }, 10 * 1000);
+    }, massrel.timeout);
   }
   
   function to_qs(params) {

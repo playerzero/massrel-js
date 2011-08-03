@@ -1,6 +1,97 @@
 describe('helpers', function() {
 
+  describe('load script', function() {
+    var load = massrel.helpers.load;
+    
+    it('callback is successful and work cross domain', function() {
+      var url = 'http://pipes.yahoo.com/pipes/pipe.run?_id=c4fb5175c000f1e19e244bba36aca1e8&_render=json&_callback=loadtest';
 
+      var loadtest = window.loadtest = jasmine.createSpy();
+      var callback = jasmine.createSpy();
+
+      load(url, callback);
+
+      setTimeout(function() {
+        expect(loadtest).toHaveBeenCalled();
+        expect(callback).toHaveBeenCalled();
+      }, 1500);
+    });
+
+    waits(1500);
+  });
+
+  describe('building jsonp requests', function() {
+
+    massrel.Stream._json_callbacks = {};
+
+    var callbacksBefore = 0;
+    for(var k in massrel.Stream._json_callbacks) {
+      callbacksBefore += 1;
+    }
+
+    var scope = {};
+    var params = [];
+    var prefix = '_textprefix_';
+
+    it('pass data to callback', function() {
+      var callback = jasmine.createSpy('success');
+      var error = jasmine.createSpy('error');
+
+      var limit = Math.max( Math.ceil( Math.random() * 10 ), 1);
+      var params = [['limit', limit]];
+      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/celebrities.json', params, prefix, {}, callback, error);
+
+      setTimeout(function() {
+        expect(callback).toHaveBeenCalled();
+        expect(callback.mostRecentCall.args[0].length).toEqual(limit);
+
+        expect(error).not.toHaveBeenCalled();
+      }, 1500);
+
+    });
+
+    waits(1500);
+
+    it('timeout if taking too long', function() {
+      var timeout = massrel.timeout;
+      massrel.timeout = 100;
+
+      var callback = jasmine.createSpy('success');
+      var error = jasmine.createSpy('error');
+      
+      massrel.helpers.jsonp_factory('http://localhost:9876/fakeurl', params, prefix, {}, callback, error);
+
+      setTimeout(function() {
+        expect(callback).not.toHaveBeenCalled();
+        expect(error).toHaveBeenCalled();
+      }, 500);
+
+      massrel.timeout = timeout;
+    });
+
+    waits(1000);
+
+    it('add new callback to public jsonp hash', function() {
+      var callbacksAfter = 0;
+      for(var k in massrel.Stream._json_callbacks) {
+        callbacksAfter += 1;
+      }
+      expect(callbacksAfter - callbacksBefore).toEqual(1);
+    });
+
+    it('use given prefix for jsonp method', function() {
+      for(var k in massrel.Stream._json_callbacks) {
+        expect(k.indexOf(prefix)).toBeGreaterThan(-1);
+      }
+    });
+
+    it('auto add jsonp param to url', function() {
+      expect(params.length).toEqual(1);
+      expect(params[0][0]).toEqual('jsonp');
+    });
+
+
+  });
 
   describe('building a query string', function() {
     var to_qs = massrel.helpers.to_qs;
