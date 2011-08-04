@@ -117,3 +117,4 @@ Shorthand
 * include optional param to show author location in status UI
 * break out *jsonp_factory* to be a replaceable io transport, so we can use XHR or CORS easily in future
 * use HTTPS urls when on a secure page
+* change anchor text to use entitites given in in JSON (/entities/urls)
