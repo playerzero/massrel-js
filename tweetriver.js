@@ -353,17 +353,25 @@
   };
   
   function parse_params() {
-    var params = {};
-    var e,
-        a = /\+/g,  // Regex for replacing addition symbol with a space
-        r = /([^&;=]+)=?([^&;]*)/g,
-        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
-        q = window.location.search.substring(1);
-        
-    while (e = r.exec(q)) {
-      params[d(e[1])] = d(e[2]);
-    }    
-    return params;
+    raw = {};
+    queryString = window.location.search.substring(1);
+    if (queryString.charAt(0) == '?') queryString = queryString.substring(1);
+    if (queryString.length > 0){
+      queryString = queryString.replace(/\+/g, ' ');
+      var queryComponents = queryString.split(/[&;]/g);
+      for (var index = 0; index < queryComponents.length; index ++){
+        var keyValuePair = queryComponents[index].split('=');
+        var key          = decodeURIComponent(keyValuePair[0]);
+        var value        = keyValuePair.length > 1
+                         ? decodeURIComponent(keyValuePair[1])
+                         : '';
+        if (!(key in raw)) {
+          raw[key] = [];
+        }
+        raw[key].push(value);
+      }
+    }
+    return raw;  
   }
 
   
