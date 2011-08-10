@@ -366,12 +366,20 @@
                          ? decodeURIComponent(keyValuePair[1])
                          : '';
         if (!(key in raw)) {
-          raw[key] = [];
-        }
-        raw[key].push(value);
+          raw[key] = value;
+        } else {
+          var existing_val = raw[key];    
+          if (typeof existing_val != 'string') {
+            raw[key].push(value);
+          } else {
+            raw[key] = [];
+            raw[key].push(existing_val);
+            raw[key].push(value);            
+          }
+        }        
       }
     }
-    return raw;  
+    return raw;    
   }
 
   
