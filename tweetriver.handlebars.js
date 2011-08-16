@@ -9,13 +9,16 @@ if(massrel.handlebars) {
 function register(Handlebars) {
 
   Handlebars.registerHelper('autoLink', function(text) {
-    return twttr.txt.autoLink(text, { target: '_blank' });
+    return twttr.txt.autoLink(text, { target: '_blank', urlEntities: this.status.entities.urls });
   });
+
+  
 
   Handlebars.registerHelper('prettyDate', function(date) {
     date = massrel.helpers.fix_twitter_date(date);
     return prettyDate(date);
  });
+
 }
 
 
