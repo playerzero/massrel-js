@@ -100,7 +100,7 @@ Basically if you want to display tweets on a regular interval
 
 Shorthand
 
-    var poller = stream.poller().queue(function() {
+    var poller = stream.poller().queue(function(tweet, step) {
       var container = document.getElementById('tweet-delay');
   
       var ptag = document.createElement('p');
