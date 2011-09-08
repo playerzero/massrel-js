@@ -44,8 +44,6 @@
 
 <div id="stream" class="stream"></div>
 
-
-<!-- Handlebars is a template syntax. It's very helpful (http://www.handlebarsjs.com/) -->
 <script id="status-template" type="text/x-handlebars-template">
  <div class="massrel-status" data-massrel-network="twt" data-massrel-id="{{status.id_str}}">
    <a href="https://twitter.com/{{status.user.screen_name}}" class="massrel-avatar"><img src="{{status.user.profile_image_url}}" alt="" /></a>
@@ -81,35 +79,17 @@
 // register Handlebars hooks
 massrel.handlebars.register(Handlebars);
 
-// instance of a stream
 var stream = new massrel.Stream('massrelevance/glee');
+var template = Handlebars.compile($('#status-template').text());
 
-// list to be used when pruning the stream from being too long
-var elements = [];
-
-// compile template
-var template = Handlebars.compile(document.getElementById('status-template').text);
-
-// create new poller (it's chained!)
-var poller = stream.poller({
+stream.poller({
   limit: 20
 }).each(function(status) {
-  // create template context
   var context = massrel.handlebars.prepare_context(status);
 
-  // create DOM element
-  var div = document.createElement('div');
-  div.innerHTML = template(context);
-
-  // add div to the top of the stream element (each new status is newer)
-  document.getElementById('stream').insertBefore(div, document.getElementById('stream').firstChild);
-
-  // prune list
-  while(elements.length > this.limit) { // not very performant
-    var remove = elements.shift();
-    remove.parentNode.removeChild(remove);
-  }
-  elements.push(div);
+  $('<div />')
+    .html(template(context))
+    .prependTo('#stream');
 
 }).start();
 

@@ -68,27 +68,6 @@ function init() {
     }
   });
 
-  /*
-  $('.switch-option').click(function() {
-    track('widget_tab', this);
-  });
-
-  $('.join-convo').click(function() {
-    track('widget_join', this);
-  });
-
-
-  $('.move-right-arrow').click(function() {
-    track('leader_next', this);
-  });
-
-  $('.move-left-arrow').click(function() {
-    track('leader_prev', this);
-  });
-
-  twttr.events.bind('follow', function(event) {
-    track('leader_follow', event.target);
-  }); */
 }
 
 
