@@ -118,3 +118,4 @@ Shorthand
 * break out *jsonp_factory* to be a replaceable io transport, so we can use XHR or CORS easily in future
 * use HTTPS urls when on a secure page
 * change anchor text to use entitites given in in JSON (/entities/urls)
+* better date handling (is8601 and twitter formmated date conversion not very thorough)
