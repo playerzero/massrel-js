@@ -357,7 +357,6 @@
     else if(rx_fb_date.test(date)) {
       date = date.replace(rx_fb_date, '$1/$2/$3 $4:$5:$6 $7');
     }
-    console.log(date, rx_fb_date.test(date))
     return date;
   };
   
