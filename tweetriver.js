@@ -347,7 +347,7 @@
 
   var rx_twitter_date = /\+\d{4} \d{4}$/;
   var rx_fb_date = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+\d{4})$/; // iso8601
-  function fix_twitter_date(date) {
+  function fix_date(date) {
     if(rx_twitter_date.test(date)) {
       date = date.split(' ');
       var year = date.pop();
@@ -401,7 +401,8 @@
     to_qs: to_qs,
     extend: extend,
     is_array: is_array,
-    fix_twitter_date: fix_twitter_date,
+    fix_date: fix_date,
+    fix_twitter_date: fix_date, // alias
     parse_params: parse_params
   };
   

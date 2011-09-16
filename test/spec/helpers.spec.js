@@ -133,27 +133,27 @@ describe('helpers', function() {
 
   });
 
-  describe('fixing twitter dates', function() {
+  describe('fix string dates to be parasable by JavaScript', function() {
     // using 2009 so we can test that it is not now
     var twitter_date = 'Tue Aug 02 22:05:13 +0000 2009';
-    var to_date = 'Tue Aug 02 2009 22:05:13 +0000';
+    var twitter_to_date = 'Tue Aug 02 2009 22:05:13 +0000';
 
     // actually testing iso8601 format
     var fb_date = '2009-08-02T22:05:13+0000';
     var fb_to_date = '2009/08/02 22:05:13 +0000';
 
     it('should move the year from the end of a twitter JSON', function() {
-      expect(massrel.helpers.fix_twitter_date(twitter_date)).toEqual(to_date);
+      expect(massrel.helpers.fix_date(twitter_date)).toEqual(twitter_to_date);
     });
 
-    it('should not parse a facebook style date', function() {
-      expect(massrel.helpers.fix_twitter_date(fb_date)).toEqual(fb_to_date);
+    it('should add spaces and stuff to facebook style dates', function() {
+      expect(massrel.helpers.fix_date(fb_date)).toEqual(fb_to_date);
     });
 
-    it('should be able to be a real Date object', function() {
-      var from_date = new Date(massrel.helpers.fix_twitter_date(twitter_date));
-      var from_date_fb = new Date(massrel.helpers.fix_twitter_date(fb_date));
-      var compare_to = new Date(to_date);
+    it('should be a real Date object', function() {
+      var from_date = new Date(massrel.helpers.fix_date(twitter_date));
+      var from_date_fb = new Date(massrel.helpers.fix_date(fb_date));
+      var compare_to = new Date(twitter_to_date);
 
       // twitter
       expect(from_date.getFullYear()).toEqual(2009);
