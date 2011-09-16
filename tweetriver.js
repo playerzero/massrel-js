@@ -345,11 +345,20 @@
     return Object.prototype.toString.call(obj) === '[object Array]';
   }
 
+  var rx_twitter_date = /\+\d{4} \d{4}$/;
+  var rx_fb_date = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+\d{4})$/; // iso8601
   function fix_twitter_date(date) {
-    date = date.split(' ');
-    var year = date.pop();
-    date.splice(3, 0, year);
-    return date.join(' ');
+    if(rx_twitter_date.test(date)) {
+      date = date.split(' ');
+      var year = date.pop();
+      date.splice(3, 0, year);
+      date = date.join(' ');
+    }
+    else if(rx_fb_date.test(date)) {
+      date = date.replace(rx_fb_date, '$1/$2/$3 $4:$5:$6 $7');
+    }
+    console.log(date, rx_fb_date.test(date))
+    return date;
   };
   
   function parse_params() {
