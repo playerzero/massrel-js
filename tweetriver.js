@@ -371,6 +371,7 @@
   }
   
   function extend(to_obj, from_obj) {
+    var prop;
     for(prop in from_obj) {
       if(typeof(to_obj[prop]) === 'undefined') {
         to_obj[prop] = from_obj[prop];

@@ -184,4 +184,41 @@ describe('helpers', function() {
     });
   });
 
+  describe('extending and object', function() {
+    it('copy over key/values', function() {
+      var to_obj = {};
+      to_obj['to'+(Math.random()*99999999)] = Math.random()*99999999;
+      to_obj['to'+(Math.random()*99999999)] = Math.random()*99999999;
+
+      var from_obj = {};
+      from_obj.foo = 'bar';
+      from_obj['from'+(Math.random()*99999999)] = Math.random()*99999999;
+      from_obj['from'+(Math.random()*99999999)] = Math.random()*99999999;
+
+      var out = massrel.helpers.extend(to_obj, from_obj);
+
+      expect(out.foo).toEqual('bar');
+
+      var key;
+      for(key in from_obj) {
+        expect(out[key]).toEqual(from_obj[key]);
+      }
+      for(key in to_obj) {
+        expect(out[key]).toEqual(to_obj[key]);
+      }
+    });
+
+    it('not overwrite preexisting keys', function() {
+      var out = massrel.helpers.extend({ foo: 'bar1' }, { foo: 'bar2' });
+      expect(out.foo).toEqual('bar1');
+    });
+
+    it('return original object instance', function() {
+      var to_obj = {};
+      var out = massrel.helpers.extend(to_obj, { foo: 'bar' });
+      expect(to_obj).toBe(out);
+    });
+
+  });
+
 });
