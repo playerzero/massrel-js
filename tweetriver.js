@@ -91,6 +91,9 @@
   function Account(user) {
     this.user = user;
   }
+  Account.prototype.meta_url = function() {
+    return 'http://tweetriver.com/'+ _enc(this.user) +'.json';
+  };
   Account.prototype.meta = function() {
     var opts, fn, error;
     if(typeof(arguments[0]) === 'function') {
