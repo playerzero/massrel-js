@@ -119,3 +119,5 @@ Shorthand
 * use HTTPS urls when on a secure page
 * change anchor text to use entitites given in in JSON (/entities/urls)
 * better date handling (is8601 and twitter formmated date conversion not very thorough)
+* build out Account API (e.g. Account#streams instead of just Account#meta)
+* abstract Poller class to handle of data besides streams api (meta anyone?)
