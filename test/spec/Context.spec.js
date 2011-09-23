@@ -37,6 +37,9 @@ describe('Context', function() {
 
     expect(context.retweet).toBe(true);
     expect(context.retweeted_by_user).toBeDefined();
+
+    // naive way to make sure every thing was shifted around correctly
+    expect(status.twitter_with_retweet.text).toEqual('RT @'+context.status.user.screen_name+': '+context.status.text);
   });
 
   it('match facebook', function() {
