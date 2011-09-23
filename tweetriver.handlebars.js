@@ -29,6 +29,8 @@ function register(Handlebars) {
 }
 
 function prepare_context(status, opts) {
+  status = status || {}; // gracefully handle nulls
+
   if(status.retweeted_status) {
     var context = massrel.handlebars.prepare_context(status.retweeted_status, opts);
     context.retweet = true;
@@ -45,9 +47,10 @@ function prepare_context(status, opts) {
     intents: opts.intents,
     source: {
       facebook: false,
-      twitter: false
+      twitter: false,
+      message: false
     },
-    known: true
+    known: false
   };
 
   // determine status source
@@ -55,8 +58,11 @@ function prepare_context(status, opts) {
     context.source.facebook = true;
     context.known = (typeof(status.message) === 'string');
   }
-  else {
-    context.source.twitter = true;
+  else if(status.network === 'massrelevance') {
+    context.source.message = context.known = true;
+  }
+  else if(status.id_str && status.text && status.entities) {
+    context.source.twitter = context.known = true;
   }
 
   return context;
