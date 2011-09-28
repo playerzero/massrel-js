@@ -224,16 +224,21 @@
   
   function PollerQueue(poller, opts) {
     this.poller = poller;
-    
-    opts = opts || {};
-    
+
+    opts = extend(opts || {}, {
+      history_size: 0,
+      history_timeout: poller.frequency / 1000
+    });
+
     var queue = [];
+    var history = [];
     var callback = null;
     var locked = false;
+    var last_history_total = 0;
 
     this.total = 0;
     this.enqueued = 0;
-    
+
     var self = this;
     poller.batch(function(tweets) {
       var len = tweets.length;
@@ -243,22 +248,52 @@
       }
       self.total += len;
       self.enqueued += len;
-      
+
       step();
     });
-    
+
+    function check_history() {
+      last_history_total = self.total;
+      setTimeout(function() {
+        if(self.total === last_history_total && history.length > 0 && queue.length === 0) {
+          var index = Math.min(Math.floor(history.length * Math.random()), history.length - 1);
+          var status = history[index];
+          queue.push(status);
+
+          //shoud i be updating total here?
+          self.total += 1;
+          self.enqueued += 1;
+
+          step();
+        };
+        check_history();
+      }, opts.history_timeout * 1000);
+    }
+    if(opts.history_size > 0) {
+      check_history();
+    }
+
     function step() {
       if(!locked && queue.length > 0 && typeof callback === 'function') {
         self.enqueued -= 1;
         var tweet = queue.shift();
-        locked = true
+        locked = true;
+
+        if(opts.history_size > 0 && !tweet.__recycled) {
+          if(opts.history_size === history.length) {
+            history.shift();
+          }
+          tweet.__recycled = true;
+          history.push(tweet);
+        }
+
         callback.call(self, tweet, function() {
           locked = false;
           setTimeout(step, 0);
         });
       }
     }
-    
+
     this.next = function(fn) {
       if(!locked && typeof fn === 'function') {
         callback = fn;
