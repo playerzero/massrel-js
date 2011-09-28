@@ -255,7 +255,7 @@
     function check_history() {
       last_history_total = self.total;
       setTimeout(function() {
-        if(self.total === last_history_total && history.length > 0 && queue.length === 0) {
+        if(self.poller.enabled && self.total === last_history_total && history.length > 0 && queue.length === 0) {
           var index = Math.min(Math.floor(history.length * Math.random()), history.length - 1);
           var status = history[index];
           queue.push(status);
