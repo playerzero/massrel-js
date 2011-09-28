@@ -33,10 +33,10 @@
       params.push(['since_id', opts.since_id]);
     }
     if(opts.replies) {
-      params.push(['replies', opts.replies]);
+      params.push(['replies', '1']);
     }
     if(opts.geo_hint) {
-      params.push(['geo_hint', opts.geo_hint]);
+      params.push(['geo_hint', '1']);
     }
 
     jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error); 
