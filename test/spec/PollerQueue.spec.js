@@ -69,6 +69,7 @@ describe('PollerQueue', function() {
   });
 
   it('prevent multiple iterations if step called multiple times', function() {
+    var max_timeout = 1000;
     var poller = createFakePoller(10, 1000);
     var queue = new massrel.PollerQueue(poller);
 
@@ -78,20 +79,23 @@ describe('PollerQueue', function() {
       if(this.count === 1) {
         next();
         next();
-        next();
-        next();
+        setTimeout(next, max_timeout * 0.333);
+        setTimeout(next, max_timeout * 0.666);
+        setTimeout(next, max_timeout * 0.1);
+        setTimeout(next, max_timeout * 0.5);
+        setTimeout(next, max_timeout * 0.8);
         next();
       }
     }
 
     queue.next(cb);
 
-    waits(200);
     poller._pump();
     setTimeout(function() { 
       expect(count).toBe(2);
       expect(queue.count).toBe(count);
-    }, 100);
+    }, max_timeout);
+    waits(max_timeout+200);
   });
 
   it('use historical data if no new data is added', function() {

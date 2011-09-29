@@ -234,6 +234,7 @@
     var history = [];
     var callback = null;
     var locked = false;
+    var lock_incr = 0;
     var last_history_total = 0;
 
     this.total = 0;
@@ -277,14 +278,18 @@
 
     function step() {
       if(!locked && queue.length > 0 && typeof callback === 'function') {
+        var lock_local = ++lock_incr;
+
         self.enqueued -= 1;
         self.count += 1;
         var status = queue.shift();
         locked = true;
-        var localLock = Math.floor(1000 * Math.random());
+
         callback.call(self, status, function() {
-          locked = false;
-          setTimeout(step, 0);
+          if(lock_local === lock_incr) {
+            locked = false;
+            setTimeout(step, 0);
+          }
         });
 
         if(opts.history_size > 0 && !status.__recycled) {
