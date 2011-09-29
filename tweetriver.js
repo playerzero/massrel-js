@@ -33,7 +33,7 @@
       params.push(['since_id', opts.since_id]);
     }
     if(opts.replies) {
-      params.push(['replies', '1']);
+      params.push(['replies', opts.replies]);
     }
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
@@ -137,8 +137,8 @@
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
-    this.replies = opts.replies || null;
-    this.geo_hint = opts.geo_hint || null;
+    this.replies = !!opts.replies;
+    this.geo_hint = !!opts.geo_hint;
     this.frequency = (opts.frequency || 30) * 1000;
     this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
     this.enabled = false;
@@ -238,6 +238,8 @@
 
     this.total = 0;
     this.enqueued = 0;
+    this.count = 0;
+    this.reused = 0;
 
     var self = this;
     poller.batch(function(tweets) {
@@ -260,9 +262,9 @@
           var status = history[index];
           queue.push(status);
 
-          //shoud i be updating total here?
           self.total += 1;
           self.enqueued += 1;
+          self.reused += 1;
 
           step();
         };
@@ -276,8 +278,14 @@
     function step() {
       if(!locked && queue.length > 0 && typeof callback === 'function') {
         self.enqueued -= 1;
+        self.count += 1;
         var tweet = queue.shift();
         locked = true;
+        var localLock = Math.floor(1000 * Math.random());
+        callback.call(self, tweet, function() {
+          locked = false;
+          setTimeout(step, 0);
+        });
 
         if(opts.history_size > 0 && !tweet.__recycled) {
           if(opts.history_size === history.length) {
@@ -287,10 +295,6 @@
           history.push(tweet);
         }
 
-        callback.call(self, tweet, function() {
-          locked = false;
-          setTimeout(step, 0);
-        });
       }
     }
 
