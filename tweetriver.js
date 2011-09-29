@@ -75,13 +75,13 @@
     
     return this;
   };
-  Stream.step_through = function(tweets, enumerators, context) {
-    var i = tweets.length - 1;
+  Stream.step_through = function(statuses, enumerators, context) {
+    var i = statuses.length - 1;
     if(i >= 0) {
       for(;i >= 0; i--) {
-        var tweet = tweets[i];
+        var status = statuses[i];
         for(var j = 0, len = enumerators.length; j < len; j++) {
-          enumerators[j].call(context, tweet);
+          enumerators[j].call(context, status);
         }
       }
     }
@@ -182,21 +182,21 @@
         since_id: self.since_id,
         replies: self.replies,
         geo_hint: self.geo_hint
-      }, function(tweets) {
+      }, function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        var catch_up = self.catch_up && tweets.length === self.limit;
+        var catch_up = self.catch_up && statuses.length === self.limit;
         
-        if(tweets.length > 0) {
-          self.since_id = tweets[0].entity_id;
+        if(statuses.length > 0) {
+          self.since_id = statuses[0].entity_id;
           
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
-            self._callbacks[i].call(self, tweets); // we might need to pass in a copy of tweets array
+            self._callbacks[i].call(self, statuses); // we might need to pass in a copy of statuses array
           }
           
           // invoke all enumerators on this poller
-          Stream.step_through(tweets, self._enumerators, self);
+          Stream.step_through(statuses, self._enumerators, self);
         }
         self._t = setTimeout(poll, catch_up ? 0 : self.frequency);
       }, function() {
@@ -242,11 +242,11 @@
     this.reused = 0;
 
     var self = this;
-    poller.batch(function(tweets) {
-      var len = tweets.length;
+    poller.batch(function(statuses) {
+      var len = statuses.length;
       var i = len - 1;
-      for(; i >= 0; i--) { // looping through from bottom to top to queue tweets from oldest to newest
-        queue.push(tweets[i]);
+      for(; i >= 0; i--) { // looping through from bottom to top to queue statuses from oldest to newest
+        queue.push(statuses[i]);
       }
       self.total += len;
       self.enqueued += len;
@@ -279,20 +279,20 @@
       if(!locked && queue.length > 0 && typeof callback === 'function') {
         self.enqueued -= 1;
         self.count += 1;
-        var tweet = queue.shift();
+        var status = queue.shift();
         locked = true;
         var localLock = Math.floor(1000 * Math.random());
-        callback.call(self, tweet, function() {
+        callback.call(self, status, function() {
           locked = false;
           setTimeout(step, 0);
         });
 
-        if(opts.history_size > 0 && !tweet.__recycled) {
+        if(opts.history_size > 0 && !status.__recycled) {
           if(opts.history_size === history.length) {
             history.shift();
           }
-          tweet.__recycled = true;
-          history.push(tweet);
+          status.__recycled = true;
+          history.push(status);
         }
 
       }
