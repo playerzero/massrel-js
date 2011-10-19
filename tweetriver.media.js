@@ -23,11 +23,10 @@
  
 (function() {
   var massrel = window.massrel = window.massrel || {};
-  var m = massrel.media = massrel.media || {};
+  var exports = massrel.media = massrel.media || {};
+  var sources = exports.sources = {};
   
-  var MEDIA = m.MEDIA = {};
-  
-  MEDIA.yfrog = {
+  sources.yfrog = {
     type: 'photo',
     matchers: {
       photo: /^(?:(?:https?\:\/\/)?(?:www\.)?)?yfrog\.com\/(\S+)/i
@@ -37,7 +36,7 @@
     }
   };
   
-  MEDIA.twitpic = {
+  sources.twitpic = {
     matchers: {
       photo: /^(?:(?:https?\:\/\/)?(?:www\.)?)?twitpic\.com\/(\S+)/
     },
@@ -46,7 +45,7 @@
     }
   };
   
-  MEDIA.instagram = {
+  sources.instagram = {
     type: 'photo',
     matchers: {
       photo: /(^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?instagr\.am\/p\/[a-zA-Z0-9_\-]+\/?)/i
@@ -73,7 +72,7 @@
     }
   };
 
-  MEDIA.twitter = {
+  sources.twitter = {
     type: 'photo',
     matchers: {
       photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?pic\.twitter\.com\/([a-z0-9]+)\/?/i
@@ -100,7 +99,7 @@
     }
   }
 
-  MEDIA.lockerz = {
+  sources.lockerz = {
     type: 'photo',
     matchers: {
       photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?lockerz\.com\/s\/(\d+)\/?/i
@@ -110,7 +109,7 @@
     }
   };
 
-  MEDIA.plixi = {
+  sources.plixi = {
     type: 'photo',
     matchers: {
       tweetphoto: /^(?:(?:https?\:\/\/)?(?:www\.)?)?tweetphoto\.com\/(\d+)/i,
@@ -129,7 +128,7 @@
     }
   };
 
-  MEDIA.flickr = {
+  sources.flickr = {
     type: 'photo',
     matchers: {
       photo: /^(?:(?:https?\:\/\/)?(?:www\.)?)?flickr\.com\/photos\/[\w\@\-]+\/(\d+)\/?/i,
@@ -188,10 +187,10 @@
     return A;
   }
   
-  m.match_media = function(url) {
+  exports.match_media = function(url) {
     var slug;
-    for(var name in MEDIA) {
-      var type = MEDIA[name];
+    for(var name in sources) {
+      var type = sources[name];
       var matchers = type.matchers;
       for(var matcher_name in matchers) {
         if(slug = url.match(matchers[matcher_name])) {
@@ -211,14 +210,14 @@
   // @context: (optional) context to provide processor
   // @success: (optional) callback for media url
   // @error: (optional) callback if media could not be found or skipped
-  m.media_url = function() {
+  exports.media_url = function() {
     var i = 1,
         url = arguments[0],
         context = typeof(arguments[i]) !== 'function' && (arguments[i++] || {}),
         success = typeof(arguments[i]) === 'function' && arguments[i++] || null,
         error = typeof(arguments[i]) === 'function' && arguments[i++] || null;
 
-    var media = m.match_media(url, context);
+    var media = exports.match_media(url, context);
 
     if(media) {
       function resume(media_url) {
