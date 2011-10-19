@@ -54,7 +54,7 @@
     process: function(slug, matcher_name) {
       var self = this;
       $.ajax({
-        url: '//instagr.am/api/v1/oembed',
+        url: 'http://instagr.am/api/v1/oembed',
         type: 'GET',
         dataType: 'jsonp',
         data: {
@@ -73,6 +73,16 @@
     }
   };
   
+  MEDIA.lockerz = {
+    type: 'photo',
+    matchers: {
+      photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?lockerz\.com\/s\/(\d+)\/?/i
+    },
+    process: function(slug, matcher_name) {
+      this('http://api.plixi.com/api/tpapi.svc/imagefromurl?size=medium&url=http://lockerz.com/s/'+encodeURIComponent(slug));
+    }
+  };
+
   MEDIA.plixi = {
     type: 'photo',
     matchers: {
@@ -83,7 +93,7 @@
     process: function(slug, matcher_name) {
       var self = this;
       $.ajax({
-        url: '//tweetphotoapi.com/api/tpapi.svc/jsonp/photos/' + slug,
+        url: 'http://tweetphotoapi.com/api/tpapi.svc/jsonp/photos/' + slug,
         dataType: 'jsonp',
         success: function(resp) {
           self(resp.MediumImageUrl);
@@ -91,7 +101,7 @@
       });
     }
   };
-  
+
   MEDIA.flickr = {
     type: 'photo',
     matchers: {

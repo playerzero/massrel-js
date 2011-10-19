@@ -10,7 +10,10 @@ describe('media scaper', function() {
         var success = jasmine.createSpy('success');
         var error = jasmine.createSpy('error');
 
-        media_url(url, success, error);
+        media_url(url, function() {
+          console.log(arguments);
+          success();
+        }, error);
 
         setTimeout(function() {
           expect(success).toHaveBeenCalled();
@@ -27,5 +30,6 @@ describe('media scaper', function() {
   urlRun('match twitpic url', 'http://twitpic.com/3x9wso');
   urlRun('match instagram url', 'http://instagr.am/p/BdLaS/');
   urlRun('match plixi url', 'http://plixi.com/p/75523311');
+  urlRun('match lockerz url', 'http://lockerz.com/s/148475342');
 
 });
