@@ -72,7 +72,34 @@
       });
     }
   };
-  
+
+  MEDIA.twitter = {
+    type: 'photo',
+    matchers: {
+      photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?pic\.twitter\.com\/([a-z0-9]+)\/?/i
+    },
+    process: function(slug, matcher_name) {
+      var media = this.context && (this.context.entities && this.context.entities.media || massrel.helpers.is_array(this.context) && this.context) || null;
+      var media_url;
+
+      if(media) {
+        var display_url = 'pic.twitter.com/'+slug;
+        for(var i = 0, len = media.length; i < len && !media_url; i++) {
+          if(media[i].display_url === display_url) {
+            media_url = media[i].media_url;
+          }
+        }
+      }
+
+      if(media_url) {
+        this(media_url);
+      }
+      else {
+        this.skip();
+      }
+    }
+  }
+
   MEDIA.lockerz = {
     type: 'photo',
     matchers: {
@@ -179,8 +206,19 @@
     }
   };
 
-  m.media_url = function(url, success, error) {
-    var media = m.match_media(url);
+  // params:
+  // @url: url to lookup
+  // @context: (optional) context to provide processor
+  // @success: (optional) callback for media url
+  // @error: (optional) callback if media could not be found or skipped
+  m.media_url = function() {
+    var i = 1,
+        url = arguments[0],
+        context = typeof(arguments[i]) !== 'function' && (arguments[i++] || {}),
+        success = typeof(arguments[i]) === 'function' && arguments[i++] || null,
+        error = typeof(arguments[i]) === 'function' && arguments[i++] || null;
+
+    var media = m.match_media(url, context);
 
     if(media) {
       function resume(media_url) {
@@ -192,6 +230,8 @@
           error();
         }
       }
+
+      resume.context = context;
 
       media.type.process.call(resume, media.slug, media.matcher_name);
     }
