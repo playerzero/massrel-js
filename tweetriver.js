@@ -150,7 +150,7 @@
     // this method should not be called externally...
     // it basically restarts the poll loop if it stopped for network errors
     // we call this if a request takes longer than 10sec
-    if(this.alive == false) {
+    if(!this.alive && this.enabled) {
       this._t = null;
       this.start();
     }
