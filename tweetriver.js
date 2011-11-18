@@ -2,6 +2,7 @@
   var massrel = window.massrel = window.massrel || {};
   massrel.host = 'tweetriver.com';
   massrel.timeout = 10 * 1000;
+  massrel.protocol = document.location.protocol === 'https:' ? 'https' : 'http';
 
   var _enc = encodeURIComponent;
   var json_callbacks_counter = 0;
@@ -15,10 +16,10 @@
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    return 'http://'+ massrel.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'.json';
+    return api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json');
   };
   Stream.prototype.meta_url = function() {
-    return 'http://'+ massrel.host +'/' + _enc(this.account) + '/'+ _enc(this.stream_name) +'/meta.json';
+    return api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
   };
   Stream.prototype.load = function(opts, fn, error) {
     opts = extend(opts || {}, {
@@ -92,7 +93,7 @@
     this.user = user;
   }
   Account.prototype.meta_url = function() {
-    return 'http://tweetriver.com/'+ _enc(this.user) +'.json';
+    return api_url('/'+ _enc(this.user) +'.json');
   };
   Account.prototype.meta = function() {
     var opts, fn, error;
@@ -517,6 +518,11 @@
     return raw;    
   }
 
+  function api_url(path, host) {
+    host = host || massrel.host;
+    return massrel.protocol+'://'+host+path;
+  }
+
   
   // public api
   massrel.Stream = Stream;
@@ -532,7 +538,8 @@
     is_array: is_array,
     fix_date: fix_date,
     fix_twitter_date: fix_date, // alias
-    parse_params: parse_params
+    parse_params: parse_params,
+    api_url: api_url
   };
   
 })();
