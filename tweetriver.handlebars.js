@@ -12,8 +12,14 @@ function register(Handlebars) {
     var options = { target: '_blank' };
 
     if(this.source.twitter) {
-      if(this.status.entities && this.status.entities.urls) {
-        options.urlEntities = this.status.entities.urls;
+      if(this.status.entities) {
+        if(this.status.entities.urls) {
+          options.urlEntities = this.status.entities.urls;
+        }
+        if(this.status.entities.media) {
+          console.log(this.status.entities.media);
+          options.urlEntities = (options.urlEntities || []).concat(this.status.entities.media);
+        }
       }
       return twttr.txt.autoLink(text, options);
     }
