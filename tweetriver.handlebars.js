@@ -17,7 +17,6 @@ function register(Handlebars) {
           options.urlEntities = this.status.entities.urls;
         }
         if(this.status.entities.media) {
-          console.log(this.status.entities.media);
           options.urlEntities = (options.urlEntities || []).concat(this.status.entities.media);
         }
       }
