@@ -858,12 +858,18 @@ define('massrel', [
     var massrel = window.massrel = globals;
   }
 
+  // public API
   massrel.Stream = Stream;
   massrel.Account = Account;
   massrel.Poller = Poller;
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.helpers = helpers;
+
+  // require/AMD methods
+  massrel.define = define;
+  massrel.require = require;
+  massrel.requirejs = requirejs;
 
 });
 }());
