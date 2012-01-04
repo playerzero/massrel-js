@@ -22,10 +22,10 @@ describe('helpers', function() {
 
   describe('building jsonp requests', function() {
 
-    massrel.Stream._json_callbacks = {};
+    massrel._json_callbacks = {};
 
     var callbacksBefore = 0;
-    for(var k in massrel.Stream._json_callbacks) {
+    for(var k in massrel._json_callbacks) {
       callbacksBefore += 1;
     }
 
@@ -73,14 +73,14 @@ describe('helpers', function() {
 
     it('add new callback to public jsonp hash', function() {
       var callbacksAfter = 0;
-      for(var k in massrel.Stream._json_callbacks) {
+      for(var k in massrel._json_callbacks) {
         callbacksAfter += 1;
       }
       expect(callbacksAfter - callbacksBefore).toEqual(1);
     });
 
     it('use given prefix for jsonp method', function() {
-      for(var k in massrel.Stream._json_callbacks) {
+      for(var k in massrel._json_callbacks) {
         expect(k.indexOf(prefix)).toBeGreaterThan(-1);
       }
     });
@@ -219,6 +219,26 @@ describe('helpers', function() {
       expect(to_obj).toBe(out);
     });
 
+  });
+
+  describe('steping through results', function() {
+    it('fan out items through enumerators', function() {
+      var randomItems = Math.ceil( Math.random() * 100 );
+      var randomEnums = Math.ceil( Math.random() * 10 );
+      var enumerators = [];
+
+      // create enums
+      for(var i = 0; i < randomEnums; i++) {
+        enumerators.push( jasmine.createSpy('callback '+(i+1)) );
+      }
+
+      massrel.helpers.step_through(new Array(randomItems), enumerators, window);
+
+      // check enums
+      for(var i = 0; i < randomEnums; i++) {
+        expect(enumerators[i].callCount).toEqual(randomItems);
+      }
+    });
   });
 
 });
