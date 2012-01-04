@@ -28,8 +28,8 @@ describe('media scaper', function() {
   urlRun('match flickr url', 'http://flic.kr/p/5waghv', 'http://farm4.static.flickr.com/3059/2966729377_38483a86b6.jpg');
   urlRun('match yfrog url', 'http://yfrog.com/h02gvclj', 'http://yfrog.com/h02gvclj:iphone');
   urlRun('match twitpic url', 'http://twitpic.com/3x9wso', 'http://twitpic.com/show/large/3x9wso');
-  urlRun('match instagram url', 'http://instagr.am/p/BdLaS/', 'http://distillery.s3.amazonaws.com/media/2011/02/07/5d03d258fbd849d688a1c3e5a08e0c47_7.jpg');
-  urlRun('match plixi url', 'http://plixi.com/p/75523311', 'http://c0013639.r32.cf1.rackcdn.com/x2_48064ef');
+  urlRun('match instagram url', 'http://instagr.am/p/BdLaS/', 'http://instagr.am/p/BdLaS/media/?type=l');
+  urlRun('match plixi url', 'http://plixi.com/p/75523311', 'http://api.plixi.com/api/tpapi.svc/imagefromurl?size=medium&url=http://lockerz.com/s/75523311');
   urlRun('match lockerz url', 'http://lockerz.com/s/148475342', 'http://api.plixi.com/api/tpapi.svc/imagefromurl?size=medium&url=http://lockerz.com/s/148475342');
 
 

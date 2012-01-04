@@ -48,27 +48,10 @@
   sources.instagram = {
     type: 'photo',
     matchers: {
-      photo: /(^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?instagr\.am\/p\/[a-zA-Z0-9_\-]+\/?)/i
+      photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?(?:instagr\.am|instagram\.com)\/p\/([a-zA-Z0-9_\-]+)\/?/i
     },
     process: function(slug, matcher_name) {
-      var self = this;
-      $.ajax({
-        url: 'http://instagr.am/api/v1/oembed',
-        type: 'GET',
-        dataType: 'jsonp',
-        data: {
-          url: slug
-          //, maxwidth: A.maxwidth
-        },
-        success: function(resp) {
-          if (!resp.error) {
-            self(resp.url);
-          }
-          else {
-            self.skip();
-          }
-        }
-      });
+      this('http://instagr.am/p/'+slug+'/media/?type=l');
     }
   };
 
@@ -102,29 +85,13 @@
   sources.lockerz = {
     type: 'photo',
     matchers: {
-      photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?lockerz\.com\/s\/(\d+)\/?/i
-    },
-    process: function(slug, matcher_name) {
-      this('http://api.plixi.com/api/tpapi.svc/imagefromurl?size=medium&url=http://lockerz.com/s/'+encodeURIComponent(slug));
-    }
-  };
-
-  sources.plixi = {
-    type: 'photo',
-    matchers: {
+      photo: /^(?:(?:https?\:\/\/)?(?:[\w\-]+\.)?)?lockerz\.com\/s\/(\d+)\/?/i,
       tweetphoto: /^(?:(?:https?\:\/\/)?(?:www\.)?)?tweetphoto\.com\/(\d+)/i,
       plixi: /^(?:(?:https?\:\/\/)?(?:www\.)?)?plixi\.com\/p\/(\d+)/i,
       mobile: /^(?:https?\:\/\/)?m\.plixi\.com\/p\/(\d+)/i
     },
     process: function(slug, matcher_name) {
-      var self = this;
-      $.ajax({
-        url: 'http://tweetphotoapi.com/api/tpapi.svc/jsonp/photos/' + slug,
-        dataType: 'jsonp',
-        success: function(resp) {
-          self(resp.MediumImageUrl);
-        }
-      });
+      this('http://api.plixi.com/api/tpapi.svc/imagefromurl?size=medium&url=http://lockerz.com/s/'+encodeURIComponent(slug));
     }
   };
 
