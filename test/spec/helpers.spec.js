@@ -39,7 +39,7 @@ describe('helpers', function() {
 
       var limit = Math.max( Math.ceil( Math.random() * 10 ), 1);
       var params = [['limit', limit]];
-      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/celebrities.json', params, prefix, {}, callback, error);
+      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, callback, error);
 
       setTimeout(function() {
         expect(callback).toHaveBeenCalled();
