@@ -4,6 +4,7 @@ define('massrel', [
        , 'stream'
        , 'account'
        , 'poller'
+       , 'meta_poller'
        , 'poller_queue'
        , 'context'
        ], function(
@@ -12,6 +13,7 @@ define('massrel', [
        , Stream
        , Account
        , Poller
+       , MetaPoller
        , PollerQueue
        , Context
        ) {
@@ -25,6 +27,7 @@ define('massrel', [
   massrel.Stream = Stream;
   massrel.Account = Account;
   massrel.Poller = Poller;
+  massrel.MetaPoller = MetaPoller;
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.helpers = helpers;

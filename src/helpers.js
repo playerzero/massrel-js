@@ -2,11 +2,12 @@ define(['globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
-  exports.step_through = function(statuses, enumerators, context) {
-    var i = statuses.length - 1;
+  exports.step_through = function(data_list, enumerators, context) {
+    data_list = exports.is_array(data_list) ? data_list : [data_list];
+    var i = data_list.length - 1;
     if(i >= 0) {
       for(;i >= 0; i--) {
-        var status = statuses[i];
+        var status = data_list[i];
         for(var j = 0, len = enumerators.length; j < len; j++) {
           enumerators[j].call(context, status);
         }

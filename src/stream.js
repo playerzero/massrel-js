@@ -1,4 +1,4 @@
-define(['helpers', 'poller'], function(helpers, Poller) {
+define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -69,6 +69,9 @@ define(['helpers', 'poller'], function(helpers, Poller) {
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
+  };
+  Stream.prototype.metaPoller = function(opts) {
+    return new MetaPoller(this, opts);
   };
 
   return Stream;
