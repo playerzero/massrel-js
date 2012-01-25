@@ -109,6 +109,18 @@ Shorthand
       setTimeout(step, 1000);
     }).start();
 
+# Change log
+
+## v0.9.2
+
+* added conveniece wrapper for polling stream meta info (use `Stream#metaPoller`)
+* define API as AMD if public AMD `define` method exists
+
+## v0.9.1
+
+* first versioned package
+* overhall system to use jburke/r.js & almond for build system
+
 # TO DO
 
 * tests
