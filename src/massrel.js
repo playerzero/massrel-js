@@ -37,4 +37,9 @@ define('massrel', [
   massrel.require = require;
   massrel.requirejs = requirejs;
 
+  // define API for AMD
+  if(typeof(window.define) === 'function' && typeof(window.define.amd) !== 'undefined') {
+    window.define(massrel);
+  }
+
 });
