@@ -48,10 +48,10 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
     var stream = new massrel.Stream('howardrauscher/test');
     var params;
 
-    params = stream.buildParams();
+    params = stream.builMetaParams();
     expect(params.length).toEqual(0);
 
-    params = stream.buildParams({});
+    params = stream.builMetaParams({});
     expect(params.length).toEqual(0);
 
     var testParam = function(opts, key, val) {
