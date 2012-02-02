@@ -23,7 +23,7 @@ define(['helpers'], function(helpers) {
       throw new Error('incorrect arguments');
     }
 
-    var params = this.metaParamBuilder();
+    var params = this.metaParamBuilder(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;

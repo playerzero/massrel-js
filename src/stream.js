@@ -20,7 +20,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       // put defaults
     });
     
-    var params = this.buildParams();
+    var params = this.buildParams(opts);
     helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
@@ -68,7 +68,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       throw new Error('incorrect arguments');
     }
     
-    var params = this.builMetaParams();
+    var params = this.builMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
