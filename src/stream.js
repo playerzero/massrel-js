@@ -68,11 +68,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       throw new Error('incorrect arguments');
     }
     
-    var params = [];
-    if(opts.disregard) {
-      params.push(['disregard', opts.disregard]);
-    }
-
+    var params = this.builMetaParams();
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
