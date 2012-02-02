@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.9.3
+
+* added `Poller#more` method to pull older statuses from a timeline. It keeps track of the last item in the list for subsequent requests
+* created query param builder methods for stream and account requests (use `Stream#buildParams`, `Stream.buildMetaParams`, or `Account#buildMetaParams`)
+
 ## v0.9.2
 
 * added conveniece wrapper for polling stream meta info (use `Stream#metaPoller`)
