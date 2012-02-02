@@ -20,6 +20,13 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       // put defaults
     });
     
+    var params = this.buildParams();
+    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+
+    return this;
+  };
+  Stream.prototype.buildParams = function(opts) {
+    opts = opts || {};
     var params = [];
     if(opts.limit) {
       params.push(['limit', opts.limit]);
@@ -31,15 +38,12 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       params.push(['start', opts.start_id || opts.start]);
     }
     if(opts.replies) {
-      params.push(['replies', opts.replies]);
+      params.push(['replies', '1']);
     }
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
-
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
-
-    return this;
+    return params;
   };
   Stream.prototype.each = function(fn) {
     this._enumerators.push(fn);
@@ -72,6 +76,14 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
+  };
+  Stream.prototype.builMetaParams = function(opts) {
+    opts = opts || {};
+    var params = [];
+    if(opts.disregard) {
+      params.push(['disregard', opts.disregard]);
+    }
+    return params;
   };
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
