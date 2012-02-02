@@ -507,7 +507,7 @@ define('account',['helpers'], function(helpers) {
       throw new Error('incorrect arguments');
     }
 
-    var params = this.metaParamBuilder();
+    var params = this.metaParamBuilder(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
@@ -834,7 +834,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       // put defaults
     });
     
-    var params = this.buildParams();
+    var params = this.buildParams(opts);
     helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
@@ -882,12 +882,12 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       throw new Error('incorrect arguments');
     }
     
-    var params = this.builMetaParams();
+    var params = this.builMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
   };
-  Stream.prototype.builMetaParams = function(opts) { 
+  Stream.prototype.builMetaParams = function(opts) {
     opts = opts || {};
     var params = [];
     if(opts.disregard) {
