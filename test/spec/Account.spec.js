@@ -17,6 +17,29 @@ describe('Account', function() {
     expect(account.meta_url()).toEqual('http://tweetriver.com/howardrauscher.json');
   });
 
+  it('use correct meta params from options', function() {
+    var account = new massrel.Account('howardrauscher');
+    var params;
+
+    params = account.builMetaParams();
+    expect(params.length).toEqual(0);
+
+    params = account.builMetaParams({});
+    expect(params.length).toEqual(0);
+
+    var testParam = function(opts, key, val) {
+      var params = account.builMetaParams(opts);
+      expect(params.length).toEqual(1);
+      expect(params[0][0]).toEqual(key);
+      expect(params[0][1]).toEqual(val);
+    };
+
+    testParam({ quick_stats: true }, 'quick_stats', '1');
+    testParam({ streams: 'mystream' }, 'streams', 'mystream');
+    testParam({ streams: ['mystream'] }, 'streams', 'mystream');
+    testParam({ streams: ['mystream1', 'mystream2'] }, 'streams', 'mystream1,mystream2');
+  });
+
   //TODO: #meta
 
 });

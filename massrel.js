@@ -496,6 +496,14 @@ define('account',['helpers'], function(helpers) {
       throw new Error('incorrect arguments');
     }
 
+    var params = this.metaParamBuilder();
+    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+
+    return this;
+  };
+  Account.prototype.builMetaParams = function(opts) {
+    opts = opts || {};
+
     var params = [];
     if(opts.quick_stats) {
       params.push(['quick_stats', '1']);
@@ -505,9 +513,7 @@ define('account',['helpers'], function(helpers) {
       params.push(['streams', streams.join(',')]);
     }
 
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-
-    return this;
+    return params;
   };
   Account.prototype.toString = function() {
     return this.user;
@@ -673,6 +679,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
+    this.start_id = opts.start_id || null;
     this.replies = !!opts.replies;
     this.geo_hint = !!opts.geo_hint;
     this.frequency = (opts.frequency || 30) * 1000;
@@ -713,18 +720,19 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
-      self.stream.load({
-        limit: self.limit,
-        since_id: self.since_id,
-        replies: self.replies,
-        geo_hint: self.geo_hint
-      }, function(statuses) {
+      self.stream.load(self.params({
+        since_id: self.since_id
+      }), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
         var catch_up = self.catch_up && statuses.length === self.limit;
         
         if(statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
+
+          if(!self.start_id) { // grab last item ID if it has not been set
+            self.start_id = statuses[statuses.length - 1].entity_id;
+          }
           
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
@@ -757,6 +765,38 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     queue.next(fn);
     return this;
   };
+  Poller.prototype.more = function(fn, error) {
+    //TODO: build in a lock, so multiple "more" calls
+    //are called sequentially instead of in parallel
+
+    var self = this
+      , fetch = function() {
+          self.stream.load(self.params({
+            start_id: self.start_id
+          }), function(statuses) {
+            if(statuses.length > 0) {
+              self.start_id = statuses[statuses.length - 1].entity_id;
+            }
+            fn(statuses);
+          }, function() {
+            // error
+            if(typeof(error) === 'function') {
+              error();
+            }
+          })
+        };
+
+    fetch();
+
+    return this;
+  };
+  Poller.prototype.params = function(opts) {
+    return helpers.extend({
+      limit: this.limit,
+      replies: this.replies,
+      geo_hint: this.geo_hint
+    }, opts || {});
+  };
 
   return Poller;
 });
@@ -783,6 +823,13 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       // put defaults
     });
     
+    var params = this.buildParams();
+    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+
+    return this;
+  };
+  Stream.prototype.buildParams = function(opts) {
+    opts = opts || {};
     var params = [];
     if(opts.limit) {
       params.push(['limit', opts.limit]);
@@ -790,16 +837,16 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     if(opts.since_id) {
       params.push(['since_id', opts.since_id]);
     }
+    else if(opts.start_id || opts.start) {
+      params.push(['start', opts.start_id || opts.start]);
+    }
     if(opts.replies) {
-      params.push(['replies', opts.replies]);
+      params.push(['replies', '1']);
     }
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
-
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
-
-    return this;
+    return params;
   };
   Stream.prototype.each = function(fn) {
     this._enumerators.push(fn);
@@ -824,14 +871,18 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       throw new Error('incorrect arguments');
     }
     
+    var params = this.builMetaParams();
+    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    
+    return this;
+  };
+  Stream.prototype.builMetaParams = function(opts) {
+    opts = opts || {};
     var params = [];
     if(opts.disregard) {
       params.push(['disregard', opts.disregard]);
     }
-
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-    
-    return this;
+    return params;
   };
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);

@@ -23,6 +23,14 @@ define(['helpers'], function(helpers) {
       throw new Error('incorrect arguments');
     }
 
+    var params = this.metaParamBuilder();
+    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+
+    return this;
+  };
+  Account.prototype.builMetaParams = function(opts) {
+    opts = opts || {};
+
     var params = [];
     if(opts.quick_stats) {
       params.push(['quick_stats', '1']);
@@ -32,9 +40,7 @@ define(['helpers'], function(helpers) {
       params.push(['streams', streams.join(',')]);
     }
 
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-
-    return this;
+    return params;
   };
   Account.prototype.toString = function() {
     return this.user;
