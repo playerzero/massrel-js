@@ -10,6 +10,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
+    this.start_id = opts.start_id || null;
     this.replies = !!opts.replies;
     this.geo_hint = !!opts.geo_hint;
     this.frequency = (opts.frequency || 30) * 1000;
@@ -50,18 +51,19 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
-      self.stream.load({
-        limit: self.limit,
-        since_id: self.since_id,
-        replies: self.replies,
-        geo_hint: self.geo_hint
-      }, function(statuses) {
+      self.stream.load(self.params({
+        since_id: self.since_id
+      }), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
         var catch_up = self.catch_up && statuses.length === self.limit;
         
         if(statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
+
+          if(!self.start_id) { // grab last item ID if it has not been set
+            self.start_id = statuses[statuses.length - 1].entity_id;
+          }
           
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
@@ -93,6 +95,38 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     var queue = new PollerQueue(this);
     queue.next(fn);
     return this;
+  };
+  Poller.prototype.more = function(fn, error) {
+    //TODO: build in a lock, so multiple "more" calls
+    //are called sequentially instead of in parallel
+
+    var self = this
+      , fetch = function() {
+          self.stream.load(self.params({
+            start_id: self.start_id
+          }), function(statuses) {
+            if(statuses.length > 0) {
+              self.start_id = statuses[statuses.length - 1].entity_id;
+            }
+            fn(statuses);
+          }, function() {
+            // error
+            if(typeof(error) === 'function') {
+              error();
+            }
+          })
+        };
+
+    fetch();
+
+    return this;
+  };
+  Poller.prototype.params = function(opts) {
+    return helpers.extend({
+      limit: this.limit,
+      replies: this.replies,
+      geo_hint: this.geo_hint
+    }, opts || {});
   };
 
   return Poller;
