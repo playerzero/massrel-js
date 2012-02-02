@@ -876,7 +876,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     
     return this;
   };
-  Stream.prototype.builMetaParams = function(opts) {
+  Stream.prototype.builMetaParams = function(opts) { 
     opts = opts || {};
     var params = [];
     if(opts.disregard) {
