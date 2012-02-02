@@ -783,7 +783,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
             if(typeof(error) === 'function') {
               error();
             }
-          })
+          });
         };
 
     fetch();
