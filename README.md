@@ -113,7 +113,7 @@ Shorthand
 
 ## v0.9.4
 
-* fix mispelled method name in `Account` which caused `Account#meta` to break when called (`builMetaParams` changed to `buildMetaParams`, and reference in `Accounts#meta` change from `metaParamBuilder` to the correct `buildMetaParams`)
+* fix mispelled method names in `Account` and `Stream` which caused `#meta` to break when called (`builMetaParams` changed to `buildMetaParams`)
 
 ## v0.9.3
 
