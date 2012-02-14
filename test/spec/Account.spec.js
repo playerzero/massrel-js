@@ -1,5 +1,5 @@
 describe('Account', function() {
-  var user = 'howardrauscher';
+  var user = 'howardr';
 
   it('create instance of Account', function() {
     var account = new massrel.Account(user);
@@ -14,11 +14,11 @@ describe('Account', function() {
 
   it('use correct RESTful urls', function() {
     var account = new massrel.Account(user);
-    expect(account.meta_url()).toEqual('http://tweetriver.com/howardrauscher.json');
+    expect(account.meta_url()).toEqual('http://tweetriver.com/howardr.json');
   });
 
   it('use correct meta params from options', function() {
-    var account = new massrel.Account('howardrauscher');
+    var account = new massrel.Account(user);
     var params;
 
     params = account.buildMetaParams();
@@ -40,6 +40,23 @@ describe('Account', function() {
     testParam({ streams: ['mystream1', 'mystream2'] }, 'streams', 'mystream1,mystream2');
   });
 
-  //TODO: #meta
+  it('will not break when #meta is called (end-to-end test)', function() {
+    var account = new massrel.Account(user);
+    var old_jsonp_factory = massrel.helpers.jsonp_factory
+    
+    var opts = {
+      streams: ['mystream'],
+      quick_stats: true
+    };
+
+    massrel.helpers.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+      expect(account.meta_url()).toEqual(url);
+      expect(account.buildMetaParams(opts)).toEqual(params);
+    };
+    
+    account.meta(opts, function(data) { });
+
+    massrel.helpers.jsonp_factory = old_jsonp_factory;
+  });
 
 });
