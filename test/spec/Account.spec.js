@@ -21,14 +21,14 @@ describe('Account', function() {
     var account = new massrel.Account('howardrauscher');
     var params;
 
-    params = account.builMetaParams();
+    params = account.buildMetaParams();
     expect(params.length).toEqual(0);
 
-    params = account.builMetaParams({});
+    params = account.buildMetaParams({});
     expect(params.length).toEqual(0);
 
     var testParam = function(opts, key, val) {
-      var params = account.builMetaParams(opts);
+      var params = account.buildMetaParams(opts);
       expect(params.length).toEqual(1);
       expect(params[0][0]).toEqual(key);
       expect(params[0][1]).toEqual(val);

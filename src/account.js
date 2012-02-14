@@ -23,12 +23,12 @@ define(['helpers'], function(helpers) {
       throw new Error('incorrect arguments');
     }
 
-    var params = this.metaParamBuilder(opts);
+    var params = this.buildMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
-  Account.prototype.builMetaParams = function(opts) {
+  Account.prototype.buildMetaParams = function(opts) {
     opts = opts || {};
 
     var params = [];

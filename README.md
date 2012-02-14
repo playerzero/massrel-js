@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.9.4
+
+* fix mispelled method name in `Account` which caused `Account#meta` to break when called (`builMetaParams` changed to `buildMetaParams`, and reference in `Accounts#meta` change from `metaParamBuilder` to the correct `buildMetaParams`)
+
 ## v0.9.3
 
 * added `Poller#more` method to pull older statuses from a timeline. It keeps track of the last item in the list for subsequent requests
