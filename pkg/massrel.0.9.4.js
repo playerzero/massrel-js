@@ -882,12 +882,12 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       throw new Error('incorrect arguments');
     }
     
-    var params = this.builMetaParams(opts);
+    var params = this.buildMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
     
     return this;
   };
-  Stream.prototype.builMetaParams = function(opts) {
+  Stream.prototype.buildMetaParams = function(opts) {
     opts = opts || {};
     var params = [];
     if(opts.disregard) {
