@@ -181,5 +181,10 @@ define(['globals'], function(globals) {
     return raw;
   };
 
+  exports.poll_interval = function(interval) {
+    var min = globals.min_poll_interval;
+    return Math.max(interval || min, min);
+  };
+
   return exports;
 });

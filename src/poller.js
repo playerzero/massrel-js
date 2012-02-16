@@ -73,7 +73,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
-        self._t = setTimeout(poll, catch_up ? 0 : self.frequency);
+        self._t = setTimeout(poll, catch_up ? 0 : helpers.poll_interval(self.frequency));
       }, function() {
         self.consecutive_errors += 1;
         self.poke();

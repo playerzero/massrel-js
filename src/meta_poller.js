@@ -13,7 +13,7 @@ define(['helpers'], function(helpers) {
           });
         }
       , again = function() {
-          tmo = setTimeout(fetch, self.frequency);
+          tmo = setTimeout(fetch, helpers.poll_interval(self.frequency));
         }
       , enabled = false
       , tmo;
