@@ -43,6 +43,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
+    if(opts.keywords) {
+      params.push(['keywords', opts.keywords]);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {

@@ -13,6 +13,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.start_id = opts.start_id || null;
     this.replies = !!opts.replies;
     this.geo_hint = !!opts.geo_hint;
+    this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
     this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
     this.enabled = false;
@@ -52,7 +53,8 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
       self.stream.load(self.params({
-        since_id: self.since_id
+        keywords: self.keywords
+      , since_id: self.since_id
       }), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
