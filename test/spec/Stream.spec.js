@@ -42,6 +42,7 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
     testParam({ since_id: '100001', start_id: '20002' }, 'since_id', '100001');
     testParam({ replies: true }, 'replies', '1');
     testParam({ geo_hint: true }, 'geo_hint', '1');
+    testParam({ keywords: 'blah, 2, 3' }, 'keywords', 'blah, 2, 3');
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
