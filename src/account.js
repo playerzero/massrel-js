@@ -1,4 +1,4 @@
-define(['helpers'], function(helpers) {
+define(['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
@@ -41,6 +41,9 @@ define(['helpers'], function(helpers) {
     }
 
     return params;
+  };
+  Account.prototype.metaPoller = function(opts) {
+    return new MetaPoller(this, opts);
   };
   Account.prototype.toString = function() {
     return this.user;

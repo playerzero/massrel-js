@@ -1,11 +1,9 @@
 define(['helpers'], function(helpers) {
 
-  function MetaPoller(stream, opts) {
+  function MetaPoller(object, opts) {
     var self = this
       , fetch = function() {
-          stream.meta({
-            disregard: self.disregard
-          }, function(data) { // success
+          object.meta(opts, function(data) { // success
             helpers.step_through(data, self._listeners, self);
             again();
           }, function() { // error
@@ -21,8 +19,8 @@ define(['helpers'], function(helpers) {
     this._listeners = [];
 
     opts = opts || {};
-    this.disregard = opts.diregard || null;
     this.frequency = (opts.frequency || 30) * 1000;
+    delete opts.frequency;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers

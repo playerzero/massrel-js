@@ -283,6 +283,7 @@ define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
 , protocol: document.location.protocol === 'https:' ? 'https' : 'http'
+, min_poll_interval: 5e3
 });
 
 define('helpers',['globals'], function(globals) {
@@ -468,10 +469,64 @@ define('helpers',['globals'], function(globals) {
     return raw;
   };
 
+  exports.poll_interval = function(interval) {
+    var min = globals.min_poll_interval;
+    return Math.max(interval || min, min);
+  };
+
   return exports;
 });
 
-define('account',['helpers'], function(helpers) {
+define('meta_poller',['helpers'], function(helpers) {
+
+  function MetaPoller(object, opts) {
+    var self = this
+      , fetch = function() {
+          object.meta(opts, function(data) { // success
+            helpers.step_through(data, self._listeners, self);
+            again();
+          }, function() { // error
+            again();
+          });
+        }
+      , again = function() {
+          tmo = setTimeout(fetch, helpers.poll_interval(self.frequency));
+        }
+      , enabled = false
+      , tmo;
+
+    this._listeners = [];
+
+    opts = opts || {};
+    this.frequency = (opts.frequency || 30) * 1000;
+    delete opts.frequency;
+
+    this.start = function() {
+      if(!enabled) { // guard against multiple pollers
+        enabled = true;
+        fetch();
+      }
+      return this;
+    };
+    this.stop = function() {
+      clearTimeout(tmo);
+      enabled = false;
+      return this;
+    };
+  }
+
+  MetaPoller.prototype.data = function(fn) {
+    this._listeners.push(fn);
+    return this;
+  };
+  // alias #each
+  MetaPoller.prototype.each = MetaPoller.prototype.data;
+
+  return MetaPoller;
+});
+
+
+define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
@@ -515,63 +570,15 @@ define('account',['helpers'], function(helpers) {
 
     return params;
   };
+  Account.prototype.metaPoller = function(opts) {
+    return new MetaPoller(this, opts);
+  };
   Account.prototype.toString = function() {
     return this.user;
   };
 
   return Account;
 });
-
-define('meta_poller',['helpers'], function(helpers) {
-
-  function MetaPoller(stream, opts) {
-    var self = this
-      , fetch = function() {
-          stream.meta({
-            disregard: self.disregard
-          }, function(data) { // success
-            helpers.step_through(data, self._listeners, self);
-            again();
-          }, function() { // error
-            again();
-          });
-        }
-      , again = function() {
-          tmo = setTimeout(fetch, self.frequency);
-        }
-      , enabled = false
-      , tmo;
-
-    this._listeners = [];
-
-    opts = opts || {};
-    this.disregard = opts.diregard || null;
-    this.frequency = (opts.frequency || 30) * 1000;
-
-    this.start = function() {
-      if(!enabled) { // guard against multiple pollers
-        enabled = true;
-        fetch();
-      }
-      return this;
-    };
-    this.stop = function() {
-      clearTimeout(tmo);
-      enabled = false;
-      return this;
-    };
-  }
-
-  MetaPoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
-    return this;
-  };
-  // alias #each
-  MetaPoller.prototype.each = MetaPoller.prototype.data;
-
-  return MetaPoller;
-});
-
 
 define('poller_queue',['helpers'], function(helpers) {
 
@@ -742,7 +749,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
-        self._t = setTimeout(poll, catch_up ? 0 : self.frequency);
+        self._t = setTimeout(poll, catch_up ? 0 : helpers.poll_interval(self.frequency));
       }, function() {
         self.consecutive_errors += 1;
         self.poke();
