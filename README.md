@@ -111,6 +111,12 @@ Shorthand
 
 # Change log
 
+## v0.9.5
+
+* add `keywords` param for streams
+* meta poller for Account (use `Account#metaPoller`)
+* global minimum poll value. for use in a possible QoS implementation
+
 ## v0.9.4
 
 * fix mispelled method names in `Account` and `Stream` which caused `#meta` to break when called (`builMetaParams` changed to `buildMetaParams`)
