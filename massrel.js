@@ -482,7 +482,8 @@ define('meta_poller',['helpers'], function(helpers) {
   function MetaPoller(object, opts) {
     var self = this
       , fetch = function() {
-          object.meta(opts, function(data) { // success
+					console.log(self.opts);
+          object.meta(self.opts, function(data) { // success
             helpers.step_through(data, self._listeners, self);
             again();
           }, function() { // error
@@ -490,17 +491,17 @@ define('meta_poller',['helpers'], function(helpers) {
           });
         }
       , again = function() {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.frequency));
+          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
         }
       , enabled = false
       , tmo;
 
     this._listeners = [];
 
-    opts = opts || {};
-    this.frequency = (opts.frequency || 30) * 1000;
+    this.opts = opts || {};
+		
+    this.opts.frequency = (opts.frequency || 30) * 1000;
     delete opts.frequency;
-		this.top_periods = opts.top_periods || null;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers
