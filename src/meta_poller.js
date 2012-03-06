@@ -21,6 +21,7 @@ define(['helpers'], function(helpers) {
     opts = opts || {};
     this.frequency = (opts.frequency || 30) * 1000;
     delete opts.frequency;
+		this.top_periods = opts.top_periods || null;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers

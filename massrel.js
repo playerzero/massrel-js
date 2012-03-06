@@ -500,6 +500,7 @@ define('meta_poller',['helpers'], function(helpers) {
     opts = opts || {};
     this.frequency = (opts.frequency || 30) * 1000;
     delete opts.frequency;
+		this.top_periods = opts.top_periods || null;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers
@@ -893,6 +894,10 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     var params = [];
     if(opts.disregard) {
       params.push(['disregard', opts.disregard]);
+    }
+		if(opts.top_periods) {
+			var top_periods = helpers.is_array(opts.top_periods) ? opts.top_periods : [opts.top_periods];
+      params.push(['top_periods', top_periods.join(',')]);
     }
     return params;
   };
