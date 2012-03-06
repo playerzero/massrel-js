@@ -86,6 +86,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
 			var top_periods = helpers.is_array(opts.top_periods) ? opts.top_periods : [opts.top_periods];
       params.push(['top_periods', top_periods.join(',')]);
     }
+		if(opts.finish) {
+      params.push(['finish', opts.finish]);
+    }
     return params;
   };
   Stream.prototype.metaPoller = function(opts) {

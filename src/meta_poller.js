@@ -3,7 +3,6 @@ define(['helpers'], function(helpers) {
   function MetaPoller(object, opts) {
     var self = this
       , fetch = function() {
-					console.log(self.opts);
           object.meta(self.opts, function(data) { // success
             helpers.step_through(data, self._listeners, self);
             again();

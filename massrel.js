@@ -482,7 +482,6 @@ define('meta_poller',['helpers'], function(helpers) {
   function MetaPoller(object, opts) {
     var self = this
       , fetch = function() {
-					console.log(self.opts);
           object.meta(self.opts, function(data) { // success
             helpers.step_through(data, self._listeners, self);
             again();
@@ -899,6 +898,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
 		if(opts.top_periods) {
 			var top_periods = helpers.is_array(opts.top_periods) ? opts.top_periods : [opts.top_periods];
       params.push(['top_periods', top_periods.join(',')]);
+    }
+		if(opts.finish) {
+      params.push(['finish', opts.finish]);
     }
     return params;
   };
