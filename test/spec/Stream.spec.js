@@ -83,6 +83,8 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
     };
 
     testParam({ disregard: 'word' }, 'disregard', 'word');
+    testParam({ num_minutes: 8 }, 'num_minutes', '8');
+    testParam({ num_days: 9 }, 'num_days', '9');
   });
 
   it('will not break when #meta is called (end-to-end test)', function() {

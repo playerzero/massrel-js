@@ -19,7 +19,7 @@ define(['helpers'], function(helpers) {
     this._listeners = [];
 
     this.opts = opts || {};
-		
+    
     this.opts.frequency = (opts.frequency || 30) * 1000;
     delete opts.frequency;
 
