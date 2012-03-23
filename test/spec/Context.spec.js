@@ -7,7 +7,7 @@ describe('Context', function() {
     message: {"kind":"internal_message", "created_at":"Mon Sep 19 03:45:51 UTC 2011", "order_id":"115632665499156480_1316403951_135", "entity_id":"115632665499156480_1316403951_135", "text":"why didnt atlanta run the ball", "id":"115632665499156480_1316403951_135", "network":"massrelevance", "score":"115632665499156480_1316403951_135", "source":"web", "user":{"profile_image_url":"http://api.twitter.com/1/users/profile_image/AskSNF", "id":100, "followers_count":100, "friends_count":100, "screen_name":"AskSNF"}}
   };
 
-  var create_context = massrel.handlebars.prepare_context;
+  var create_context = massrel.Context.create;
 
   function sum_matched_sources(sources) {
     var count = 0;
@@ -77,6 +77,26 @@ describe('Context', function() {
     var context = create_context(undefined);
     expect(context.known).toBe(false);
     expect(sum_matched_sources(context.source)).toEqual(0);
+  });
+
+  it('default to intents enabled', function() {
+    var raw_context = new massrel.Context();
+    expect(raw_context.intents).toBe(true);
+
+    var context = create_context(status.twitter);
+    expect(context.intents).toBe(true);
+
+    context = create_context(status.twitter, {
+      intents: true
+    });
+    expect(context.intents).toBe(true);
+
+    context = create_context(status.twitter, {
+      intents: false
+    });
+    expect(context.intents).toBe(false);
+
+
   });
 
 });
