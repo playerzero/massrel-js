@@ -498,9 +498,8 @@ define('meta_poller',['helpers'], function(helpers) {
     this._listeners = [];
 
     this.opts = opts || {};
-		
-    this.opts.frequency = (opts.frequency || 30) * 1000;
-    delete opts.frequency;
+    
+    this.opts.frequency = (this.opts.frequency || 30) * 1000;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers
@@ -922,7 +921,7 @@ define('context',['helpers'], function(helpers) {
       message: false
     };
     this.known = false;
-    this.intents = false;
+    this.intents = true;
   }
 
   Context.create = function(status, opts) {
@@ -933,6 +932,8 @@ define('context',['helpers'], function(helpers) {
       intents: true,
       retweeted_by: true
     });
+
+    context.intents = opts.intents;
 
     // determine status source
     if(status.id_str && status.text && status.entities) {
