@@ -8,7 +8,7 @@ define(['helpers'], function(helpers) {
       message: false
     };
     this.known = false;
-    this.intents = false;
+    this.intents = true;
   }
 
   Context.create = function(status, opts) {
@@ -19,6 +19,8 @@ define(['helpers'], function(helpers) {
       intents: true,
       retweeted_by: true
     });
+
+    this.intents = opts.intents;
 
     // determine status source
     if(status.id_str && status.text && status.entities) {
