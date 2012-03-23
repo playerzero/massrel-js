@@ -111,6 +111,13 @@ Shorthand
 
 # Change log
 
+## v0.9.6
+
+* enable intents by default in `Context`
+* `top_periods` is a new param on `Stream#meta`
+* `finish` is a new param on `Stream#meta`
+* added a way for you to update `MetaPoller` options on the fly
+
 ## v0.9.5
 
 * add `keywords` param for streams
