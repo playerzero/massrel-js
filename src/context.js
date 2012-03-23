@@ -20,7 +20,7 @@ define(['helpers'], function(helpers) {
       retweeted_by: true
     });
 
-    this.intents = opts.intents;
+    context.intents = opts.intents;
 
     // determine status source
     if(status.id_str && status.text && status.entities) {
