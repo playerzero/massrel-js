@@ -111,6 +111,13 @@ Shorthand
 
 # Change log
 
+## v0.9.7
+
+* catch race condition that prevents `MetaPoller` from being stopped when called to stop
+* `num_days` is a new param on `Stream#meta`
+* `num_minutes` is a new param on `Stream#meta`
+* intent url generator (e.g. `massrel.intents.tweet({ text: 'Awesome!!', hashtags: ['awesome', 'nice'] });`)
+
 ## v0.9.6
 
 * enable intents by default in `Context`
