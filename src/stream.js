@@ -82,11 +82,16 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.disregard) {
       params.push(['disregard', opts.disregard]);
     }
-		if(opts.top_periods) {
-			var top_periods = helpers.is_array(opts.top_periods) ? opts.top_periods : [opts.top_periods];
-      params.push(['top_periods', top_periods.join(',')]);
+    if(opts.num_minutes) {
+      params.push(['num_minutes', opts.num_minutes]);
     }
-		if(opts.finish) {
+    if(opts.num_days) {
+      params.push(['num_days', opts.num_days]);
+    }
+    if(opts.top_periods) {
+      params.push(['top_periods', opts.top_periods]);
+    }
+    if(opts.finish) {
       params.push(['finish', opts.finish]);
     }
     return params;
