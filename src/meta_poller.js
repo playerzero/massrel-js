@@ -3,12 +3,19 @@ define(['helpers'], function(helpers) {
   function MetaPoller(object, opts) {
     var self = this
       , fetch = function() {
-          object.meta(self.opts, function(data) { // success
-            helpers.step_through(data, self._listeners, self);
-            again();
-          }, function() { // error
-            again();
-          });
+          if(enabled) {
+            object.meta(self.opts, function(data) { // success
+              if(enabled) { // being very thorough in making sure to stop polling when told
+                helpers.step_through(data, self._listeners, self);
+
+                if(enabled) { // poller can be stopped in any of the above iterators
+                  again();
+                }
+              }
+            }, function() { // error
+              again();
+            });
+          }
         }
       , again = function() {
           tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
