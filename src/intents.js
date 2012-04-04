@@ -1,4 +1,4 @@
-define(['globals', 'helpers'], function(globals, helpers) {
+define(['helpers'], function(helpers) {
 
   var intents = {
     base_url: 'https://twitter.com/intent/',
