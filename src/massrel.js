@@ -7,6 +7,7 @@ define('massrel', [
        , 'meta_poller'
        , 'poller_queue'
        , 'context'
+       , 'intents'
        ], function(
          globals
        , helpers
@@ -16,6 +17,7 @@ define('massrel', [
        , MetaPoller
        , PollerQueue
        , Context
+       , intents
        ) {
 
   var massrel = window.massrel;
@@ -31,6 +33,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.helpers = helpers;
+  massrel.intents = intents;
 
   // require/AMD methods
   massrel.define = define;
