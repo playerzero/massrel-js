@@ -22,13 +22,14 @@
 					touch_enable  : true,        // (boolean) Should scroll allow for touch
 					wheel_enable  : true,        // (boolean) Should allow for a mousewheel
 					bar_enable    : true,        // (boolean) Should show a scroll bar
+					auto_generate : false,       // (boolean) Should the bar be auto generated
 					class_bar     : 'scrollbar', // (string) Class used for the scroll bar
 					class_handle  : 'handle',    // (string) Class used for the scroll handle
-					class_content : 'stream'
+					class_content : 'content'
 				},
 				_win = $(window);
 		
-		params = $.extend(params, defaults);
+		params = $.extend(defaults, params);
 		
 		function getTouches(e) {
 			if (e.originalEvent) {
@@ -42,10 +43,25 @@
 					_bar     = _obj.find('.' + params.class_bar),
 					_hdl     = _bar.find('.' + params.class_handle),
 					_cnt     = _obj.find('.' + params.class_content),
+					_hstart  = 0,
 					_tscroll = false,
 					_tstart  = 0,
-					_up, _down, _move, _wheel, _touchstart, _touchend, _touchmove, _kill;
-					
+					_setup, _up, _down, _move, _wheel, _touchstart, _touchend, _touchmove, _kill;
+			
+			// Setup the content
+			_setup = function () {
+				// Generate Scrollbar
+				_bar = $('<div>').addClass(params.class_bar);
+				_hdl = $('<div>').addClass(params.class_handle).appendTo(_bar);
+				
+				// Make content wrapper
+				_obj.wrapInner($('<div>').addClass(params.class_content));
+				_cnt = _obj.find('.' + params.class_content);
+				
+				// Add Scrollbar
+				_obj.append(_bar);
+			};
+			
 			// Kill all events
 			_kill = function (e) {
 				e.preventDefault();
@@ -62,6 +78,16 @@
 				
 				// Disable touchmove function
 				_obj.unbind('touchmove.touchScroll', _touchmove);
+				
+				// Verify that the scrollbar and handle exist if bar is enabled
+				if (params.bar_enable) {
+					_hdl.bind('mousedown', _down); // bind mousedown event to handle
+				}
+
+				// Activate touch events if enabled
+				if (params.touch_enable) {
+					_obj.bind('touchstart.touchScroll', _touchstart);
+				}
 			};
 			
 			// Mouse up event
@@ -84,6 +110,8 @@
 				e.preventDefault();
 				e.stopPropagation();
 				
+				_hstart = e.pageY - _hdl.offset().top;
+				
 				// Disable mousedown event
 				_hdl.unbind('mousedown', _down);
 				
@@ -100,7 +128,7 @@
 				e.stopPropagation();
 				
 				var _max     = _bar.innerHeight() - _hdl.height(),
-						_hoffset = e.pageY - _bar.offset().top,
+						_hoffset = e.pageY - _bar.offset().top - _hstart,
 						_coffset;
 				
 				// Offset cannot be less than zero
@@ -220,7 +248,13 @@
 			};
 			
 			// Verify that the scrollbar and handle exist if bar is enabled
-			if (params.bar_enable && _bar.length && _hdl.length) {
+			if (params.bar_enable) {
+				
+				// check if the scrollbar exists
+				if (!_bar.length && !_hdl.length && params.auto_generate) {
+					_setup();
+				}
+				
 				_hdl.bind('mousedown', _down); // bind mousedown event to handle
 			}
 			
@@ -234,7 +268,7 @@
 				_obj.bind('touchstart.touchScroll', _touchstart);
 			}
 			
-			_win.bind('mouseout', _kill);
+			_win.bind('mouseleave', _kill);
 		});
 	};
 }(jQuery, window));
