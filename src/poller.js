@@ -60,7 +60,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
         self.consecutive_errors = 0;
         var catch_up = self.catch_up && statuses.length === self.limit;
         
-        if(statuses.length > 0) {
+        if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
 
           if(!self.start_id) { // grab last item ID if it has not been set
