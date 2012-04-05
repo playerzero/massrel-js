@@ -1,0 +1,240 @@
+/*!
+ * Scrollify - v1.0.0
+ *
+ * Copyright 2012 Mass Relevance
+ *
+ * Scrollify allows for a custom scrollbar to work along with mousewheel and touch events.
+ * 
+ * USE: you will need a mask, content container, and scrollbar with handle
+ * 
+ * <div class="mask">
+ *   <div class="content"></div>
+ *   <div class="scrollbar"><div class="handle">&nbsp;</div></div>
+ * </div>
+ * 
+ * Your will then initialize the Scrollify function on the mask element $('.mask').Scrollify();
+ */
+
+// requires: jQuery
+(function ($, window) {
+	$.fn.Scrollify = function (params) {
+		var defaults = {
+					touch_enable  : true,        // (boolean) Should scroll allow for touch
+					wheel_enable  : true,        // (boolean) Should allow for a mousewheel
+					bar_enable    : true,        // (boolean) Should show a scroll bar
+					class_bar     : 'scrollbar', // (string) Class used for the scroll bar
+					class_handle  : 'handle',    // (string) Class used for the scroll handle
+					class_content : 'stream'
+				},
+				_win = $(window);
+		
+		params = $.extend(params, defaults);
+		
+		function getTouches(e) {
+			if (e.originalEvent) {
+				return e.originalEvent.changedTouches || e.originalEvent.touches;
+			}
+			return e.touches
+		}
+		
+		return this.each(function () {
+			var _obj     = $(this),
+					_bar     = _obj.find('.' + params.class_bar),
+					_hdl     = _bar.find('.' + params.class_handle),
+					_cnt     = _obj.find('.' + params.class_content),
+					_tscroll = false,
+					_tstart  = 0,
+					_up, _down, _move, _wheel, _touchstart, _touchend, _touchmove, _kill;
+					
+			// Kill all events
+			_kill = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				// Disable mouseup event
+				_win.unbind('mouseup', _up);
+				
+				// Disable mousemove event
+				_win.unbind('mousemove', _move);
+				
+				// Disable touch function
+				_obj.unbind('touchend.touchScroll touchcancel.touchScroll', _touchend);
+				
+				// Disable touchmove function
+				_obj.unbind('touchmove.touchScroll', _touchmove);
+			};
+			
+			// Mouse up event
+			_up = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				// Disable mouseup event
+				_win.unbind('mouseup', _up);
+				
+				// Disable mousemove event
+				_win.unbind('mousemove', _move);
+				
+				// Bind mousedown event
+				_hdl.bind('mousedown', _down);
+			};
+			
+			// Mouse down event
+			_down = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				// Disable mousedown event
+				_hdl.unbind('mousedown', _down);
+				
+				// Bind release function
+				_win.bind('mouseup', _up);
+				
+				// Bind move function
+				_win.bind('mousemove', _move);
+			};
+			
+			// Mouse move event
+			_move = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				var _max     = _bar.innerHeight() - _hdl.height(),
+						_hoffset = e.pageY - _bar.offset().top,
+						_coffset;
+				
+				// Offset cannot be less than zero
+				if (_hoffset < 0) {
+					_hoffset = 0;
+				
+				// Offset cannot be greater than the available scrollbar height
+				} else if (_hoffset > _max) {
+					_hoffset = _max;
+				}
+				
+				// Set the content offset
+				_coffset = (_cnt.outerHeight() - _obj.innerHeight()) * (_hoffset/_max);
+				
+				// Move the handle
+				_hdl.css('margin-top', _hoffset + 'px');
+				
+				// Move the content
+				_cnt.css('margin-top', -(_coffset) + 'px');
+			};
+			
+			// Mouse wheel event
+			_wheel = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				var _delta   = e.originalEvent.wheelDelta || -e.originalEvent.detail * 2,
+						_max     = -(_cnt.outerHeight() - _obj.innerHeight()),
+						_coffset = _delta + parseInt(_cnt.css('margin-top'), 10),
+						_hoffset;
+				
+				// Offset cannot be greater than zero
+				if (_coffset < _max) {
+					_coffset = _max;
+
+				// Offset cannot be less than the available content height
+				} else if (_coffset > 0) {
+					_coffset = 0;
+				}
+				
+				// Set the content offset
+				_hoffset = (_bar.innerHeight() - _hdl.height()) * Math.abs(_coffset/_max);
+				
+				// Move the handle
+				_hdl.css('margin-top', _hoffset + 'px');
+				
+				// Move the content
+				_cnt.css('margin-top', _coffset + 'px');
+			};
+			
+			// Touchstart event
+			_touchstart = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				var touches = getTouches(e)[0];
+				
+				_tscroll = true;
+				_tstart  = touches.pageY;
+				
+				// Disable touchstart event
+				_obj.unbind('touchstart.touchScroll', _touchstart);
+				
+				// Bind release function
+				_obj.bind('touchend.touchScroll touchcancel.touchScroll', _touchend);
+				
+				// Bind move function
+				_obj.bind('touchmove.touchScroll', _touchmove);
+			};
+			
+			// Touchend event
+			_touchend = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				_tscroll = false;
+				
+				// Disable release function
+				_obj.unbind('touchend.touchScroll touchcancel.touchScroll', _touchend);
+				
+				// Disable move function
+				_obj.unbind('touchmove.touchScroll', _touchmove);
+				
+				// Bind touchstart event
+				_obj.bind('touchstart.touchScroll', _touchstart);
+			};
+			
+			// Touchmove event
+			_touchmove = function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				if (_tscroll) {
+					var _delta   = (getTouches(e)[0].pageY - _tstart) * 0.8,
+							_max     = -(_cnt.outerHeight() - _obj.innerHeight()),
+							_coffset = _delta + parseInt(_cnt.css('margin-top'), 10),
+							_hoffset;
+							
+					// Offset cannot be greater than zero
+					if (_coffset < _max) {
+						_coffset = _max;
+
+					// Offset cannot be less than the available content height
+					} else if (_coffset > 0) {
+						_coffset = 0;
+					}
+
+					// Set the content offset
+					_hoffset = (_bar.innerHeight() - _hdl.height()) * Math.abs(_coffset/_max);
+
+					// Move the handle
+					_hdl.css('margin-top', _hoffset + 'px');
+
+					// Move the content
+					_cnt.css('margin-top', _coffset + 'px');
+				}
+			};
+			
+			// Verify that the scrollbar and handle exist if bar is enabled
+			if (params.bar_enable && _bar.length && _hdl.length) {
+				_hdl.bind('mousedown', _down); // bind mousedown event to handle
+			}
+			
+			// Activate mousewheel if enabled
+			if (params.wheel_enable) {
+				_obj.bind('mousewheel DOMMouseScroll', _wheel);
+			}
+			
+			// Activate touch events if enabled
+			if (params.touch_enable) {
+				_obj.bind('touchstart.touchScroll', _touchstart);
+			}
+			
+			_win.bind('mouseout', _kill);
+		});
+	};
+}(jQuery, window));
