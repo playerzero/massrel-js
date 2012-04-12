@@ -12,6 +12,13 @@
  *   <div class="scrollbar"><div class="handle">&nbsp;</div></div>
  * </div>
  * 
+ * CSS: you can use this boilerplate as a starter
+ * 
+ * .mask {height:100%;position:relative;overflow:hidden;}
+ * .content {position:absolute;}
+ * .scrollbar {height:100%;width:1em;top:0;right:0;background:#ccc;position:absolute;z-index:2;}
+ * .scrollbar .handle {width:1em;height:6em;top:0;left:0;background:#fff;border-radius:15px;position:absolute;cursor:pointer;}
+ * 
  * Your will then initialize the Scrollify function on the mask element $('.mask').Scrollify();
  */
 
