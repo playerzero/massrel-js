@@ -155,7 +155,7 @@
 				e.preventDefault();
 				e.stopPropagation();
 
-				var _delta   = e.originalEvent.wheelDelta || -e.originalEvent.detail / 3,
+				var _delta   = e.originalEvent.wheelDelta || -e.originalEvent.detail,
 						_max     = -Math.abs(_cnt.outerHeight() - _obj.innerHeight()),
 						_coffset = _delta + parseInt(_cnt.css('margin-top'), 10),
 						_hoffset;
