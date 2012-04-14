@@ -4,14 +4,21 @@
  * Copyright 2012 Mass Relevance
  *
  * Scrollify allows for a custom scrollbar to work along with mousewheel and touch events.
- *
+ * 
  * USE: you will need a mask, content container, and scrollbar with handle
- *
+ * 
  * <div class="mask">
  *   <div class="content"></div>
  *   <div class="scrollbar"><div class="handle">&nbsp;</div></div>
  * </div>
- *
+ * 
+ * CSS: you can use this boilerplate as a starter
+ * 
+ * .mask {height:100%;position:relative;overflow:hidden;}
+ * .content {position:absolute;}
+ * .scrollbar {height:100%;width:1em;top:0;right:0;background:#ccc;position:absolute;z-index:2;}
+ * .scrollbar .handle {width:1em;height:6em;top:0;left:0;background:#fff;border-radius:15px;position:absolute;cursor:pointer;z-index:3;}
+ * 
  * Your will then initialize the Scrollify function on the mask element $('.mask').Scrollify();
  */
 
@@ -145,9 +152,11 @@
 
 				// Move the handle
 				_hdl.css('margin-top', _hoffset + 'px');
-
-				// Move the content
-				_cnt.css('margin-top', _coffset + 'px');
+				
+				if (_cnt.outerHeight() > _obj.innerHeight()) {
+					// Move the content
+					_cnt.css('margin-top', -(_coffset) + 'px');
+				}
 			};
 
 			// Mouse wheel event
@@ -155,7 +164,7 @@
 				e.preventDefault();
 				e.stopPropagation();
 
-				var _delta   = e.originalEvent.wheelDelta || -e.originalEvent.detail,
+				var _delta   = e.originalEvent.wheelDelta || -e.originalEvent.detail * 2,
 						_max     = -Math.abs(_cnt.outerHeight() - _obj.innerHeight()),
 						_coffset = _delta + parseInt(_cnt.css('margin-top'), 10),
 						_hoffset;
