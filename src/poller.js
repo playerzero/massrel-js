@@ -127,7 +127,8 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     return helpers.extend({
       limit: this.limit,
       replies: this.replies,
-      geo_hint: this.geo_hint
+      geo_hint: this.geo_hint,
+      keywords: this.keywords
     }, opts || {});
   };
 
