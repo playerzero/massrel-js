@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.9.8
+
+* `num_hours` is a new param on `Stream#meta`
+* `keywords` now works when polling streamer
+
 ## v0.9.7
 
 * catch race condition that prevents `MetaPoller` from being stopped when called to stop (fixes #1)
