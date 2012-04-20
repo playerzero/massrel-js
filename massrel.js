@@ -904,6 +904,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     if(opts.num_minutes) {
       params.push(['num_minutes', opts.num_minutes]);
     }
+    if(opts.num_hours) {
+      params.push(['num_hours', opts.num_hours]);
+    }
     if(opts.num_days) {
       params.push(['num_days', opts.num_days]);
     }
