@@ -15,6 +15,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.geo_hint = !!opts.geo_hint;
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
+    this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -51,10 +52,15 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
-      self.stream.load(self.params({
-        keywords: self.keywords
-      , since_id: self.since_id
-      }), function(statuses) {
+      var load_opts = {}
+      if(this.stay_realtime) {
+        load_opts.since_id = self.since_id;
+      }
+      else {
+        load_opts.from_id = self.since_id;
+      }
+
+      self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
         

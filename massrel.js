@@ -698,7 +698,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.geo_hint = !!opts.geo_hint;
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
-    this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
+    this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -735,13 +735,17 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
-      self.stream.load(self.params({
-        keywords: self.keywords
-      , since_id: self.since_id
-      }), function(statuses) {
+      var load_opts = {}
+      if(this.stay_realtime) {
+        load_opts.since_id = self.since_id;
+      }
+      else {
+        load_opts.from_id = self.since_id;
+      }
+
+      self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        var catch_up = self.catch_up && statuses.length === self.limit;
         
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
@@ -758,7 +762,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
-        self._t = setTimeout(poll, catch_up ? 0 : helpers.poll_interval(self.frequency));
+        self._t = setTimeout(poll, helpers.poll_interval(self.frequency));
       }, function() {
         self.consecutive_errors += 1;
         self.poke();
@@ -853,6 +857,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.since_id) {
       params.push(['since_id', opts.since_id]);
+    }
+    else if(opts.from_id) {
+      params.push(['from_id', opts.from_id]);
     }
     else if(opts.start_id || opts.start) {
       params.push(['start', opts.start_id || opts.start]);

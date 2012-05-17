@@ -34,6 +34,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.since_id) {
       params.push(['since_id', opts.since_id]);
     }
+    else if(opts.from_id) {
+      params.push(['from_id', opts.from_id]);
+    }
     else if(opts.start_id || opts.start) {
       params.push(['start', opts.start_id || opts.start]);
     }
