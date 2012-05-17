@@ -15,7 +15,6 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.geo_hint = !!opts.geo_hint;
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
-    this.catch_up = opts.catch_up !== undefined ? opts.catch_up : false;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -58,7 +57,6 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       }), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        var catch_up = self.catch_up && statuses.length === self.limit;
         
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
@@ -75,7 +73,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
-        self._t = setTimeout(poll, catch_up ? 0 : helpers.poll_interval(self.frequency));
+        self._t = setTimeout(poll, helpers.poll_interval(self.frequency));
       }, function() {
         self.consecutive_errors += 1;
         self.poke();
