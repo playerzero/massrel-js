@@ -52,7 +52,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
-      var load_opts = {}
+      var load_opts = {};
       if(this.stay_realtime) {
         load_opts.since_id = self.since_id;
       }
@@ -113,6 +113,10 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           }), function(statuses) {
             if(statuses.length > 0) {
               self.start_id = statuses[statuses.length - 1].entity_id;
+              if(!self.since_id) {
+                self.since_id = statuses[0].entity_id;
+              }
+
             }
             fn(statuses);
           }, function() {
