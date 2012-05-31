@@ -22,7 +22,9 @@ define('massrel', [
 
   var massrel = window.massrel;
   if(typeof(massrel) === 'undefined') {
-    var massrel = window.massrel = globals;
+    massrel = window.massrel = globals;
+  } else {
+    helpers.extend(massrel, globals);
   }
 
   // public API
