@@ -736,7 +736,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       if(!self.enabled || instance_id !== self.alive_instance) { return; }
 
       var load_opts = {};
-      if(this.stay_realtime) {
+      if(self.stay_realtime) {
         load_opts.since_id = self.since_id;
       }
       else {
@@ -1078,7 +1078,9 @@ define('massrel', [
 
   var massrel = window.massrel;
   if(typeof(massrel) === 'undefined') {
-    var massrel = window.massrel = globals;
+    massrel = window.massrel = globals;
+  } else {
+    helpers.extend(massrel, globals);
   }
 
   // public API
