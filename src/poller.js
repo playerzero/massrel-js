@@ -118,7 +118,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
               }
 
             }
-            fn(statuses);
+            fn.call(self, statuses);
           }, function() {
             // error
             if(typeof(error) === 'function') {
