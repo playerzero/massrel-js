@@ -98,7 +98,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       params.push(['top_periods', opts.top_periods]);
     }
     if(opts.top_periods_relative) {
-      params.push(['top_periods_relative', opts.top_periods]);
+      params.push(['top_periods_relative', opts.top_periods_relative]);
     }
     if(opts.finish) {
       params.push(['finish', opts.finish]);

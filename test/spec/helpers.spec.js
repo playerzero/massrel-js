@@ -90,6 +90,19 @@ describe('helpers', function() {
       expect(params[0][0]).toEqual('jsonp');
     });
 
+    it('use a different jsonp param if changed', function() {
+      var old_param = massrel.jsonp_param;
+      massrel.jsonp_param = 'callback';
+
+      var params = [];
+      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, function() {}, function() {});
+
+      expect(params.length).toEqual(1);
+      expect(params[0][0]).toEqual(massrel.jsonp_param);
+
+      massrel.jsonp_param = old_param;
+    });
+
 
   });
 
