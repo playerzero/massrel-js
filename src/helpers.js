@@ -51,7 +51,7 @@ define(['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push(['jsonp', 'massrel._json_callbacks.'+callback_id]);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 

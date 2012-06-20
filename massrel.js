@@ -284,6 +284,7 @@ define('globals',{
 , timeout: 10e3
 , protocol: document.location.protocol === 'https:' ? 'https' : 'http'
 , min_poll_interval: 5e3
+, jsonp_param: 'jsonp'
 });
 
 define('helpers',['globals'], function(globals) {
@@ -339,7 +340,7 @@ define('helpers',['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push(['jsonp', 'massrel._json_callbacks.'+callback_id]);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 
@@ -924,6 +925,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);
+    }
+    if(opts.top_periods_relative) {
+      params.push(['top_periods_relative', opts.top_periods]);
     }
     if(opts.finish) {
       params.push(['finish', opts.finish]);
