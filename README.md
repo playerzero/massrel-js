@@ -111,6 +111,14 @@ Shorthand
 
 # Change log
 
+## v0.9.9
+
+* `top_period_relative` is a new partam on `Stream#meta` (b0e3013f24)
+* bind current poller instance to `this` in `Poller#more` callback (45e8c496a3)
+* fixed bug so that the massrel.js lib doesn't replace any existing global massrel global object (71ac8a739e)
+* fixed bug that prevented newer statuses from being pulled in correctly if `Poller#more` was called before `Poller#start` (19c96fc767)
+* `stay_realtime` is a new param for `Poller` (default: true) (replaces old `catch_up` param) (cb9c796692...f860ea3ba0, and bug fix c85cd339d3)
+
 ## v0.9.8
 
 * `num_hours` is a new param on `Stream#meta`
