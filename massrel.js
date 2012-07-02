@@ -1,14 +1,3 @@
-  /*!
-   * massrel/stream-js 0.9.9
-   *
-   * Copyright 2012 Mass Relevance
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this work except in compliance with the License.
-   * You may obtain a copy of the License at:
-   *
-   *    http://www.apache.org/licenses/LICENSE-2.0
-   */
 (function () {
 /**
  * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -1004,6 +993,68 @@ define('context',['helpers'], function(helpers) {
   return Context;
 });
 
+define('compare',['helpers'], function(helpers) {
+  function Compare() {
+	this.opts = arguments[0];
+    
+    if(this.opts.frequency) {
+      this.frequency = Math.max(this.opts.frequency, 5) * 1000;
+    }
+	  
+	var fn = arguments[1] || null;
+	var error = arguments[2] || null;
+	  
+    if(this.opts.frequency) {
+      this.poll(fn, error);
+    } else {
+	  this.load(fn, error);
+    }
+  }
+  Compare.prototype.compare_url = function() {
+    return helpers.api_url('/compare.json');
+  };
+  Compare.prototype.buildParams = function(opts) {
+    opts = opts || {};
+    var params = [];
+    if(opts.streams) {
+      params.push(['streams', opts.streams]);
+    }
+    return params;
+  };
+  Compare.prototype.load = function (fn, error) {
+    var params = this.buildParams(this.opts);
+    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
+    
+	return this;
+  };
+  Compare.prototype.poll = function (fn, error) {
+    var self = this;
+    if(self._t) {
+      return this;
+    }
+    
+    self.enabled = true;
+
+    function poll() {
+      self.alive = false;
+
+      if(!self.enabled) { return; }
+
+      self.load(function (data) {
+        self.alive = true;
+
+        if (typeof fn === 'function') {
+          fn(data);
+        }   
+        self._t = setTimeout(poll, self.frequency);
+      }, error);
+    }
+    poll();
+	  return this;
+  };
+
+  return Compare;
+});
 define('intents',['helpers'], function(helpers) {
 
   var intents = {
@@ -1078,6 +1129,7 @@ define('massrel', [
        , 'meta_poller'
        , 'poller_queue'
        , 'context'
+       , 'compare'
        , 'intents'
        ], function(
          globals
@@ -1088,6 +1140,7 @@ define('massrel', [
        , MetaPoller
        , PollerQueue
        , Context
+       , Compare
        , intents
        ) {
 
@@ -1105,6 +1158,7 @@ define('massrel', [
   massrel.MetaPoller = MetaPoller;
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
+  massrel.Compare = Compare;
   massrel.helpers = helpers;
   massrel.intents = intents;
 
