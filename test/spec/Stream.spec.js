@@ -88,6 +88,7 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
     testParam({ num_days: 9 }, 'num_days', 9);
     testParam({ top_periods: '2012040309' }, 'top_periods', '2012040309')
     testParam({ top_periods_relative: 1 }, 'top_periods_relative', 1);
+    testParam({ top_count: 4 }, 'top_count', 4);
 
     var time = (new Date()).getTime();
     testParam({ finish: time }, 'finish', time);
