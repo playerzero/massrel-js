@@ -1005,7 +1005,7 @@ define('compare_poller',['helpers'], function(helpers) {
 	  var self = this,
 	      fetch = function () {
 	        if (enabled) {
-	          object.load(function(data) {
+	          object.load(self.opts, function(data) {
 	            if (enabled) {
 	              helpers.step_through(data, self._listeners, self);
 	              
@@ -1013,7 +1013,9 @@ define('compare_poller',['helpers'], function(helpers) {
 	                again();
 	              }
 	            }
-	          });
+	          }, function() {
+              again();
+            });
 	        }
 	      },
 	      again = function () {
