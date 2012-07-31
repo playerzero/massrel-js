@@ -21,18 +21,27 @@ define(['helpers', 'compare_poller'], function(helpers, ComparePoller) {
     
     opts = opts || {};
 
-    if (opts.streams) {
+    if(opts.streams) {
       params.push(['streams', opts.streams]);
+    }
+    if(opts.target || opts.target >=0) {
+      params.push('target', opts.target.toString());
     }
     
     return params;
   };
   
-  Compare.prototype.load = function(fn, error) {
-    var params = this.buildParams(this);
-    
+  Compare.prototype.load = function(opts, fn, error) {
+    if(typeof(opts) === 'function') {
+      error = fn;
+      fn = opts;
+      opts = null;
+    }
+    var params = this.buildParams(helpers.extend({
+      streams: this.streams
+    }, opts || {}));
+
     helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
-    
     return this;
   };
   

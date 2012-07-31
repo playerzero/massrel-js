@@ -3,7 +3,7 @@ define(['helpers'], function(helpers) {
 	  var self = this,
 	      fetch = function () {
 	        if (enabled) {
-	          object.load(function (data) {
+	          object.load(function(data) {
 	            if (enabled) {
 	              helpers.step_through(data, self._listeners, self);
 	              
