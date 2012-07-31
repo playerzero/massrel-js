@@ -8,6 +8,7 @@ define('massrel', [
        , 'poller_queue'
        , 'context'
        , 'compare'
+       , 'compare_poller'
        , 'intents'
        ], function(
          globals
@@ -19,6 +20,7 @@ define('massrel', [
        , PollerQueue
        , Context
        , Compare
+       , ComparePoller
        , intents
        ) {
 
@@ -37,6 +39,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
+  massrel.CompatePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
 

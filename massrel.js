@@ -1000,51 +1000,7 @@ define('context',['helpers'], function(helpers) {
   return Context;
 });
 
-define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
-  function Compare() {
-    var self = this,
-        fn, error;
-	  
-	  self.opts = {
-	    streams : arguments[0]
-	  };
-	  
-	  return self;
-  }
-  
-  Compare.prototype.compare_url = function() {
-    return helpers.api_url('/compare.json');
-  };
-  
-  Compare.prototype.buildParams = function(opts) {
-    var params = [];
-    
-    opts = opts || {};
-
-    if (opts.streams) {
-      params.push(['streams', streams]);
-    }
-    
-    return params;
-  };
-  
-  Compare.prototype.load = function (fn, error) {
-    var self = this,
-        params = self.buildParams(self.opts);
-    
-    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
-    
-	  return this;
-  };
-  
-  Compare.prototype.poller = function (opts) {
-    return new ComparePoller(this, opts);
-  };
-  
-  return Compare;
-});
-
-define('compare_poller', ['helpers'], function(helpers) {
+define('compare_poller',['helpers'], function(helpers) {
   function ComparePoller(object, opts) {
 	  var self = this,
 	      fetch = function () {
@@ -1097,6 +1053,50 @@ define('compare_poller', ['helpers'], function(helpers) {
   ComparePoller.prototype.each = ComparePoller.prototype.data;
 
   return ComparePoller;
+});
+
+define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
+  function Compare() {
+    var self = this,
+        fn, error;
+	  
+	  self.opts = {
+	    streams : arguments[0]
+	  };
+	  
+	  return self;
+  }
+  
+  Compare.prototype.compare_url = function() {
+    return helpers.api_url('/compare.json');
+  };
+  
+  Compare.prototype.buildParams = function(opts) {
+    var params = [];
+    
+    opts = opts || {};
+
+    if (opts.streams) {
+      params.push(['streams', streams]);
+    }
+    
+    return params;
+  };
+  
+  Compare.prototype.load = function (fn, error) {
+    var self = this,
+        params = self.buildParams(self.opts);
+    
+    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
+    
+	  return this;
+  };
+  
+  Compare.prototype.poller = function (opts) {
+    return new ComparePoller(this, opts);
+  };
+  
+  return Compare;
 });
 
 define('intents',['helpers'], function(helpers) {
@@ -1174,6 +1174,7 @@ define('massrel', [
        , 'poller_queue'
        , 'context'
        , 'compare'
+       , 'compare_poller'
        , 'intents'
        ], function(
          globals
@@ -1185,6 +1186,7 @@ define('massrel', [
        , PollerQueue
        , Context
        , Compare
+       , ComparePoller
        , intents
        ) {
 
@@ -1203,6 +1205,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
+  massrel.CompatePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
 
