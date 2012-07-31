@@ -20,12 +20,6 @@ define(['helpers', 'compare_poller'], function(helpers, ComparePoller) {
     opts = opts || {};
 
     if (opts.streams) {
-      var streams = opts.streams;
-      
-      if(helpers.is_array(streams)) {
-        streams = streams.slice(0);
-      }
-      
       params.push(['streams', streams]);
     }
     
