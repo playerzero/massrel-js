@@ -116,10 +116,14 @@ define(['globals'], function(globals) {
       for(var i = 0, len = params.length; i < len; i++) {
         val = params[i][1];
         if(exports.is_array(val)) {
+          // copy encoded vals from array into a
+          // new array to make sure not to corruept
+          // reference array
+          var encVals = [];
           for(var j = 0, len2 = val.length; j < len2; j++) {
-            val[j] = _enc(val[j] || '');
+            encVals[j] = _enc(val[j] || '');
           }
-          val = val.join(',');
+          val = encVals.join(',');
         }
         else if(val !== undefined && val !== null) {
           val = _enc(val);

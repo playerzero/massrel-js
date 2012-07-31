@@ -405,10 +405,14 @@ define('helpers',['globals'], function(globals) {
       for(var i = 0, len = params.length; i < len; i++) {
         val = params[i][1];
         if(exports.is_array(val)) {
+          // copy encoded vals from array into a
+          // new array to make sure not to corruept
+          // reference array
+          var encVals = [];
           for(var j = 0, len2 = val.length; j < len2; j++) {
-            val[j] = _enc(val[j] || '');
+            encVals[j] = _enc(val[j] || '');
           }
-          val = val.join(',');
+          val = encVals.join(',');
         }
         else if(val !== undefined && val !== null) {
           val = _enc(val);
@@ -1018,7 +1022,7 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
     opts = opts || {};
 
     if (opts.streams) {
-      params.push(['streams', opts.streams]);
+      params.push(['streams', streams]);
     }
     
     return params;
@@ -1027,8 +1031,6 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
   Compare.prototype.load = function (fn, error) {
     var self = this,
         params = self.buildParams(self.opts);
-        
-    console.log(self.opts);
     
     helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
     
@@ -1096,6 +1098,7 @@ define('compare_poller', ['helpers'], function(helpers) {
 
   return ComparePoller;
 });
+
 define('intents',['helpers'], function(helpers) {
 
   var intents = {
