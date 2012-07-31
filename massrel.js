@@ -1056,15 +1056,17 @@ define('compare_poller',['helpers'], function(helpers) {
 });
 
 define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
-  function Compare() {
-    var self = this,
-        fn, error;
-	  
-	  self.opts = {
-	    streams : arguments[0]
-	  };
-	  
-	  return self;
+  function Compare(streams) {
+    if(helpers.is_array(streams)) {
+      // keep a copy of the array
+      this.streams = streams.slice(0);
+    }
+    else if(typeof(streams) === 'string') {
+      this.streams = [streams];
+    }
+    else {
+      this.streams = [];
+    }
   }
   
   Compare.prototype.compare_url = function() {
@@ -1077,22 +1079,21 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
     opts = opts || {};
 
     if (opts.streams) {
-      params.push(['streams', streams]);
+      params.push(['streams', opts.streams]);
     }
     
     return params;
   };
   
-  Compare.prototype.load = function (fn, error) {
-    var self = this,
-        params = self.buildParams(self.opts);
+  Compare.prototype.load = function(fn, error) {
+    var params = this.buildParams(this);
     
     helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
     
-	  return this;
+    return this;
   };
   
-  Compare.prototype.poller = function (opts) {
+  Compare.prototype.poller = function(opts) {
     return new ComparePoller(this, opts);
   };
   
