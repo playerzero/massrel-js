@@ -147,16 +147,16 @@ describe('helpers', function() {
     it('should make a copy of an value of an array to prevent double encoding', function() {
       var vals = ['myuser/stream1', 'myuser/stream2'];
       var params = [['key1', vals]];
-      var expect = 'key1=myuser%2Fstream1,myuser%2Fstream2';
+      var expected = 'key1=myuser%2Fstream1,myuser%2Fstream2';
       var qs;
 
       qs = to_qs(params);
-      expect(qs).toEqual(expect);
+      expect(qs).toEqual(expected);
 
       // build qs again to check for
       // double encoding issue
       qs = to_qs(params);
-      expect(qs).toEqual(expect);
+      expect(qs).toEqual(expected);
     })
 
   });
