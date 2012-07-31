@@ -20,7 +20,7 @@ define(['helpers', 'compare_poller'], function(helpers, ComparePoller) {
     opts = opts || {};
 
     if (opts.streams) {
-      params.push(['streams', streams]);
+      params.push(['streams', opts.streams]);
     }
     
     return params;
