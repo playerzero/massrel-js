@@ -956,6 +956,8 @@ define('context',['helpers'], function(helpers) {
     this.source = {
       facebook: false,
       twitter: false,
+      google: false,
+      instagram: false,
       message: false
     };
     this.known = false;
@@ -983,6 +985,12 @@ define('context',['helpers'], function(helpers) {
       context.source.facebook = true;
       context.known = (typeof(status.message) === 'string');
     }
+    else if(status.network === 'google_plus') {
+      context.source.google = context.known = true;
+    }
+    else if(status.network === 'instagram') {
+      context.source.instagram = context.known = true;
+    }
     else if(status.network === 'massrelevance') {
       // source: internal message
       context.source.message = context.known = true;
@@ -1002,48 +1010,48 @@ define('context',['helpers'], function(helpers) {
 
 define('compare_poller',['helpers'], function(helpers) {
   function ComparePoller(object, opts) {
-	  var self = this,
-	      fetch = function () {
-	        if (enabled) {
-	          object.load(self.opts, function(data) {
-	            if (enabled) {
-	              helpers.step_through(data, self._listeners, self);
-	              
-	              if (enabled) {
-	                again();
-	              }
-	            }
-	          }, function() {
+    var self = this,
+        fetch = function () {
+          if (enabled) {
+            object.load(self.opts, function(data) {
+              if (enabled) {
+                helpers.step_through(data, self._listeners, self);
+                
+                if (enabled) {
+                  again();
+                }
+              }
+            }, function() {
               again();
             });
-	        }
-	      },
-	      again = function () {
-	        tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-	      },
-	      enabled = false,
-	      tmo;
-	      
-	  self._listeners = [];
-	  
-	  self.opts = opts || {};
-	  self.opts.frequency = (self.opts.frequency || 30) * 1000;
-	  
-	  self.start = function () {
-	    if (!enabled) {
-	      enabled = true;
-	      fetch();
-	    }
-	    
-	    return this;
-	  };
-	  
-	  self.stop = function () {
-	    clearTimeout(tmo);
-	    enabled = false;
-	    
-	    return this;
-	  };
+          }
+        },
+        again = function () {
+          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
+        },
+        enabled = false,
+        tmo;
+        
+    self._listeners = [];
+    
+    self.opts = opts || {};
+    self.opts.frequency = (self.opts.frequency || 30) * 1000;
+    
+    self.start = function () {
+      if (!enabled) {
+        enabled = true;
+        fetch();
+      }
+      
+      return this;
+    };
+    
+    self.stop = function () {
+      clearTimeout(tmo);
+      enabled = false;
+      
+      return this;
+    };
   }
   
   ComparePoller.prototype.data = function(fn) {
