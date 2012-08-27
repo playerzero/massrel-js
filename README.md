@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.9.10
+
+* `top_count` is a new param on `Stream#meta` (4aabe2e)
+* `Compare` classes to map to /compare.json endpoint
+
 ## v0.9.9
 
 * `top_period_relative` is a new partam on `Stream#meta` (b0e3013f24)
