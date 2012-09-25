@@ -94,6 +94,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.num_days) {
       params.push(['num_days', opts.num_days]);
     }
+    if(opts.num_trends) {
+      params.push(['num_trends', opts.num_trends]);
+    }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);
     }
