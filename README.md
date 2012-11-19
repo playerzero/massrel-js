@@ -111,9 +111,17 @@ Shorthand
 
 # Change log
 
+## v0.9.10
+
+* Automatically add `original_referer` param when using intents URL helper (5fd729243b)
+* `Context` class supports Google+ and Instagram types (6158535fb3)
+* `num_trends` is a new param on `Stream#meta` (cefde81cae)
+* `Compare` API support (use `new massrel.Compare`)
+* `top_count` is a new param on `Stream#meta` (4aabe2e7c7)
+
 ## v0.9.9
 
-* `top_period_relative` is a new partam on `Stream#meta` (b0e3013f24)
+* `top_period_relative` is a new param on `Stream#meta` (b0e3013f24)
 * bind current poller instance to `this` in `Poller#more` callback (45e8c496a3)
 * fixed bug so that the massrel.js lib doesn't replace any existing global massrel global object (71ac8a739e)
 * fixed bug that prevented newer statuses from being pulled in correctly if `Poller#more` was called before `Poller#start` (19c96fc767)
