@@ -142,16 +142,22 @@ define(['globals'], function(globals) {
 
   var rx_twitter_date = /\+\d{4} \d{4}$/;
   var rx_fb_date = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+\d{4})$/; // iso8601
+  var rx_normal_date = /^(\d{4})-(\d\d)-(\d\d)T(\d\d)\:(\d\d)\:(\d\d)\.(\d{3})Z$/; // iso8601, no offset
   exports.fix_date = exports.fix_twitter_date = function(date) {
-    if(rx_twitter_date.test(date)) {
+    if (rx_twitter_date.test(date)) {
       date = date.split(' ');
       var year = date.pop();
       date.splice(3, 0, year);
       date = date.join(' ');
     }
-    else if(rx_fb_date.test(date)) {
+    else if (rx_fb_date.test(date)) {
       date = date.replace(rx_fb_date, '$1/$2/$3 $4:$5:$6 $7');
     }
+    else if (rx_normal_date.test(date)) {
+      // IE7/8 can't handle the ISO JavaScript date format, so we convert
+      date = date.replace(rx_normal_date, '$1/$2/$3 $4:$5:$6 +0000');
+    }
+
     return date;
   };
 
