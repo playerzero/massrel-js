@@ -3,10 +3,10 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
 
   function Stream() {
     var args = arguments.length === 1 ? arguments[0].split('/') : arguments;
-    
+
     this.account = args[0];
     this.stream_name = args[1];
-    
+
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
@@ -19,7 +19,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
-    
+
     var params = this.buildParams(opts);
     helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
@@ -73,10 +73,10 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     else {
       throw new Error('incorrect arguments');
     }
-    
+
     var params = this.buildMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-    
+
     return this;
   };
   Stream.prototype.buildMetaParams = function(opts) {
@@ -108,6 +108,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     }
     if(opts.finish) {
       params.push(['finish', opts.finish]);
+    }
+    if(opts.finish) {
+      params.push(['networks', opts.networks]);
     }
     return params;
   };
