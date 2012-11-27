@@ -842,10 +842,10 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
 
   function Stream() {
     var args = arguments.length === 1 ? arguments[0].split('/') : arguments;
-    
+
     this.account = args[0];
     this.stream_name = args[1];
-    
+
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
@@ -858,7 +858,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
-    
+
     var params = this.buildParams(opts);
     helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
@@ -912,10 +912,10 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     else {
       throw new Error('incorrect arguments');
     }
-    
+
     var params = this.buildMetaParams(opts);
     helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-    
+
     return this;
   };
   Stream.prototype.buildMetaParams = function(opts) {
@@ -947,6 +947,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.finish) {
       params.push(['finish', opts.finish]);
+    }
+    if(opts.finish) {
+      params.push(['networks', opts.networks]);
     }
     return params;
   };
@@ -1245,7 +1248,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
-  massrel.CompatePoller = ComparePoller;
+  massrel.ComparePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
 

@@ -39,7 +39,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
-  massrel.CompatePoller = ComparePoller;
+  massrel.ComparePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
 
