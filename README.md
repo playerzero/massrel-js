@@ -14,7 +14,7 @@
         while(tweets.length > 0) {
           reorder.push(tweets.pop());
         }
-        
+
         // print array of new tweets
         console.log(reorder);
     }).start();
@@ -40,7 +40,7 @@ Callback invoked for each tweet as they come in from oldest tweet to newest
       // invoke for every tweet that is return from the api
       // from oldest to newest
       console.log(tweet);
-  
+
       // "this" is the poller instance
     })
 
@@ -51,7 +51,7 @@ Callback invoked for each poll that has more than zero tweets
     poller.batch(function(tweets) {
       // all tweets from each poll that have > 0 tweets
       console.log(tweets);
-  
+
       // "this" is the poller instance
     })
 
@@ -73,7 +73,7 @@ Callback invoked for each poll that has more than zero tweets
     // the best part is that it is chainable
     stream.poller({ frequency: 30 }).each(function(tweet) {
       var container = document.getElementById('tweet-quick');
-  
+
       var ptag = document.createElement('p');
       ptag.innerHTML = tweet.text;
       container.insertBefore(ptag, container.firstChild);
@@ -91,7 +91,7 @@ Basically if you want to display tweets on a regular interval
 
     queue.next(function(tweet, step) {
       var container = document.getElementById('tweet-delay');
-  
+
       var ptag = document.createElement('p');
       ptag.innerHTML = tweet.text;
       container.insertBefore(ptag, container.firstChild);
@@ -102,7 +102,7 @@ Shorthand
 
     var poller = stream.poller().queue(function(tweet, step) {
       var container = document.getElementById('tweet-delay');
-  
+
       var ptag = document.createElement('p');
       ptag.innerHTML = tweet.text;
       container.insertBefore(ptag, container.firstChild);
@@ -110,6 +110,12 @@ Shorthand
     }).start();
 
 # Change log
+
+## v0.9.11
+
+* Correct typo with `Compare` support (44a744b073)
+* `networks` is a new param on `Stream#meta` (623b28993e, db1155493e)
+* Improve date support for IE 7 - 8 in `fix_date` (1b6fc24b5d)
 
 ## v0.9.10
 
