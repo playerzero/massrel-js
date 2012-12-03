@@ -109,7 +109,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.finish) {
       params.push(['finish', opts.finish]);
     }
-    if(opts.finish) {
+    if(opts.networks) {
       params.push(['networks', opts.networks]);
     }
     return params;

@@ -1,6 +1,6 @@
 describe('Stream', function() {
 
-  
+
   it('create with slug OR user and stream name pair', function() {
     var stream = new massrel.Stream('howardrauscher/test');
     expect(stream.account).toEqual('howardrauscher');
@@ -48,7 +48,7 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
   it('will not break when #load is called (end-to-end test)', function() {
     var stream = new massrel.Stream('howardr/test');
     var old_jsonp_factory = massrel.helpers.jsonp_factory
-    
+
     var opts = {
       limit: Math.floor(Math.random() * 100),
       since_id: Math.floor(Math.random() * 1000000000),
@@ -59,7 +59,7 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
       expect(stream.stream_url()).toEqual(url);
       expect(stream.buildParams(opts)).toEqual(params);
     };
-    
+
     stream.load(opts, function(data) { });
 
     massrel.helpers.jsonp_factory = old_jsonp_factory;
@@ -86,9 +86,10 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
     testParam({ num_minutes: 8 }, 'num_minutes', 8);
     testParam({ num_hours: 10 }, 'num_hours', 10);
     testParam({ num_days: 9 }, 'num_days', 9);
-    testParam({ top_periods: '2012040309' }, 'top_periods', '2012040309')
+    testParam({ top_periods: '2012040309' }, 'top_periods', '2012040309');
     testParam({ top_periods_relative: 1 }, 'top_periods_relative', 1);
     testParam({ top_count: 4 }, 'top_count', 4);
+    testParam({ networks: true }, 'networks', true);
 
     var time = (new Date()).getTime();
     testParam({ finish: time }, 'finish', time);
@@ -97,14 +98,14 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
   it('will not break when #meta is called (end-to-end test)', function() {
     var stream = new massrel.Stream('howardr/test');
     var old_jsonp_factory = massrel.helpers.jsonp_factory
-    
+
     var opts = {};
 
     massrel.helpers.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
       expect(stream.meta_url()).toEqual(url);
       expect(stream.buildMetaParams(opts)).toEqual(params);
     };
-    
+
     stream.meta(opts, function(data) { });
 
     massrel.helpers.jsonp_factory = old_jsonp_factory;
