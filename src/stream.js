@@ -49,6 +49,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
+    if(opts.network) {
+      params.push(['network', opts.network]);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {
@@ -110,7 +113,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       params.push(['finish', opts.finish]);
     }
     if(opts.networks) {
-      params.push(['networks', opts.networks]);
+      params.push(['networks', '1']);
     }
     return params;
   };
