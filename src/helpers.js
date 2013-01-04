@@ -27,8 +27,13 @@ define(['globals'], function(globals) {
   };
 
   exports.api_url = function(path, host) {
-    host = host || globals.host;
-    return globals.protocol+'://'+host+path;
+    // This require nastiness is due to a circular dependency that has emerged between massrel and helpers.
+    // Doing this also demands that the same 'massrel' dependency is declared in the dependency array above.
+    var host = host || massrel.host,
+        port = massrel.port,
+        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
+
+    return baseUrl + path;
   };
 
   var json_callbacks_counter = 0;
