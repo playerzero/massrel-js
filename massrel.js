@@ -287,7 +287,7 @@ define('globals',{
 , jsonp_param: 'jsonp'
 });
 
-define('helpers',['require', 'globals'], function(require, globals) {
+define('helpers',['globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -316,8 +316,9 @@ define('helpers',['require', 'globals'], function(require, globals) {
   };
 
   exports.api_url = function(path, host) {
-    // This require nastiness is due to a circular dependency that has emerged between massrel and helpers.
-    // Doing this also demands that the same 'massrel' dependency is declared in the dependency array above.
+    // A circular dependency has emerged between massrel and helpers.
+    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
+    // be easily resolved w/ require.
     var host = host || massrel.host,
         port = massrel.port,
         baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
