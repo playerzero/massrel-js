@@ -1,7 +1,10 @@
 task :build do
   cd "src"
-  sh "node ../build/r.js -o baseUrl=. name=almond.js include=massrel out=../massrel.js wrap=true optimize=none"
-  sh "node ../build/r.js -o baseUrl=. name=almond.js include=massrel out=../massrel.min.js wrap=true"
+  sh "node ../build/r.js -o ../build/build.js out=../massrel.js optimize=none"
+  sh "node ../build/r.js -o ../build/build.js out=../massrel.min.js"
+  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.js optimize=none"
+  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.min.js"
+
 end
 
 task :package, [:version] => [:pkg] do |t, args|
