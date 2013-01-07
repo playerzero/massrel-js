@@ -1,7 +1,5 @@
 /*
  * Build file for internal massrel-js (No almond shim included)
- *
- *
  */
 
 ({
