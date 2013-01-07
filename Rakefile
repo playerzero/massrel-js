@@ -9,7 +9,7 @@ task :build do
 
 end
 
-task :package, [:version] => [:pkg] do |t, args|
+task :package, [:version] => [:pkg, :build] do |t, args|
 
   def write_pkg_file(filename, dir, version)
     pkg_name = filename.gsub(".js", "." + version + ".js")
