@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.10.0
+
+* Filter stream to a single network
+* Allow port and host overrides on the massrel module
+
 ## v0.9.11
 
 * Correct typo with `Compare` support (44a744b073)
