@@ -358,6 +358,103 @@ define('helpers',['globals'], function(globals) {
     }, globals.timeout);
   };
 
+  exports.supportsXdr = window.JSON && ((window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()) || !!window.XDomainRequest);
+
+  exports.xdr = function(url, method, data, callback, errback) {
+    var req;
+    
+    if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+
+      if('withCredentials' in req) {
+        req.open(method, url, true);
+        req.onerror = errback;
+        req.onreadystatechange = function() {
+          if (req.readyState === 4) {
+            if (req.status >= 200 && req.status < 400) {
+              callback(req.responseText);
+            } else {
+              errback(new Error('Response returned with non-OK status'));
+            }
+          }
+        };
+        req.send(data);
+      }
+    }
+    else if(window.XDomainRequest) {
+      req = new XDomainRequest();
+      req.open(method, url);
+      req.onerror = errback;
+      req.onload = function() {
+        callback(req.responseText);
+      };
+      req.send(data);
+    }
+    else {
+      errback(new Error('CORS not supported'));
+    }
+  };
+
+  exports.hail_mary_factory = function(url, jsonp_prefix, obj, callback, error) {
+    if(exports.supportsXdr) {
+      exports.xdr(url, 'GET', exports.to_qs(params), function(body) {
+        var problems = false;
+        try {
+          var data = JSON.parse(body);
+          if(typeof callback === 'function') {
+            callback(data);
+          }
+          else if(exports.is_array(callback) && callback.length > 0) {
+            helpers.step_through(data, callback, obj);
+          }
+        }
+        catch(e) {
+          problems = true;
+        }
+
+        if(problems && typeof error === 'function') {
+          error();
+        }
+      }, error);
+    }
+    else {
+      var params = [];
+      var callback_id = 'massrel_'+jsonp_prefix;
+      var fulfilled = false;
+      var timeout;
+
+      globals._json_callbacks[callback_id] = function(data) {
+        if(typeof callback === 'function') {
+          callback(data);
+        }
+        else if(exports.is_array(callback) && callback.length > 0) {
+          helpers.step_through(data, callback, obj);
+        }
+        
+        delete globals._json_callbacks[callback_id];
+
+        fulfilled = true;
+        clearTimeout(timeout);
+      };
+      params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
+
+      var ld = exports.load(url + '?' + exports.to_qs(params));
+
+      // in 10 seconds if the request hasn't been loaded, cancel request
+      timeout = setTimeout(function() {
+        if(!fulfilled) {
+          globals._json_callbacks[callback_id] = function() {
+            delete globals._json_callbacks[callback_id];
+          };
+          if(typeof error === 'function') {
+            error();
+          }
+          ld.stop();
+        }
+      }, globals.timeout);
+    }
+  };
+
   exports.is_array = Array.isArray || function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   };
@@ -733,8 +830,10 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
+    var hail_mary = !!this.stream.hail_mary;
     
     var self = this;
+    var sortable_prop = 'entity_id';
     function poll() {
       self.alive = false;
 
@@ -751,9 +850,54 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        
+        if(hail_mary && statuses && statuses.length > 0) {
+          var limit = self.limit || Infinity;
+
+          // only use new statuses
+          // use the 
+          if(self.newest_timestamp) {
+            if(statuses[0][sortable_prop] <= self.newest_timestamp) {
+              // if first/newest item in request is equal or older than
+              // what the poller knows about, then there are no newer
+              // statuses to display
+              statuses = [];
+            }
+            else if(statuses[statuses.length - 1][sortable_prop] > self.newest_timestamp) {
+              // if last/oldest item in request is newer than what the poller knows
+              // then all statuses are new. we only care about making sure
+              // statuses.length <= limit
+              if(statuses.length > limit) {
+                statuses.splice(self.limit, statuses.length - limit);
+              }
+            }
+            else {
+              // the last status the poller knows about is somewhere inside of the
+              // of the requested statuses. grab the statuses that are newer than
+              // what the poller knows about until there are no more statuses OR
+              // we have collecte limit statuses
+              var newerStatuses = [];
+
+              for(var i = 0, len = statuses.length; i < len && newerStatuses.length < limit; i++) {
+                var status = statuses[i];
+                if(status[sortable_prop] > self.newest_timestamp) {
+                  newerStatuses.push(status);
+                }
+                else {
+                  break;
+                }
+              }
+
+              statuses = newerStatuses;
+            }
+          }
+          else if(statuses.length > limit) {
+            statuses.splice(self.limit, statuses.length - limit);
+          }
+        }
+
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
+          self.newest_timestamp = statuses[0][sortable_prop];
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
@@ -839,11 +983,14 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     
     this.account = args[0];
     this.stream_name = args[1];
+
+    this.hail_mary = true;
     
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json');
+    var host = this.hail_mary ? 'cdntest.api.massrelevance.com' : null;
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json', host);
   };
   Stream.prototype.meta_url = function() {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
@@ -853,8 +1000,18 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       // put defaults
     });
     
-    var params = this.buildParams(opts);
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    if(!this.hail_mary) {
+      var params = this.buildParams(opts);
+      helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    }
+    else {
+      delete opts.since_id;
+      delete opts.from_id;
+      delete opts.start;
+      var params = this.buildParams(opts);
+      helpers.hail_mary_factory(this.stream_url(), [this.account.toLowerCase(), this.stream_name.toLowerCase()].join('_'), this, fn || this._enumerators, error);
+    }
+
 
     return this;
   };
@@ -926,6 +1083,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.num_days) {
       params.push(['num_days', opts.num_days]);
+    }
+    if(opts.num_trends) {
+      params.push(['num_trends', opts.num_trends]);
     }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);
@@ -1002,48 +1162,48 @@ define('context',['helpers'], function(helpers) {
 
 define('compare_poller',['helpers'], function(helpers) {
   function ComparePoller(object, opts) {
-	  var self = this,
-	      fetch = function () {
-	        if (enabled) {
-	          object.load(self.opts, function(data) {
-	            if (enabled) {
-	              helpers.step_through(data, self._listeners, self);
-	              
-	              if (enabled) {
-	                again();
-	              }
-	            }
-	          }, function() {
+    var self = this,
+        fetch = function () {
+          if (enabled) {
+            object.load(self.opts, function(data) {
+              if (enabled) {
+                helpers.step_through(data, self._listeners, self);
+                
+                if (enabled) {
+                  again();
+                }
+              }
+            }, function() {
               again();
             });
-	        }
-	      },
-	      again = function () {
-	        tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-	      },
-	      enabled = false,
-	      tmo;
-	      
-	  self._listeners = [];
-	  
-	  self.opts = opts || {};
-	  self.opts.frequency = (self.opts.frequency || 30) * 1000;
-	  
-	  self.start = function () {
-	    if (!enabled) {
-	      enabled = true;
-	      fetch();
-	    }
-	    
-	    return this;
-	  };
-	  
-	  self.stop = function () {
-	    clearTimeout(tmo);
-	    enabled = false;
-	    
-	    return this;
-	  };
+          }
+        },
+        again = function () {
+          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
+        },
+        enabled = false,
+        tmo;
+        
+    self._listeners = [];
+    
+    self.opts = opts || {};
+    self.opts.frequency = (self.opts.frequency || 30) * 1000;
+    
+    self.start = function () {
+      if (!enabled) {
+        enabled = true;
+        fetch();
+      }
+      
+      return this;
+    };
+    
+    self.stop = function () {
+      clearTimeout(tmo);
+      enabled = false;
+      
+      return this;
+    };
   }
   
   ComparePoller.prototype.data = function(fn) {

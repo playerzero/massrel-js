@@ -69,6 +69,93 @@ define(['globals'], function(globals) {
     }, globals.timeout);
   };
 
+  exports.req = {};
+  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
+  exports.req.supportsJSON = 'JSON' in window;
+
+  exports.req.make = function(url, params, obj, callback, error) {
+    var data = exports.to_qs(params);
+    if(exports.req.supportsCors && exports.req.supportsJSON) {
+      exports.req.xdr(url, 'GET', data, callback, error);
+    }
+    else {
+      exports.req.jsonp(url, data, callback, error);
+    }
+  };
+
+  exports.req.xdr = function(url, method, data, callback, errback) {
+    var req;
+    
+    if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+
+      if('withCredentials' in req) {
+        req.open(method, url, true);
+        req.onerror = errback;
+        req.onreadystatechange = function() {
+          if (req.readyState === 4) {
+            if (req.status >= 200 && req.status < 400) {
+              callback(req.responseText);
+            } else {
+              errback(new Error('Response returned with non-OK status'));
+            }
+          }
+        };
+        req.send(data);
+      }
+    }
+    else if(window.XDomainRequest) {
+      req = new XDomainRequest();
+      req.open(method, url);
+      req.onerror = errback;
+      req.onload = function() {
+        callback(req.responseText);
+      };
+      req.send(data);
+    }
+    else {
+      errback(new Error('CORS not supported'));
+    }
+  };
+
+  exports.req.jsonp = function(url, data, callback, error) {
+    var callback_id = 'massrel_'+jsonp_prefix;
+    var fulfilled = false;
+    var timeout;
+
+    globals._json_callbacks[callback_id] = function(data) {
+      if(typeof callback === 'function') {
+        callback(data);
+      }
+      
+      delete globals._json_callbacks[callback_id];
+
+      fulfilled = true;
+      clearTimeout(timeout);
+    };
+
+    data = data || '';
+    if(data && data.indexOf('&') >=0) {
+      data += '&';
+    }
+    data += _enc(globals.jsonp_param)+'='+_enc('massrel._json_callbacks.'+callback_id)
+
+    var ld = exports.load(url+'?'+data);
+
+    // in 10 seconds if the request hasn't been loaded, cancel request
+    timeout = setTimeout(function() {
+      if(!fulfilled) {
+        globals._json_callbacks[callback_id] = function() {
+          delete globals._json_callbacks[callback_id];
+        };
+        if(typeof error === 'function') {
+          error();
+        }
+        ld.stop();
+      }
+    }, globals.timeout);
+  };
+
   exports.is_array = Array.isArray || function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   };

@@ -6,11 +6,14 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     
     this.account = args[0];
     this.stream_name = args[1];
+
+    this.hail_mary = true;
     
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json');
+    var host = this.hail_mary ? 'cdntest.api.massrelevance.com' : null;
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json', host);
   };
   Stream.prototype.meta_url = function() {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
@@ -20,8 +23,18 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
       // put defaults
     });
     
-    var params = this.buildParams(opts);
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    if(!this.hail_mary) {
+      var params = this.buildParams(opts);
+      helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    }
+    else {
+      delete opts.since_id;
+      delete opts.from_id;
+      delete opts.start;
+      var params = this.buildParams(opts);
+      helpers.req.make(this.stream_url(), params, this._enumerators, error);
+    }
+
 
     return this;
   };
@@ -93,6 +106,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     }
     if(opts.num_days) {
       params.push(['num_days', opts.num_days]);
+    }
+    if(opts.num_trends) {
+      params.push(['num_trends', opts.num_trends]);
     }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);

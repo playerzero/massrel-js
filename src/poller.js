@@ -45,8 +45,10 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
+    var hail_mary = !!this.stream.hail_mary;
     
     var self = this;
+    var sortable_prop = 'entity_id';
     function poll() {
       self.alive = false;
 
@@ -63,9 +65,54 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        
+        if(hail_mary && statuses && statuses.length > 0) {
+          var limit = self.limit || Infinity;
+
+          // only use new statuses
+          // use the 
+          if(self.newest_timestamp) {
+            if(statuses[0][sortable_prop] <= self.newest_timestamp) {
+              // if first/newest item in request is equal or older than
+              // what the poller knows about, then there are no newer
+              // statuses to display
+              statuses = [];
+            }
+            else if(statuses[statuses.length - 1][sortable_prop] > self.newest_timestamp) {
+              // if last/oldest item in request is newer than what the poller knows
+              // then all statuses are new. we only care about making sure
+              // statuses.length <= limit
+              if(statuses.length > limit) {
+                statuses.splice(self.limit, statuses.length - limit);
+              }
+            }
+            else {
+              // the last status the poller knows about is somewhere inside of the
+              // of the requested statuses. grab the statuses that are newer than
+              // what the poller knows about until there are no more statuses OR
+              // we have collecte limit statuses
+              var newerStatuses = [];
+
+              for(var i = 0, len = statuses.length; i < len && newerStatuses.length < limit; i++) {
+                var status = statuses[i];
+                if(status[sortable_prop] > self.newest_timestamp) {
+                  newerStatuses.push(status);
+                }
+                else {
+                  break;
+                }
+              }
+
+              statuses = newerStatuses;
+            }
+          }
+          else if(statuses.length > limit) {
+            statuses.splice(self.limit, statuses.length - limit);
+          }
+        }
+
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
+          self.newest_timestamp = statuses[0][sortable_prop];
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
