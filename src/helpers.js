@@ -31,9 +31,72 @@ define(['globals'], function(globals) {
     return globals.protocol+'://'+host+path;
   };
 
-  var json_callbacks_counter = 0;
-  globals._json_callbacks = {};
-  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+  exports.req = {};
+  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
+  exports.req.supportsJSON = 'JSON' in window;
+  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
+    var req;
+
+    var success = function(req) {
+      if(!req.status || req.status >= 200 && req.status < 400) {
+        var data;
+        var problems = false;
+        try {
+          data = JSON.parse(req.responseText);
+        }
+        catch(e) {
+          problems = true;
+          fail(new Error('JSON parse error'));
+        }
+
+        if(!problems) {
+          if(typeof callback === 'function') {
+            callback(data);
+          }
+          else if(exports.is_array(callback) && callback.length > 0) {
+            exports.step_through(data, callback, obj);
+          }
+        }
+      } else {
+        fail(new Error('Response returned with non-OK status'));
+      }
+    };
+
+    var fail = function(text) {
+      if(typeof error === 'string') {
+        error(text);
+      }
+    };
+
+    if(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()) {
+      req = new XMLHttpRequest();
+
+      if(true) {
+        req.open('GET', url+'?'+exports.to_qs(params), true);
+        req.onerror = fail;
+        req.onreadystatechange = function() {
+          if (req.readyState === 4) {
+            success(req);
+          }
+        };
+        req.send(null);
+      }
+    }
+    else if(window.XDomainRequest) {
+      req = new XDomainRequest();
+      req.open('GET', url+'?'+exports.to_qs(params));
+      req.onerror = fail;
+      req.onload = function() {
+        success(req);
+      };
+      req.send(null);
+    }
+    else {
+      fail(new Error('CORS not supported'));
+    }
+  };
+
+  exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
     var callback_id = jsonp_prefix+(++json_callbacks_counter);
     var fulfilled = false;
     var timeout;
@@ -43,7 +106,7 @@ define(['globals'], function(globals) {
         callback(data);
       }
       else if(exports.is_array(callback) && callback.length > 0) {
-        helpers.step_through(data, callback, obj);
+        exports.step_through(data, callback, obj);
       }
       
       delete globals._json_callbacks[callback_id];
@@ -67,6 +130,17 @@ define(['globals'], function(globals) {
         ld.stop();
       }
     }, globals.timeout);
+  };
+
+  var json_callbacks_counter = 0;
+  globals._json_callbacks = {};
+  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+     if(exports.req.supportsCors && exports.req.supportsJSON) {
+       exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
+     }
+     else {
+       exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
+     }
   };
 
   exports.is_array = Array.isArray || function(obj) {
