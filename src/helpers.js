@@ -37,57 +37,59 @@ define(['globals'], function(globals) {
   exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
     var req;
 
-    var success = function(req) {
-      if(!req.status || req.status >= 200 && req.status < 400) {
-        var data;
-        var problems = false;
-        try {
-          data = JSON.parse(req.responseText);
-        }
-        catch(e) {
-          problems = true;
-          fail(new Error('JSON parse error'));
-        }
+    var success = function(responseText) {
+      var data;
+      var problems = false;
+      try {
+        data = JSON.parse(responseText);
+      }
+      catch(e) {
+        problems = true;
+        fail(new Error('JSON parse error'));
+      }
 
-        if(!problems) {
-          if(typeof callback === 'function') {
-            callback(data);
-          }
-          else if(exports.is_array(callback) && callback.length > 0) {
-            exports.step_through(data, callback, obj);
-          }
+      if(!problems) {
+        if(typeof callback === 'function') {
+          callback(data);
         }
-      } else {
-        fail(new Error('Response returned with non-OK status'));
+        else if(exports.is_array(callback) && callback.length > 0) {
+          exports.step_through(data, callback, obj);
+        }
       }
     };
 
     var fail = function(text) {
-      if(typeof error === 'string') {
+      if(typeof error === 'function') {
         error(text);
       }
     };
 
-    if(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()) {
-      req = new XMLHttpRequest();
-
-      if(true) {
-        req.open('GET', url+'?'+exports.to_qs(params), true);
-        req.onerror = fail;
-        req.onreadystatechange = function() {
-          if (req.readyState === 4) {
-            success(req);
-          }
-        };
-        req.send(null);
-      }
-    }
-    else if(window.XDomainRequest) {
+    // check XDomainRequest presence first
+    // because newer IE's support XHR object
+    // but without CORS
+    if(window.XDomainRequest) {
       req = new XDomainRequest();
       req.open('GET', url+'?'+exports.to_qs(params));
       req.onerror = fail;
       req.onload = function() {
-        success(req);
+        success(req.responseText);
+      };
+      req.send(null);
+    }
+    else if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+
+      req.open('GET', url+'?'+exports.to_qs(params), true);
+      req.onerror = fail;
+      req.onreadystatechange = function() {
+        if (req.readyState === 4) {
+          if(req.status >= 200 && req.status < 400) {
+            success(req.responseText);
+          }
+          else {
+            fail(new Error('Response returned with non-OK status'));
+          }
+        }
       };
       req.send(null);
     }
@@ -132,9 +134,12 @@ define(['globals'], function(globals) {
     }, globals.timeout);
   };
 
+  // alias for backwards compatability
+  exports.jsonp_factory = exports.req.jsonp;
+
   var json_callbacks_counter = 0;
   globals._json_callbacks = {};
-  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+  exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
      if(exports.req.supportsCors && exports.req.supportsJSON) {
        exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
      }

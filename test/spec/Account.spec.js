@@ -42,21 +42,21 @@ describe('Account', function() {
 
   it('will not break when #meta is called (end-to-end test)', function() {
     var account = new massrel.Account(user);
-    var old_jsonp_factory = massrel.helpers.jsonp_factory
+    var old_request_factory = massrel.helpers.request_factory
     
     var opts = {
       streams: ['mystream'],
       quick_stats: true
     };
 
-    massrel.helpers.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+    massrel.helpers.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
       expect(account.meta_url()).toEqual(url);
       expect(account.buildMetaParams(opts)).toEqual(params);
     };
     
     account.meta(opts, function(data) { });
 
-    massrel.helpers.jsonp_factory = old_jsonp_factory;
+    massrel.helpers.request_factory = old_request_factory;
   });
 
 });
