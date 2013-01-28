@@ -331,4 +331,43 @@ describe('helpers', function() {
     });
   });
 
+  describe('building api urls', function() {
+    var previousHost, previousPort;
+
+    beforeEach(function() {
+      previousHost = massrel.host;
+      previousPort = massrel.port;
+    });
+
+    afterEach(function() {
+      massrel.host = previousHost;
+      massrel.port = previousPort;
+    });
+
+    it('allow host override via massrel module', function() {
+      var host = 'localhost',
+          helpers = massrel.helpers,
+          protocol = massrel.protocol,
+          path = '/v/foo.json',
+          expectedUrl = protocol + '://' + host + path;
+
+      massrel.host = host;
+
+      expect(helpers.api_url('/v/foo.json')).toBe(expectedUrl);
+    });
+
+    it('allow port override via massrel module', function() {
+      var helpers = massrel.helpers,
+          protocol = massrel.protocol,
+          host = massrel.host,
+          port = 1337,
+          path = '/v/foo.json',
+          expectedUrl = protocol + '://' + host + ':' + port + path;
+
+      massrel.port = port;
+
+      expect(helpers.api_url('/v/foo.json')).toBe(expectedUrl);
+    });
+  });
+
 });

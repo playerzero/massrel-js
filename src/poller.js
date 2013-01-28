@@ -6,7 +6,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this._enumerators = [];
     this._bound_enum = false;
     this._t = null;
-    
+
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
@@ -16,6 +16,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
+    this.network = opts.network || null;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -45,7 +46,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
-    
+
     var self = this;
     function poll() {
       self.alive = false;
@@ -63,19 +64,19 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        
+
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
           }
-          
+
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
             self._callbacks[i].call(self, statuses); // we might need to pass in a copy of statuses array
           }
-          
+
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
@@ -86,9 +87,9 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       });
 
     }
-  
+
     poll();
-    
+
     return this;
   };
   Poller.prototype.stop = function() {
@@ -136,7 +137,8 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       limit: this.limit,
       replies: this.replies,
       geo_hint: this.geo_hint,
-      keywords: this.keywords
+      keywords: this.keywords,
+      network: this.network
     }, opts || {});
   };
 

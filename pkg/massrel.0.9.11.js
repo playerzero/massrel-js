@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.9.11
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 (function () {
 /**
  * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -277,6 +288,8 @@ var requirejs, require, define;
     };
 }());
 
+define("almond.js", function(){});
+
 define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
@@ -314,14 +327,8 @@ define('helpers',['globals'], function(globals) {
   };
 
   exports.api_url = function(path, host) {
-    // A circular dependency has emerged between massrel and helpers.
-    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
-    // be easily resolved w/ require.
-    var host = host || massrel.host,
-        port = massrel.port,
-        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
-
-    return baseUrl + path;
+    host = host || globals.host;
+    return globals.protocol+'://'+host+path;
   };
 
   var json_callbacks_counter = 0;
@@ -704,7 +711,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this._enumerators = [];
     this._bound_enum = false;
     this._t = null;
-
+    
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
@@ -714,7 +721,6 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
-    this.network = opts.network || null;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -744,7 +750,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
-
+    
     var self = this;
     function poll() {
       self.alive = false;
@@ -762,19 +768,19 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-
+        
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
           }
-
+          
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
             self._callbacks[i].call(self, statuses); // we might need to pass in a copy of statuses array
           }
-
+          
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
@@ -785,9 +791,9 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       });
 
     }
-
+  
     poll();
-
+    
     return this;
   };
   Poller.prototype.stop = function() {
@@ -835,8 +841,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       limit: this.limit,
       replies: this.replies,
       geo_hint: this.geo_hint,
-      keywords: this.keywords,
-      network: this.network
+      keywords: this.keywords
     }, opts || {});
   };
 
@@ -893,9 +898,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
-    }
-    if(opts.network) {
-      params.push(['network', opts.network]);
     }
     return params;
   };
@@ -958,7 +960,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       params.push(['finish', opts.finish]);
     }
     if(opts.networks) {
-      params.push(['networks', '1']);
+      params.push(['networks', opts.networks]);
     }
     return params;
   };
@@ -1266,12 +1268,10 @@ define('massrel', [
   massrel.require = require;
   massrel.requirejs = requirejs;
 
-  return massrel;
-});
+  // define API for AMD
+  if(typeof(window.define) === 'function' && typeof(window.define.amd) !== 'undefined') {
+    window.define(massrel);
+  }
 
-// Go ahead and export the 'massrel' module to 'vendor/massrel', as well, since 
-// most places expect it to live there.
-define('vendor/massrel', ['massrel'], function(massrel) {
-  return massrel;
 });
 }());
