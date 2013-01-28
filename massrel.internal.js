@@ -46,9 +46,74 @@ define('helpers',['globals'], function(globals) {
     return baseUrl + path;
   };
 
-  var json_callbacks_counter = 0;
-  globals._json_callbacks = {};
-  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+  exports.req = {};
+  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
+  exports.req.supportsJSON = 'JSON' in window;
+  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
+    var req;
+
+    var success = function(responseText) {
+      var data;
+      var problems = false;
+      try {
+        data = JSON.parse(responseText);
+      }
+      catch(e) {
+        problems = true;
+        fail(new Error('JSON parse error'));
+      }
+
+      if(!problems) {
+        if(typeof callback === 'function') {
+          callback(data);
+        }
+        else if(exports.is_array(callback) && callback.length > 0) {
+          exports.step_through(data, callback, obj);
+        }
+      }
+    };
+
+    var fail = function(text) {
+      if(typeof error === 'function') {
+        error(text);
+      }
+    };
+
+    // check XDomainRequest presence first
+    // because newer IE's support XHR object
+    // but without CORS
+    if(window.XDomainRequest) {
+      req = new XDomainRequest();
+      req.open('GET', url+'?'+exports.to_qs(params));
+      req.onerror = fail;
+      req.onload = function() {
+        success(req.responseText);
+      };
+      req.send(null);
+    }
+    else if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+
+      req.open('GET', url+'?'+exports.to_qs(params), true);
+      req.onerror = fail;
+      req.onreadystatechange = function() {
+        if (req.readyState === 4) {
+          if(req.status >= 200 && req.status < 400) {
+            success(req.responseText);
+          }
+          else {
+            fail(new Error('Response returned with non-OK status'));
+          }
+        }
+      };
+      req.send(null);
+    }
+    else {
+      fail(new Error('CORS not supported'));
+    }
+  };
+
+  exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
     var callback_id = jsonp_prefix+(++json_callbacks_counter);
     var fulfilled = false;
     var timeout;
@@ -58,7 +123,7 @@ define('helpers',['globals'], function(globals) {
         callback(data);
       }
       else if(exports.is_array(callback) && callback.length > 0) {
-        helpers.step_through(data, callback, obj);
+        exports.step_through(data, callback, obj);
       }
       
       delete globals._json_callbacks[callback_id];
@@ -82,6 +147,20 @@ define('helpers',['globals'], function(globals) {
         ld.stop();
       }
     }, globals.timeout);
+  };
+
+  // alias for backwards compatability
+  exports.jsonp_factory = exports.req.jsonp;
+
+  var json_callbacks_counter = 0;
+  globals._json_callbacks = {};
+  exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+     if(exports.req.supportsCors && exports.req.supportsJSON) {
+       exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
+     }
+     else {
+       exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
+     }
   };
 
   exports.is_array = Array.isArray || function(obj) {
@@ -296,7 +375,7 @@ define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
@@ -588,7 +667,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     });
 
     var params = this.buildParams(opts);
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -645,7 +724,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
@@ -851,7 +930,7 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
       streams: this.streams
     }, opts || {}));
 
-    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.compare_url(), params, 'meta_', this, fn, error);
     return this;
   };
   

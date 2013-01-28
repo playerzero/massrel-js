@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.11.0
+
+ * CORS support. Cross domain requests to API when browser supports it instead of JSONP.
+
 ## v0.10.0
 
 * Filter stream to a single network
