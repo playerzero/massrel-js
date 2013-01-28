@@ -109,9 +109,9 @@ describe('helpers', function() {
 
   });
 
-  describe('building CORS requests', function(useCors, supportsCors, supportsJSON) {
+  describe('building CORS requests', function() {
     
-    var testCors = function() {
+    var testCors = function(useCors, supportsCors, supportsJSON) {
       var old_xdr = massrel.helpers.req.xdr;
       var old_jsonp = massrel.helpers.req.jsonp;
       var old_cors = massrel.helpers.req.supportsCors;
