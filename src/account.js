@@ -24,7 +24,7 @@ define(['helpers', 'meta_poller'], function(helpers, MetaPoller) {
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };

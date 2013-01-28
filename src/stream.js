@@ -21,7 +21,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     });
 
     var params = this.buildParams(opts);
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -78,7 +78,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };

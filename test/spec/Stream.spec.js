@@ -15,7 +15,7 @@ describe('Stream', function() {
   it('use correct RESTful urls', function() {
     var stream = new massrel.Stream('howardrauscher/test');
     expect(stream.stream_url()).toEqual('http://tweetriver.com/howardrauscher/test.json');
-expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/meta.json');
+    expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/meta.json');
   });
 
   it('use correct params from options', function() {
@@ -48,7 +48,7 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
 
   it('will not break when #load is called (end-to-end test)', function() {
     var stream = new massrel.Stream('howardr/test');
-    var old_jsonp_factory = massrel.helpers.jsonp_factory;
+    var old_request_factory = massrel.helpers.request_factory;
 
     var opts = {
       limit: Math.floor(Math.random() * 100),
@@ -56,14 +56,14 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
       replies: !!Math.round(Math.random())
     };
 
-    massrel.helpers.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+    massrel.helpers.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
       expect(stream.stream_url()).toEqual(url);
       expect(stream.buildParams(opts)).toEqual(params);
     };
 
     stream.load(opts, function(data) { });
 
-    massrel.helpers.jsonp_factory = old_jsonp_factory;
+    massrel.helpers.request_factory = old_request_factory;
   });
 
   it('use correct params from meta options', function() {
@@ -98,18 +98,17 @@ expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/met
 
   it('will not break when #meta is called (end-to-end test)', function() {
     var stream = new massrel.Stream('howardr/test');
-    var old_jsonp_factory = massrel.helpers.jsonp_factory;
-
+    var old_request_factory = massrel.helpers.request_factory;
     var opts = {};
 
-    massrel.helpers.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+    massrel.helpers.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
       expect(stream.meta_url()).toEqual(url);
       expect(stream.buildMetaParams(opts)).toEqual(params);
     };
 
     stream.meta(opts, function(data) { });
 
-    massrel.helpers.jsonp_factory = old_jsonp_factory;
+    massrel.helpers.request_factory = old_request_factory;
   });
 
   //TODO: #load, #each, #poller, #meta

@@ -39,7 +39,7 @@ describe('helpers', function() {
 
       var limit = Math.max( Math.ceil( Math.random() * 10 ), 1);
       var params = [['limit', limit]];
-      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, callback, error);
+      massrel.helpers.req.jsonp('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, callback, error);
 
       setTimeout(function() {
         expect(callback).toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe('helpers', function() {
       var callback = jasmine.createSpy('success');
       var error = jasmine.createSpy('error');
       
-      massrel.helpers.jsonp_factory('http://localhost:9876/fakeurl', params, prefix, {}, callback, error);
+      massrel.helpers.req.jsonp('http://localhost:9876/fakeurl', params, prefix, {}, callback, error);
 
       setTimeout(function() {
         expect(callback).not.toHaveBeenCalled();
@@ -95,7 +95,7 @@ describe('helpers', function() {
       massrel.jsonp_param = 'callback';
 
       var params = [];
-      massrel.helpers.jsonp_factory('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, function() {}, function() {});
+      massrel.helpers.req.jsonp('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, function() {}, function() {});
 
       expect(params.length).toEqual(1);
       expect(params[0][0]).toEqual(massrel.jsonp_param);
@@ -103,6 +103,68 @@ describe('helpers', function() {
       massrel.jsonp_param = old_param;
     });
 
+    it('uses helpers.jsonp_factory as an alias', function() {
+      expect(massrel.helpers.jsonp_factory).toEqual(massrel.helpers.req.jsonp);
+    });
+
+  });
+
+  describe('building CORS requests', function(useCors, supportsCors, supportsJSON) {
+    
+    var testCors = function() {
+      var old_xdr = massrel.helpers.req.xdr;
+      var old_jsonp = massrel.helpers.req.jsonp;
+      var old_cors = massrel.helpers.req.supportsCors;
+      var old_json = massrel.helpers.req.cupportsJSON;
+
+      massrel.helpers.req.supportsCors = supportsCors;
+      massrel.helpers.req.supportsJSON = supportsJSON;
+
+      massrel.helpers.req.xdr = jasmine.createSpy('fakeXdr');
+      massrel.helpers.req.jsonp = jasmine.createSpy('jsonp');
+      massrel.helpers.request_factory('http://tweetriver.com/test/');
+
+      if(useCors) {
+        expect(massrel.helpers.req.xdr).toHaveBeenCalled();
+        expect(massrel.helpers.req.jsonp).not.toHaveBeenCalled();
+      }
+      else {
+        expect(massrel.helpers.req.xdr).not.toHaveBeenCalled();
+        expect(massrel.helpers.req.jsonp).toHaveBeenCalled();
+      }
+
+      massrel.helpers.req.xdr = old_xdr;
+      massrel.helpers.req.xdr = old_jsonp;
+      massrel.helpers.req.supportsCors = old_cors;
+      massrel.helpers.req.supportsJSON = old_json;
+    };
+
+    it('use CORS when supported', function() {
+      testCors(true, true, true);
+    });
+
+    it('not use CORS when not supported', function() {
+      testCors(false, false, true);
+    });
+
+    it('not use CORS when JSON parser not supported', function() {
+      testCors(false, true, false);
+    });
+
+    it('make a request (browser must support CORS)', function() {
+      if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
+        var callback = jasmine.createSpy('success');
+
+        massrel.helpers.req.xdr('http://tweetriver.com/bdainton/kindle.json', [], '_', this, callback);
+
+        setTimeout(function() {
+          expect(callback).not.toHaveBeenCalled();
+        }, 1500);
+      }
+
+      waits(2000);
+
+    });
 
   });
 
