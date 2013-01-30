@@ -5,6 +5,8 @@ define(['helpers'], function(helpers) {
     this.source = {
       facebook: false,
       twitter: false,
+      google: false,
+      instagram: false,
       message: false
     };
     this.known = false;
@@ -31,6 +33,12 @@ define(['helpers'], function(helpers) {
       // source: facebook
       context.source.facebook = true;
       context.known = (typeof(status.message) === 'string');
+    }
+    else if(status.network === 'google_plus') {
+      context.source.google = context.known = true;
+    }
+    else if(status.network === 'instagram') {
+      context.source.instagram = context.known = true;
     }
     else if(status.network === 'massrelevance') {
       // source: internal message

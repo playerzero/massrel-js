@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.9.11
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 (function () {
 /**
  * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -277,6 +288,8 @@ var requirejs, require, define;
     };
 }());
 
+define("almond.js", function(){});
+
 define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
@@ -314,89 +327,14 @@ define('helpers',['globals'], function(globals) {
   };
 
   exports.api_url = function(path, host) {
-    // A circular dependency has emerged between massrel and helpers.
-    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
-    // be easily resolved w/ require.
-    var host = host || massrel.host,
-        port = massrel.port,
-        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
-
-    return baseUrl + path;
+    host = host || globals.host;
+    return globals.protocol+'://'+host+path;
   };
 
-  exports.req = {};
-  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
-  exports.req.supportsJSON = 'JSON' in window;
-  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
-    var req;
-
-    var success = function(responseText) {
-      var data;
-      var problems = false;
-      try {
-        data = JSON.parse(responseText);
-      }
-      catch(e) {
-        problems = true;
-        fail(new Error('JSON parse error'));
-      }
-
-      if(!problems) {
-        if(typeof callback === 'function') {
-          callback(data);
-        }
-        else if(exports.is_array(callback) && callback.length > 0) {
-          exports.step_through(data, callback, obj);
-        }
-      }
-    };
-
-    var fail = function(text) {
-      if(typeof error === 'function') {
-        error(text);
-      }
-    };
-
-    // check XDomainRequest presence first
-    // because newer IE's support XHR object
-    // but without CORS
-    if(window.XDomainRequest) {
-      req = new XDomainRequest();
-      req.open('GET', url+'?'+exports.to_qs(params));
-      req.onerror = fail;
-      req.onload = function() {
-        success(req.responseText);
-      };
-      req.send(null);
-    }
-    else if(window.XMLHttpRequest) {
-      req = new XMLHttpRequest();
-
-      req.open('GET', url+'?'+exports.to_qs(params), true);
-      req.onerror = fail;
-      req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-          if(req.status >= 200 && req.status < 400) {
-            success(req.responseText);
-          }
-          else {
-            fail(new Error('Response returned with non-OK status'));
-          }
-        }
-      };
-      req.send(null);
-    }
-    else {
-      fail(new Error('CORS not supported'));
-    }
-  };
-
-  exports.req.callback_id = function(jsonp_prefix) {
-    return jsonp_prefix;
-  };
-
-  exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
-    var callback_id = exports.req.callback_id(jsonp_prefix);
+  var json_callbacks_counter = 0;
+  globals._json_callbacks = {};
+  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+    var callback_id = jsonp_prefix+(++json_callbacks_counter);
     var fulfilled = false;
     var timeout;
 
@@ -405,7 +343,7 @@ define('helpers',['globals'], function(globals) {
         callback(data);
       }
       else if(exports.is_array(callback) && callback.length > 0) {
-        exports.step_through(data, callback, obj);
+        helpers.step_through(data, callback, obj);
       }
       
       delete globals._json_callbacks[callback_id];
@@ -413,7 +351,7 @@ define('helpers',['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push([globals.jsonp_param, 'massrel._json_callbacks[\''+callback_id+'\']']);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 
@@ -429,20 +367,6 @@ define('helpers',['globals'], function(globals) {
         ld.stop();
       }
     }, globals.timeout);
-  };
-
-  // alias for backwards compatability
-  exports.jsonp_factory = exports.req.jsonp;
-
-  var json_callbacks_counter = 0;
-  globals._json_callbacks = {};
-  exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
-     if(exports.req.supportsCors && exports.req.supportsJSON) {
-       exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
-     }
-     else {
-       exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
-     }
   };
 
   exports.is_array = Array.isArray || function(obj) {
@@ -657,7 +581,7 @@ define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
@@ -787,7 +711,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this._enumerators = [];
     this._bound_enum = false;
     this._t = null;
-
+    
     opts = opts || {};
     this.limit = opts.limit || null;
     this.since_id = opts.since_id || null;
@@ -797,12 +721,10 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.keywords = opts.keywords || null;
     this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
-    this.network = opts.network || null;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
     this.consecutive_errors = 0;
-    this.hail_mary = !!opts.hail_mary;
   }
   Poller.prototype.poke = function(fn) {
     // this method should not be called externally...
@@ -828,10 +750,8 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
-    var hail_mary = this.hail_mary;
-
+    
     var self = this;
-    var sortable_prop = 'queued_at';
     function poll() {
       self.alive = false;
 
@@ -848,64 +768,19 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        if(hail_mary && statuses && statuses.length > 0) {
-          var limit = self.limit || Infinity;
-
-          // only use new statuses
-          // use the 
-          if(self.newest_timestamp) {
-            if(statuses[0][sortable_prop] <= self.newest_timestamp) {
-              // if first/newest item in request is equal or older than
-              // what the poller knows about, then there are no newer
-              // statuses to display
-              statuses = [];
-            }
-            else if(statuses[statuses.length - 1][sortable_prop] > self.newest_timestamp) {
-              // if last/oldest item in request is newer than what the poller knows
-              // then all statuses are new. we only care about making sure
-              // statuses.length <= limit
-              if(statuses.length > limit) {
-                statuses.splice(self.limit, statuses.length - limit);
-              }
-            }
-            else {
-              // the last status the poller knows about is somewhere inside of the
-              // of the requested statuses. grab the statuses that are newer than
-              // what the poller knows about until there are no more statuses OR
-              // we have collecte limit statuses
-              var newerStatuses = [];
-
-              for(var i = 0, len = statuses.length; i < len && newerStatuses.length < limit; i++) {
-                var status = statuses[i];
-                if(status[sortable_prop] > self.newest_timestamp) {
-                  newerStatuses.push(status);
-                }
-                else {
-                  break;
-                }
-              }
-
-              statuses = newerStatuses;
-            }
-          }
-          else if(statuses.length > limit) {
-            statuses.splice(self.limit, statuses.length - limit);
-          }
-        }
-
+        
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
-          self.newest_timestamp = statuses[0][sortable_prop];
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
           }
-
+          
           // invoke all batch handlers on this poller
           for(var i = 0, len = self._callbacks.length; i < len; i++) {
             self._callbacks[i].call(self, statuses); // we might need to pass in a copy of statuses array
           }
-
+          
           // invoke all enumerators on this poller
           helpers.step_through(statuses, self._enumerators, self);
         }
@@ -916,9 +791,9 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       });
 
     }
-
+  
     poll();
-
+    
     return this;
   };
   Poller.prototype.stop = function() {
@@ -966,8 +841,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       limit: this.limit,
       replies: this.replies,
       geo_hint: this.geo_hint,
-      keywords: this.keywords,
-      network: this.network
+      keywords: this.keywords
     }, opts || {});
   };
 
@@ -983,8 +857,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     this.account = args[0];
     this.stream_name = args[1];
 
-    this.hail_mary = true;
-    
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
@@ -997,18 +869,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
-    
-    if(!this.hail_mary) {
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
-    }
-    else {
-      delete opts.since_id;
-      delete opts.from_id;
-      delete opts.start;
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, [this.account, this.stream_name].join('_'), this, fn || this._enumerators, error);
-    }
+
+    var params = this.buildParams(opts);
+    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -1036,9 +899,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
-    if(opts.network) {
-      params.push(['network', opts.network]);
-    }
     return params;
   };
   Stream.prototype.each = function(fn) {
@@ -1046,8 +906,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     return this;
   };
   Stream.prototype.poller = function(opts) {
-    opts = opts || {};
-    opts.hail_mary = this.hail_mary;
     return new Poller(this, opts);
   };
   Stream.prototype.meta = function() {
@@ -1067,7 +925,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
@@ -1102,7 +960,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
       params.push(['finish', opts.finish]);
     }
     if(opts.networks) {
-      params.push(['networks', '1']);
+      params.push(['networks', opts.networks]);
     }
     return params;
   };
@@ -1273,7 +1131,7 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
       streams: this.streams
     }, opts || {}));
 
-    helpers.request_factory(this.compare_url(), params, 'meta_', this, fn, error);
+    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
     return this;
   };
   
@@ -1410,12 +1268,10 @@ define('massrel', [
   massrel.require = require;
   massrel.requirejs = requirejs;
 
-  return massrel;
-});
+  // define API for AMD
+  if(typeof(window.define) === 'function' && typeof(window.define.amd) !== 'undefined') {
+    window.define(massrel);
+  }
 
-// Go ahead and export the 'massrel' module to 'vendor/massrel', as well, since 
-// most places expect it to live there.
-define('vendor/massrel', ['massrel'], function(massrel) {
-  return massrel;
 });
 }());

@@ -27,14 +27,89 @@ define(['globals'], function(globals) {
   };
 
   exports.api_url = function(path, host) {
-    host = host || globals.host;
-    return globals.protocol+'://'+host+path;
+    // A circular dependency has emerged between massrel and helpers.
+    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
+    // be easily resolved w/ require.
+    var host = host || massrel.host,
+        port = massrel.port,
+        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
+
+    return baseUrl + path;
   };
 
-  var json_callbacks_counter = 0;
-  globals._json_callbacks = {};
-  exports.jsonp_factory = function(url, params, jsonp_prefix, obj, callback, error) {
-    var callback_id = jsonp_prefix+(++json_callbacks_counter);
+  exports.req = {};
+  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
+  exports.req.supportsJSON = 'JSON' in window;
+  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
+    var req;
+
+    var success = function(responseText) {
+      var data;
+      var problems = false;
+      try {
+        data = JSON.parse(responseText);
+      }
+      catch(e) {
+        problems = true;
+        fail(new Error('JSON parse error'));
+      }
+
+      if(!problems) {
+        if(typeof callback === 'function') {
+          callback(data);
+        }
+        else if(exports.is_array(callback) && callback.length > 0) {
+          exports.step_through(data, callback, obj);
+        }
+      }
+    };
+
+    var fail = function(text) {
+      if(typeof error === 'function') {
+        error(text);
+      }
+    };
+
+    // check XDomainRequest presence first
+    // because newer IE's support XHR object
+    // but without CORS
+    if(window.XDomainRequest) {
+      req = new XDomainRequest();
+      req.open('GET', url+'?'+exports.to_qs(params));
+      req.onerror = fail;
+      req.onload = function() {
+        success(req.responseText);
+      };
+      req.send(null);
+    }
+    else if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+
+      req.open('GET', url+'?'+exports.to_qs(params), true);
+      req.onerror = fail;
+      req.onreadystatechange = function() {
+        if (req.readyState === 4) {
+          if(req.status >= 200 && req.status < 400) {
+            success(req.responseText);
+          }
+          else {
+            fail(new Error('Response returned with non-OK status'));
+          }
+        }
+      };
+      req.send(null);
+    }
+    else {
+      fail(new Error('CORS not supported'));
+    }
+  };
+
+  exports.req.callback_id = function(jsonp_prefix) {
+    return jsonp_prefix;
+  };
+
+  exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
+    var callback_id = exports.req.callback_id(jsonp_prefix);
     var fulfilled = false;
     var timeout;
 
@@ -43,7 +118,7 @@ define(['globals'], function(globals) {
         callback(data);
       }
       else if(exports.is_array(callback) && callback.length > 0) {
-        helpers.step_through(data, callback, obj);
+        exports.step_through(data, callback, obj);
       }
       
       delete globals._json_callbacks[callback_id];
@@ -51,7 +126,7 @@ define(['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks[\''+callback_id+'\']']);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 
@@ -69,91 +144,18 @@ define(['globals'], function(globals) {
     }, globals.timeout);
   };
 
-  exports.req = {};
-  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
-  exports.req.supportsJSON = 'JSON' in window;
+  // alias for backwards compatability
+  exports.jsonp_factory = exports.req.jsonp;
 
-  exports.req.make = function(url, params, obj, callback, error) {
-    var data = exports.to_qs(params);
-    if(exports.req.supportsCors && exports.req.supportsJSON) {
-      exports.req.xdr(url, 'GET', data, callback, error);
-    }
-    else {
-      exports.req.jsonp(url, data, callback, error);
-    }
-  };
-
-  exports.req.xdr = function(url, method, data, callback, errback) {
-    var req;
-    
-    if(window.XMLHttpRequest) {
-      req = new XMLHttpRequest();
-
-      if('withCredentials' in req) {
-        req.open(method, url, true);
-        req.onerror = errback;
-        req.onreadystatechange = function() {
-          if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-              callback(req.responseText);
-            } else {
-              errback(new Error('Response returned with non-OK status'));
-            }
-          }
-        };
-        req.send(data);
-      }
-    }
-    else if(window.XDomainRequest) {
-      req = new XDomainRequest();
-      req.open(method, url);
-      req.onerror = errback;
-      req.onload = function() {
-        callback(req.responseText);
-      };
-      req.send(data);
-    }
-    else {
-      errback(new Error('CORS not supported'));
-    }
-  };
-
-  exports.req.jsonp = function(url, data, callback, error) {
-    var callback_id = 'massrel_'+jsonp_prefix;
-    var fulfilled = false;
-    var timeout;
-
-    globals._json_callbacks[callback_id] = function(data) {
-      if(typeof callback === 'function') {
-        callback(data);
-      }
-      
-      delete globals._json_callbacks[callback_id];
-
-      fulfilled = true;
-      clearTimeout(timeout);
-    };
-
-    data = data || '';
-    if(data && data.indexOf('&') >=0) {
-      data += '&';
-    }
-    data += _enc(globals.jsonp_param)+'='+_enc('massrel._json_callbacks.'+callback_id)
-
-    var ld = exports.load(url+'?'+data);
-
-    // in 10 seconds if the request hasn't been loaded, cancel request
-    timeout = setTimeout(function() {
-      if(!fulfilled) {
-        globals._json_callbacks[callback_id] = function() {
-          delete globals._json_callbacks[callback_id];
-        };
-        if(typeof error === 'function') {
-          error();
-        }
-        ld.stop();
-      }
-    }, globals.timeout);
+  var json_callbacks_counter = 0;
+  globals._json_callbacks = {};
+  exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+     if(exports.req.supportsCors && exports.req.supportsJSON) {
+       exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
+     }
+     else {
+       exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
+     }
   };
 
   exports.is_array = Array.isArray || function(obj) {
@@ -229,16 +231,22 @@ define(['globals'], function(globals) {
 
   var rx_twitter_date = /\+\d{4} \d{4}$/;
   var rx_fb_date = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+\d{4})$/; // iso8601
+  var rx_normal_date = /^(\d{4})-(\d\d)-(\d\d)T(\d\d)\:(\d\d)\:(\d\d)\.(\d{3})Z$/; // iso8601, no offset
   exports.fix_date = exports.fix_twitter_date = function(date) {
-    if(rx_twitter_date.test(date)) {
+    if (rx_twitter_date.test(date)) {
       date = date.split(' ');
       var year = date.pop();
       date.splice(3, 0, year);
       date = date.join(' ');
     }
-    else if(rx_fb_date.test(date)) {
+    else if (rx_fb_date.test(date)) {
       date = date.replace(rx_fb_date, '$1/$2/$3 $4:$5:$6 $7');
     }
+    else if (rx_normal_date.test(date)) {
+      // IE7/8 can't handle the ISO JavaScript date format, so we convert
+      date = date.replace(rx_normal_date, '$1/$2/$3 $4:$5:$6 +0000');
+    }
+
     return date;
   };
 

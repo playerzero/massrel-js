@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.11.0
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 (function () {
 /**
  * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -391,12 +402,8 @@ define('helpers',['globals'], function(globals) {
     }
   };
 
-  exports.req.callback_id = function(jsonp_prefix) {
-    return jsonp_prefix;
-  };
-
   exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
-    var callback_id = exports.req.callback_id(jsonp_prefix);
+    var callback_id = jsonp_prefix+(++json_callbacks_counter);
     var fulfilled = false;
     var timeout;
 
@@ -413,7 +420,7 @@ define('helpers',['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push([globals.jsonp_param, 'massrel._json_callbacks[\''+callback_id+'\']']);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 
@@ -802,7 +809,6 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.alive = true;
     this.alive_instance = 0;
     this.consecutive_errors = 0;
-    this.hail_mary = !!opts.hail_mary;
   }
   Poller.prototype.poke = function(fn) {
     // this method should not be called externally...
@@ -828,10 +834,8 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
-    var hail_mary = this.hail_mary;
 
     var self = this;
-    var sortable_prop = 'queued_at';
     function poll() {
       self.alive = false;
 
@@ -848,54 +852,9 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        if(hail_mary && statuses && statuses.length > 0) {
-          var limit = self.limit || Infinity;
-
-          // only use new statuses
-          // use the 
-          if(self.newest_timestamp) {
-            if(statuses[0][sortable_prop] <= self.newest_timestamp) {
-              // if first/newest item in request is equal or older than
-              // what the poller knows about, then there are no newer
-              // statuses to display
-              statuses = [];
-            }
-            else if(statuses[statuses.length - 1][sortable_prop] > self.newest_timestamp) {
-              // if last/oldest item in request is newer than what the poller knows
-              // then all statuses are new. we only care about making sure
-              // statuses.length <= limit
-              if(statuses.length > limit) {
-                statuses.splice(self.limit, statuses.length - limit);
-              }
-            }
-            else {
-              // the last status the poller knows about is somewhere inside of the
-              // of the requested statuses. grab the statuses that are newer than
-              // what the poller knows about until there are no more statuses OR
-              // we have collecte limit statuses
-              var newerStatuses = [];
-
-              for(var i = 0, len = statuses.length; i < len && newerStatuses.length < limit; i++) {
-                var status = statuses[i];
-                if(status[sortable_prop] > self.newest_timestamp) {
-                  newerStatuses.push(status);
-                }
-                else {
-                  break;
-                }
-              }
-
-              statuses = newerStatuses;
-            }
-          }
-          else if(statuses.length > limit) {
-            statuses.splice(self.limit, statuses.length - limit);
-          }
-        }
 
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
-          self.newest_timestamp = statuses[0][sortable_prop];
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
@@ -983,8 +942,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     this.account = args[0];
     this.stream_name = args[1];
 
-    this.hail_mary = true;
-    
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
@@ -997,18 +954,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
-    
-    if(!this.hail_mary) {
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
-    }
-    else {
-      delete opts.since_id;
-      delete opts.from_id;
-      delete opts.start;
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, [this.account, this.stream_name].join('_'), this, fn || this._enumerators, error);
-    }
+
+    var params = this.buildParams(opts);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -1046,8 +994,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     return this;
   };
   Stream.prototype.poller = function(opts) {
-    opts = opts || {};
-    opts.hail_mary = this.hail_mary;
     return new Poller(this, opts);
   };
   Stream.prototype.meta = function() {

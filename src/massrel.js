@@ -39,7 +39,7 @@ define('massrel', [
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
-  massrel.CompatePoller = ComparePoller;
+  massrel.ComparePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
 
@@ -48,9 +48,11 @@ define('massrel', [
   massrel.require = require;
   massrel.requirejs = requirejs;
 
-  // define API for AMD
-  if(typeof(window.define) === 'function' && typeof(window.define.amd) !== 'undefined') {
-    window.define(massrel);
-  }
+  return massrel;
+});
 
+// Go ahead and export the 'massrel' module to 'vendor/massrel', as well, since 
+// most places expect it to live there.
+define('vendor/massrel', ['massrel'], function(massrel) {
+  return massrel;
 });

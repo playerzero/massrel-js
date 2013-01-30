@@ -1,282 +1,15 @@
+  /*!
+   * massrel/stream-js 0.11.0
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 (function () {
-/**
- * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
- * Available via the MIT or new BSD license.
- * see: http://github.com/jrburke/almond for details
- */
-/*jslint strict: false, plusplus: false */
-/*global setTimeout: false */
-
-var requirejs, require, define;
-(function (undef) {
-
-    var defined = {},
-        waiting = {},
-        aps = [].slice,
-        main, req;
-
-    if (typeof define === "function") {
-        //If a define is already in play via another AMD loader,
-        //do not overwrite.
-        return;
-    }
-
-    /**
-     * Given a relative module name, like ./something, normalize it to
-     * a real name that can be mapped to a path.
-     * @param {String} name the relative name
-     * @param {String} baseName a real name that the name arg is relative
-     * to.
-     * @returns {String} normalized name
-     */
-    function normalize(name, baseName) {
-        //Adjust any relative paths.
-        if (name && name.charAt(0) === ".") {
-            //If have a base name, try to normalize against it,
-            //otherwise, assume it is a top-level require that will
-            //be relative to baseUrl in the end.
-            if (baseName) {
-                //Convert baseName to array, and lop off the last part,
-                //so that . matches that "directory" and not name of the baseName's
-                //module. For instance, baseName of "one/two/three", maps to
-                //"one/two/three.js", but we want the directory, "one/two" for
-                //this normalization.
-                baseName = baseName.split("/");
-                baseName = baseName.slice(0, baseName.length - 1);
-
-                name = baseName.concat(name.split("/"));
-
-                //start trimDots
-                var i, part;
-                for (i = 0; (part = name[i]); i++) {
-                    if (part === ".") {
-                        name.splice(i, 1);
-                        i -= 1;
-                    } else if (part === "..") {
-                        if (i === 1 && (name[2] === '..' || name[0] === '..')) {
-                            //End of the line. Keep at least one non-dot
-                            //path segment at the front so it can be mapped
-                            //correctly to disk. Otherwise, there is likely
-                            //no path mapping for a path starting with '..'.
-                            //This can still fail, but catches the most reasonable
-                            //uses of ..
-                            break;
-                        } else if (i > 0) {
-                            name.splice(i - 1, 2);
-                            i -= 2;
-                        }
-                    }
-                }
-                //end trimDots
-
-                name = name.join("/");
-            }
-        }
-        return name;
-    }
-
-    function makeRequire(relName, forceSync) {
-        return function () {
-            //A version of a require function that passes a moduleName
-            //value for items that may need to
-            //look up paths relative to the moduleName
-            return req.apply(undef, aps.call(arguments, 0).concat([relName, forceSync]));
-        };
-    }
-
-    function makeNormalize(relName) {
-        return function (name) {
-            return normalize(name, relName);
-        };
-    }
-
-    function makeLoad(depName) {
-        return function (value) {
-            defined[depName] = value;
-        };
-    }
-
-    function callDep(name) {
-        if (waiting.hasOwnProperty(name)) {
-            var args = waiting[name];
-            delete waiting[name];
-            main.apply(undef, args);
-        }
-        return defined[name];
-    }
-
-    /**
-     * Makes a name map, normalizing the name, and using a plugin
-     * for normalization if necessary. Grabs a ref to plugin
-     * too, as an optimization.
-     */
-    function makeMap(name, relName) {
-        var prefix, plugin,
-            index = name.indexOf('!');
-
-        if (index !== -1) {
-            prefix = normalize(name.slice(0, index), relName);
-            name = name.slice(index + 1);
-            plugin = callDep(prefix);
-
-            //Normalize according
-            if (plugin && plugin.normalize) {
-                name = plugin.normalize(name, makeNormalize(relName));
-            } else {
-                name = normalize(name, relName);
-            }
-        } else {
-            name = normalize(name, relName);
-        }
-
-        //Using ridiculous property names for space reasons
-        return {
-            f: prefix ? prefix + '!' + name : name, //fullName
-            n: name,
-            p: plugin
-        };
-    }
-
-    main = function (name, deps, callback, relName) {
-        var args = [],
-            usingExports,
-            cjsModule, depName, i, ret, map;
-
-        //Use name if no relName
-        if (!relName) {
-            relName = name;
-        }
-
-        //Call the callback to define the module, if necessary.
-        if (typeof callback === 'function') {
-
-            //Default to require, exports, module if no deps if
-            //the factory arg has any arguments specified.
-            if (!deps.length && callback.length) {
-                deps = ['require', 'exports', 'module'];
-            }
-
-            //Pull out the defined dependencies and pass the ordered
-            //values to the callback.
-            for (i = 0; i < deps.length; i++) {
-                map = makeMap(deps[i], relName);
-                depName = map.f;
-
-                //Fast path CommonJS standard dependencies.
-                if (depName === "require") {
-                    args[i] = makeRequire(name);
-                } else if (depName === "exports") {
-                    //CommonJS module spec 1.1
-                    args[i] = defined[name] = {};
-                    usingExports = true;
-                } else if (depName === "module") {
-                    //CommonJS module spec 1.1
-                    cjsModule = args[i] = {
-                        id: name,
-                        uri: '',
-                        exports: defined[name]
-                    };
-                } else if (defined.hasOwnProperty(depName) || waiting.hasOwnProperty(depName)) {
-                    args[i] = callDep(depName);
-                } else if (map.p) {
-                    map.p.load(map.n, makeRequire(relName, true), makeLoad(depName), {});
-                    args[i] = defined[depName];
-                } else {
-                    throw name + ' missing ' + depName;
-                }
-            }
-
-            ret = callback.apply(defined[name], args);
-
-            if (name) {
-                //If setting exports via "module" is in play,
-                //favor that over return value and exports. After that,
-                //favor a non-undefined return value over exports use.
-                if (cjsModule && cjsModule.exports !== undef) {
-                    defined[name] = cjsModule.exports;
-                } else if (!usingExports) {
-                    //Use the return value from the function.
-                    defined[name] = ret;
-                }
-            }
-        } else if (name) {
-            //May just be an object definition for the module. Only
-            //worry about defining if have a module name.
-            defined[name] = callback;
-        }
-    };
-
-    requirejs = req = function (deps, callback, relName, forceSync) {
-        if (typeof deps === "string") {
-
-            //Just return the module wanted. In this scenario, the
-            //deps arg is the module name, and second arg (if passed)
-            //is just the relName.
-            //Normalize module name, if it contains . or ..
-            return callDep(makeMap(deps, callback).f);
-        } else if (!deps.splice) {
-            //deps is a config object, not an array.
-            //Drop the config stuff on the ground.
-            if (callback.splice) {
-                //callback is an array, which means it is a dependency list.
-                //Adjust args if there are dependencies
-                deps = callback;
-                callback = arguments[2];
-            } else {
-                deps = [];
-            }
-        }
-
-        //Simulate async callback;
-        if (forceSync) {
-            main(undef, deps, callback, relName);
-        } else {
-            setTimeout(function () {
-                main(undef, deps, callback, relName);
-            }, 15);
-        }
-
-        return req;
-    };
-
-    /**
-     * Just drops the config on the floor, but returns req in case
-     * the config return value is used.
-     */
-    req.config = function () {
-        return req;
-    };
-
-    /**
-     * Export require as a global, but only if it does not already exist.
-     */
-    if (!require) {
-        require = req;
-    }
-
-    define = function (name, deps, callback) {
-
-        //This module may not have dependencies
-        if (!deps.splice) {
-            //deps is not an array, so probably means
-            //an object literal or factory function for
-            //the value. Adjust args.
-            callback = deps;
-            deps = [];
-        }
-
-        if (define.unordered) {
-            waiting[name] = [name, deps, callback];
-        } else {
-            main(name, deps, callback);
-        }
-    };
-
-    define.amd = {
-        jQuery: true
-    };
-}());
-
 define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
@@ -391,12 +124,8 @@ define('helpers',['globals'], function(globals) {
     }
   };
 
-  exports.req.callback_id = function(jsonp_prefix) {
-    return jsonp_prefix;
-  };
-
   exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
-    var callback_id = exports.req.callback_id(jsonp_prefix);
+    var callback_id = jsonp_prefix+(++json_callbacks_counter);
     var fulfilled = false;
     var timeout;
 
@@ -413,7 +142,7 @@ define('helpers',['globals'], function(globals) {
       fulfilled = true;
       clearTimeout(timeout);
     };
-    params.push([globals.jsonp_param, 'massrel._json_callbacks[\''+callback_id+'\']']);
+    params.push([globals.jsonp_param, 'massrel._json_callbacks.'+callback_id]);
 
     var ld = exports.load(url + '?' + exports.to_qs(params));
 
@@ -802,7 +531,6 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.alive = true;
     this.alive_instance = 0;
     this.consecutive_errors = 0;
-    this.hail_mary = !!opts.hail_mary;
   }
   Poller.prototype.poke = function(fn) {
     // this method should not be called externally...
@@ -828,10 +556,8 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     }
     this.enabled = true;
     var instance_id = this.alive_instance = this.alive_instance + 1;
-    var hail_mary = this.hail_mary;
 
     var self = this;
-    var sortable_prop = 'queued_at';
     function poll() {
       self.alive = false;
 
@@ -848,54 +574,9 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       self.stream.load(self.params(load_opts), function(statuses) {
         self.alive = true;
         self.consecutive_errors = 0;
-        if(hail_mary && statuses && statuses.length > 0) {
-          var limit = self.limit || Infinity;
-
-          // only use new statuses
-          // use the 
-          if(self.newest_timestamp) {
-            if(statuses[0][sortable_prop] <= self.newest_timestamp) {
-              // if first/newest item in request is equal or older than
-              // what the poller knows about, then there are no newer
-              // statuses to display
-              statuses = [];
-            }
-            else if(statuses[statuses.length - 1][sortable_prop] > self.newest_timestamp) {
-              // if last/oldest item in request is newer than what the poller knows
-              // then all statuses are new. we only care about making sure
-              // statuses.length <= limit
-              if(statuses.length > limit) {
-                statuses.splice(self.limit, statuses.length - limit);
-              }
-            }
-            else {
-              // the last status the poller knows about is somewhere inside of the
-              // of the requested statuses. grab the statuses that are newer than
-              // what the poller knows about until there are no more statuses OR
-              // we have collecte limit statuses
-              var newerStatuses = [];
-
-              for(var i = 0, len = statuses.length; i < len && newerStatuses.length < limit; i++) {
-                var status = statuses[i];
-                if(status[sortable_prop] > self.newest_timestamp) {
-                  newerStatuses.push(status);
-                }
-                else {
-                  break;
-                }
-              }
-
-              statuses = newerStatuses;
-            }
-          }
-          else if(statuses.length > limit) {
-            statuses.splice(self.limit, statuses.length - limit);
-          }
-        }
 
         if(statuses && statuses.length > 0) {
           self.since_id = statuses[0].entity_id;
-          self.newest_timestamp = statuses[0][sortable_prop];
 
           if(!self.start_id) { // grab last item ID if it has not been set
             self.start_id = statuses[statuses.length - 1].entity_id;
@@ -983,8 +664,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     this.account = args[0];
     this.stream_name = args[1];
 
-    this.hail_mary = true;
-    
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
@@ -997,18 +676,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
-    
-    if(!this.hail_mary) {
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
-    }
-    else {
-      delete opts.since_id;
-      delete opts.from_id;
-      delete opts.start;
-      var params = this.buildParams(opts);
-      helpers.request_factory(this.stream_url(), params, [this.account, this.stream_name].join('_'), this, fn || this._enumerators, error);
-    }
+
+    var params = this.buildParams(opts);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -1046,8 +716,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     return this;
   };
   Stream.prototype.poller = function(opts) {
-    opts = opts || {};
-    opts.hail_mary = this.hail_mary;
     return new Poller(this, opts);
   };
   Stream.prototype.meta = function() {

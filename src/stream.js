@@ -3,7 +3,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
 
   function Stream() {
     var args = arguments.length === 1 ? arguments[0].split('/') : arguments;
-    
+
     this.account = args[0];
     this.stream_name = args[1];
 
@@ -12,8 +12,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     this._enumerators = [];
   }
   Stream.prototype.stream_url = function() {
-    var host = this.hail_mary ? 'cdntest.api.massrelevance.com' : null;
-    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json', host);
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'.json');
   };
   Stream.prototype.meta_url = function() {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
@@ -25,16 +24,15 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     
     if(!this.hail_mary) {
       var params = this.buildParams(opts);
-      helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+      helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
     }
     else {
       delete opts.since_id;
       delete opts.from_id;
       delete opts.start;
       var params = this.buildParams(opts);
-      helpers.req.make(this.stream_url(), params, this._enumerators, error);
+      helpers.request_factory(this.stream_url(), params, [this.account, this.stream_name].join('_'), this, fn || this._enumerators, error);
     }
-
 
     return this;
   };
@@ -62,6 +60,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
+    if(opts.network) {
+      params.push(['network', opts.network]);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {
@@ -69,6 +70,8 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     return this;
   };
   Stream.prototype.poller = function(opts) {
+    opts = opts || {};
+    opts.hail_mary = this.hail_mary;
     return new Poller(this, opts);
   };
   Stream.prototype.meta = function() {
@@ -86,10 +89,10 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     else {
       throw new Error('incorrect arguments');
     }
-    
+
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
-    
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
+
     return this;
   };
   Stream.prototype.buildMetaParams = function(opts) {
@@ -121,6 +124,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     }
     if(opts.finish) {
       params.push(['finish', opts.finish]);
+    }
+    if(opts.networks) {
+      params.push(['networks', '1']);
     }
     return params;
   };
