@@ -1,19 +1,26 @@
+task :default => [:build]
+
 task :build do
   cd "src"
-  sh "node ../build/r.js -o baseUrl=. name=almond.js include=massrel out=../massrel.js wrap=true optimize=none"
-  sh "node ../build/r.js -o baseUrl=. name=almond.js include=massrel out=../massrel.min.js wrap=true"
+  sh "node ../build/r.js -o ../build/build.js out=../massrel.js optimize=none"
+  sh "node ../build/r.js -o ../build/build.js out=../massrel.min.js"
+  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.js optimize=none"
+  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.min.js"
+
 end
 
-task :package, [:version] => [:pkg] do |t, args|
-  ["massrel.js", "massrel.min.js"].each do |inpath|
-    pkg_name = inpath.gsub(".js", ".#{args.version}.js")
-    puts "Building #{pkg_name}..."
+task :package, [:version] => [:pkg, :build] do |t, args|
 
-    pkg_file = File.open(File.join(File.dirname(__FILE__), "pkg", pkg_name), "w")
+  def write_pkg_file(filename, dir, version)
+    pkg_name = filename.gsub(".js", "." + version + ".js")
+    pkg_file = File.open(File.join(dir, pkg_name), "w")
+
+    puts "Building #{pkg_name}..."
     puts "Writing header..."
+
     header_comment = <<-COMMENT
   /*!
-   * massrel/stream-js #{args.version}
+   * massrel/stream-js #{version}
    *
    * Copyright 2012 Mass Relevance
    *
@@ -27,7 +34,8 @@ task :package, [:version] => [:pkg] do |t, args|
     pkg_file.write(header_comment)
 
     puts "Writing library..."
-    js_file = File.open(File.join(File.dirname(__FILE__), inpath), "r")
+    puts filename
+    js_file = File.open(File.join(File.dirname(__FILE__), filename), "r")
     pkg_file.write(js_file.read)
     js_file.close
 
@@ -35,4 +43,16 @@ task :package, [:version] => [:pkg] do |t, args|
 
     puts "Done with #{pkg_name}"
   end
+
+
+  pkg_dir = File.join(File.dirname(__FILE__), "pkg")
+
+  ["massrel.js", "massrel.min.js"].each do |inpath|
+    write_pkg_file(inpath, pkg_dir, args.version)
+  end
+
+  ["massrel.internal.js", "massrel.internal.min.js"].each do |inpath|
+    write_pkg_file(inpath, File.join(pkg_dir, "internal"), args.version)
+  end
 end
+

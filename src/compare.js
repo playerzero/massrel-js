@@ -41,7 +41,7 @@ define(['helpers', 'compare_poller'], function(helpers, ComparePoller) {
       streams: this.streams
     }, opts || {}));
 
-    helpers.jsonp_factory(this.compare_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.compare_url(), params, 'meta_', this, fn, error);
     return this;
   };
   
