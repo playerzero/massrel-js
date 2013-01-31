@@ -144,6 +144,9 @@ define(['globals'], function(globals) {
   var rx_fb_date = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+\d{4})$/; // iso8601
   var rx_normal_date = /^(\d{4})-(\d\d)-(\d\d)T(\d\d)\:(\d\d)\:(\d\d)\.(\d{3})Z$/; // iso8601, no offset
   exports.fix_date = exports.fix_twitter_date = function(date) {
+    // ensure we're dealing with a string, not a Date object
+    date = date.toString();
+
     if (rx_twitter_date.test(date)) {
       date = date.split(' ');
       var year = date.pop();
