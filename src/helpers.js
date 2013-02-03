@@ -77,6 +77,8 @@ define(['globals'], function(globals) {
       req = new XDomainRequest();
       req.open('GET', url+'?'+exports.to_qs(params));
       req.onerror = fail;
+      req.onprogress = function(){ };
+      req.ontimeout = function(){ };
       req.onload = function() {
         success(req.responseText);
       };
