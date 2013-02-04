@@ -52,6 +52,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.network) {
       params.push(['network', opts.network]);
     }
+    if(opts.timeline_search) {
+      params.push(['timeline_search', '1']);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {

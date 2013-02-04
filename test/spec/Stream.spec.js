@@ -44,6 +44,7 @@ describe('Stream', function() {
     testParam({ geo_hint: true }, 'geo_hint', '1');
     testParam({ keywords: 'blah, 2, 3' }, 'keywords', 'blah, 2, 3');
     testParam({ network: 'instagram' }, 'network', 'instagram');
+    testParam({ timeline_search: true }, 'timeline_search', '1');
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
