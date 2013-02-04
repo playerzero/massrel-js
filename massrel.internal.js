@@ -521,6 +521,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.network = opts.network || null;
+    this.timeline_search = !!opts.timeline_search;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -642,7 +643,8 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       replies: this.replies,
       geo_hint: this.geo_hint,
       keywords: this.keywords,
-      network: this.network
+      network: this.network,
+      timeline_search: this.tiemline_search
     }, opts || {});
   };
 
@@ -702,6 +704,9 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.network) {
       params.push(['network', opts.network]);
+    }
+    if(opts.timeline_search) {
+      params.push(['timeline_search', '1']);
     }
     return params;
   };
