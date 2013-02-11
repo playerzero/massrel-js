@@ -4,8 +4,6 @@ task :build do
   cd "src"
   sh "node ../build/r.js -o ../build/build.js out=../massrel.js optimize=none"
   sh "node ../build/r.js -o ../build/build.js out=../massrel.min.js"
-  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.js optimize=none"
-  sh "node ../build/r.js -o ../build/internal.build.js out=../massrel.internal.min.js"
 
 end
 
@@ -49,10 +47,6 @@ task :package, [:version] => [:pkg, :build] do |t, args|
 
   ["massrel.js", "massrel.min.js"].each do |inpath|
     write_pkg_file(inpath, pkg_dir, args.version)
-  end
-
-  ["massrel.internal.js", "massrel.internal.min.js"].each do |inpath|
-    write_pkg_file(inpath, File.join(pkg_dir, "internal"), args.version)
   end
 end
 
