@@ -9,7 +9,8 @@
    *
    *    http://www.apache.org/licenses/LICENSE-2.0
    */
-(function () {
+;(function() {
+
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
 massreljs = {};
 /**
@@ -1490,21 +1491,15 @@ massreljs.define('massrel', [
   massrel.helpers = helpers;
   massrel.intents = intents;
 
-  // require/AMD methods
-  massrel.define = define;
-  massrel.require = require;
-  massrel.requirejs = requirejs;
+  // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
+  if(typeof window.define === 'function') {
+    window.define('massrel', massrel);
+    window.define('vendor/massrel', massrel);
+  }
 
   return massrel;
 });
+// call massrel module
+massreljs.require('massrel');
 
-// If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
-if (typeof window.define === 'function') {
-  window.define('massrel', function() {
-    return massreljs.require('massrel');
-  });
-
-  window.define('vendor/massrel', function() {
-    return massreljs.require('massrel');
-  });
-};}());
+})();

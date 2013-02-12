@@ -12,6 +12,8 @@
 
   include: "massrel",
 
+  namespace: 'massreljs',
+
   skipModuleInsertion: true,
 
   wrap: {

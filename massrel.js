@@ -1,5 +1,7 @@
 ;(function() {
 
+var massreljs;(function () { if (typeof massreljs === 'undefined') {
+massreljs = {};
 /**
  * almond 0.2.4 Copyright (c) 2011-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
@@ -402,7 +404,10 @@ var requirejs, require, define;
     jQuery: true
   };
 }());
-define('globals',{
+massreljs.requirejs = requirejs;massreljs.require = require;massreljs.define = define;
+}
+}());
+massreljs.define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
 , protocol: document.location.protocol === 'https:' ? 'https' : 'http'
@@ -410,7 +415,7 @@ define('globals',{
 , jsonp_param: 'jsonp'
 });
 
-define('helpers',['globals'], function(globals) {
+massreljs.define('helpers',['globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -701,7 +706,7 @@ define('helpers',['globals'], function(globals) {
   return exports;
 });
 
-define('poller_queue',['helpers'], function(helpers) {
+massreljs.define('poller_queue',['helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
     this.poller = poller;
@@ -795,7 +800,7 @@ define('poller_queue',['helpers'], function(helpers) {
   return PollerQueue;
 });
 
-define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
+massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
   function Poller(stream, opts) {
     this.stream = stream;
@@ -944,7 +949,7 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
   return Poller;
 });
 
-define('meta_poller',['helpers'], function(helpers) {
+massreljs.define('meta_poller',['helpers'], function(helpers) {
 
   function MetaPoller(object, opts) {
     var self = this
@@ -1000,7 +1005,7 @@ define('meta_poller',['helpers'], function(helpers) {
 });
 
 
-define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
+massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -1130,7 +1135,7 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
 
 });
 
-define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
+massreljs.define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
@@ -1184,7 +1189,7 @@ define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   return Account;
 });
 
-define('context',['helpers'], function(helpers) {
+massreljs.define('context',['helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
@@ -1243,7 +1248,7 @@ define('context',['helpers'], function(helpers) {
   return Context;
 });
 
-define('compare_poller',['helpers'], function(helpers) {
+massreljs.define('compare_poller',['helpers'], function(helpers) {
   function ComparePoller(object, opts) {
     var self = this,
         fetch = function () {
@@ -1300,7 +1305,7 @@ define('compare_poller',['helpers'], function(helpers) {
   return ComparePoller;
 });
 
-define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
+massreljs.define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
   function Compare(streams) {
     if(helpers.is_array(streams)) {
       // keep a copy of the array
@@ -1354,7 +1359,7 @@ define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller)
   return Compare;
 });
 
-define('intents',['helpers'], function(helpers) {
+massreljs.define('intents',['helpers'], function(helpers) {
 
   var intents = {
     base_url: 'https://twitter.com/intent/',
@@ -1430,7 +1435,7 @@ define('intents',['helpers'], function(helpers) {
   return intents;
 });
 
-define('massrel', [
+massreljs.define('massrel', [
          'globals'
        , 'helpers'
        , 'stream'
@@ -1484,6 +1489,6 @@ define('massrel', [
   return massrel;
 });
 // call massrel module
-require('massrel');
+massreljs.require('massrel');
 
 })();

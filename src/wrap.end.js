@@ -1,4 +1,4 @@
 // call massrel module
-require('massrel');
+massreljs.require('massrel');
 
 })();
