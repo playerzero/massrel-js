@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.12.0
+
+* Moved back to single built file, rather than internal/external builds.
+* Almond.js updated to latest stable version.
+
 ## v0.11.1
 
 * Cast all `fix_date` inputs to strings to resolve IE issues (ec390e725d)
