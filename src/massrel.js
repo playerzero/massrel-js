@@ -43,16 +43,11 @@ define('massrel', [
   massrel.helpers = helpers;
   massrel.intents = intents;
 
+  // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
+  if(typeof window.define === 'function') {
+    window.define('massrel', massrel);
+    window.define('vendor/massrel', massrel);
+  }
+
   return massrel;
 });
-
-// If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
-if (typeof window.define === 'function') {
-  window.define('massrel', function() {
-    return massreljs.require('massrel');
-  });
-
-  window.define('vendor/massrel', function() {
-    return massreljs.require('massrel');
-  });
-}

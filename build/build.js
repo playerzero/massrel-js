@@ -10,11 +10,12 @@
 
   name: "almond",
 
-  include: ["massrel"],
-
-  insertRequire: ["massrel"],
+  include: "massrel",
 
   skipModuleInsertion: true,
 
-  wrap: true
+  wrap: {
+    startFile: "../src/wrap.start.js",
+    endFile: "../src/wrap.end.js"
+  }
 })
