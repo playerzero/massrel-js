@@ -10,9 +10,9 @@
 
   name: "almond",
 
-  include: "massrel",
+  include: ["massrel"],
 
-  namespace: 'massreljs',
+  insertRequire: ["massrel"],
 
   skipModuleInsertion: true,
 
