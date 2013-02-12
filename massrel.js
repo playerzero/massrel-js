@@ -1,6 +1,5 @@
-(function () {
-var massreljs;(function () { if (typeof massreljs === 'undefined') {
-massreljs = {};
+;(function() {
+
 /**
  * almond 0.2.4 Copyright (c) 2011-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
@@ -403,10 +402,7 @@ var requirejs, require, define;
     jQuery: true
   };
 }());
-massreljs.requirejs = requirejs;massreljs.require = require;massreljs.define = define;
-}
-}());
-massreljs.define('globals',{
+define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
 , protocol: document.location.protocol === 'https:' ? 'https' : 'http'
@@ -414,7 +410,7 @@ massreljs.define('globals',{
 , jsonp_param: 'jsonp'
 });
 
-massreljs.define('helpers',['globals'], function(globals) {
+define('helpers',['globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -705,7 +701,7 @@ massreljs.define('helpers',['globals'], function(globals) {
   return exports;
 });
 
-massreljs.define('poller_queue',['helpers'], function(helpers) {
+define('poller_queue',['helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
     this.poller = poller;
@@ -799,7 +795,7 @@ massreljs.define('poller_queue',['helpers'], function(helpers) {
   return PollerQueue;
 });
 
-massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
+define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
 
   function Poller(stream, opts) {
     this.stream = stream;
@@ -948,7 +944,7 @@ massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQ
   return Poller;
 });
 
-massreljs.define('meta_poller',['helpers'], function(helpers) {
+define('meta_poller',['helpers'], function(helpers) {
 
   function MetaPoller(object, opts) {
     var self = this
@@ -1004,7 +1000,7 @@ massreljs.define('meta_poller',['helpers'], function(helpers) {
 });
 
 
-massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
+define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -1134,7 +1130,7 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers
 
 });
 
-massreljs.define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
+define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
@@ -1188,7 +1184,7 @@ massreljs.define('account',['helpers', 'meta_poller'], function(helpers, MetaPol
   return Account;
 });
 
-massreljs.define('context',['helpers'], function(helpers) {
+define('context',['helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
@@ -1247,7 +1243,7 @@ massreljs.define('context',['helpers'], function(helpers) {
   return Context;
 });
 
-massreljs.define('compare_poller',['helpers'], function(helpers) {
+define('compare_poller',['helpers'], function(helpers) {
   function ComparePoller(object, opts) {
     var self = this,
         fetch = function () {
@@ -1304,7 +1300,7 @@ massreljs.define('compare_poller',['helpers'], function(helpers) {
   return ComparePoller;
 });
 
-massreljs.define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
+define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
   function Compare(streams) {
     if(helpers.is_array(streams)) {
       // keep a copy of the array
@@ -1358,7 +1354,7 @@ massreljs.define('compare',['helpers', 'compare_poller'], function(helpers, Comp
   return Compare;
 });
 
-massreljs.define('intents',['helpers'], function(helpers) {
+define('intents',['helpers'], function(helpers) {
 
   var intents = {
     base_url: 'https://twitter.com/intent/',
@@ -1434,7 +1430,7 @@ massreljs.define('intents',['helpers'], function(helpers) {
   return intents;
 });
 
-massreljs.define('massrel', [
+define('massrel', [
          'globals'
        , 'helpers'
        , 'stream'
@@ -1479,21 +1475,15 @@ massreljs.define('massrel', [
   massrel.helpers = helpers;
   massrel.intents = intents;
 
-  // require/AMD methods
-  massrel.define = define;
-  massrel.require = require;
-  massrel.requirejs = requirejs;
+  // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
+  if(typeof window.define === 'function') {
+    window.define('massrel', massrel);
+    window.define('vendor/massrel', massrel);
+  }
 
   return massrel;
 });
+// call massrel module
+require('massrel');
 
-// If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
-if (typeof window.define === 'function') {
-  window.define('massrel', function() {
-    return massreljs.require('massrel');
-  });
-
-  window.define('vendor/massrel', function() {
-    return massreljs.require('massrel');
-  });
-};}());
+})();
