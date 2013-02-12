@@ -1,428 +1,293 @@
+  /*!
+   * massrel/stream-js 0.11.1
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 (function () {
 /**
- * almond 0.2.4 Copyright (c) 2011-2012, The Dojo Foundation All Rights Reserved.
+ * almond 0.0.3 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/almond for details
  */
-//Going sloppy to avoid 'use strict' string cost, but strict practices should
-//be followed.
-/*jslint sloppy: true */
+/*jslint strict: false, plusplus: false */
 /*global setTimeout: false */
 
-// BEGIN Mass Relevance Patch
-// removed `requirejs`, `require`, `define` so we don't always blindly expose them
-// END Mass Relevance Patch
-
+var requirejs, require, define;
 (function (undef) {
-  var main, req, makeMap, handlers,
-    defined = {},
-    waiting = {},
-    config = {},
-    defining = {},
-    hasOwn = Object.prototype.hasOwnProperty,
-    aps = [].slice,
-    // BEGIN Mass Relevance Patch
-    // Only expose these if we actually need to shim the module loader
-    requirejs, require, define;
-    // BEGIN Mass Relevance Patch
 
+    var defined = {},
+        waiting = {},
+        aps = [].slice,
+        main, req;
 
-  // BEGIN Mass Relevance Patch
-  // If there's another AMD loader, use that one, rather than shimming the module loader w/ almond.
-  if (typeof window.define === 'function') {
-    return;
-  }
-  // END Mass Relevance Patch
+    if (typeof define === "function") {
+        //If a define is already in play via another AMD loader,
+        //do not overwrite.
+        return;
+    }
 
-  function hasProp(obj, prop) {
-    return hasOwn.call(obj, prop);
-  }
+    /**
+     * Given a relative module name, like ./something, normalize it to
+     * a real name that can be mapped to a path.
+     * @param {String} name the relative name
+     * @param {String} baseName a real name that the name arg is relative
+     * to.
+     * @returns {String} normalized name
+     */
+    function normalize(name, baseName) {
+        //Adjust any relative paths.
+        if (name && name.charAt(0) === ".") {
+            //If have a base name, try to normalize against it,
+            //otherwise, assume it is a top-level require that will
+            //be relative to baseUrl in the end.
+            if (baseName) {
+                //Convert baseName to array, and lop off the last part,
+                //so that . matches that "directory" and not name of the baseName's
+                //module. For instance, baseName of "one/two/three", maps to
+                //"one/two/three.js", but we want the directory, "one/two" for
+                //this normalization.
+                baseName = baseName.split("/");
+                baseName = baseName.slice(0, baseName.length - 1);
 
-  /**
-   * Given a relative module name, like ./something, normalize it to
-   * a real name that can be mapped to a path.
-   * @param {String} name the relative name
-   * @param {String} baseName a real name that the name arg is relative
-   * to.
-   * @returns {String} normalized name
-   */
-  function normalize(name, baseName) {
-    var nameParts, nameSegment, mapValue, foundMap,
-      foundI, foundStarMap, starI, i, j, part,
-      baseParts = baseName && baseName.split("/"),
-      map = config.map,
-      starMap = (map && map['*']) || {};
+                name = baseName.concat(name.split("/"));
 
-    //Adjust any relative paths.
-    if (name && name.charAt(0) === ".") {
-      //If have a base name, try to normalize against it,
-      //otherwise, assume it is a top-level require that will
-      //be relative to baseUrl in the end.
-      if (baseName) {
-        //Convert baseName to array, and lop off the last part,
-        //so that . matches that "directory" and not name of the baseName's
-        //module. For instance, baseName of "one/two/three", maps to
-        //"one/two/three.js", but we want the directory, "one/two" for
-        //this normalization.
-        baseParts = baseParts.slice(0, baseParts.length - 1);
+                //start trimDots
+                var i, part;
+                for (i = 0; (part = name[i]); i++) {
+                    if (part === ".") {
+                        name.splice(i, 1);
+                        i -= 1;
+                    } else if (part === "..") {
+                        if (i === 1 && (name[2] === '..' || name[0] === '..')) {
+                            //End of the line. Keep at least one non-dot
+                            //path segment at the front so it can be mapped
+                            //correctly to disk. Otherwise, there is likely
+                            //no path mapping for a path starting with '..'.
+                            //This can still fail, but catches the most reasonable
+                            //uses of ..
+                            break;
+                        } else if (i > 0) {
+                            name.splice(i - 1, 2);
+                            i -= 2;
+                        }
+                    }
+                }
+                //end trimDots
 
-        name = baseParts.concat(name.split("/"));
-
-        //start trimDots
-        for (i = 0; i < name.length; i += 1) {
-          part = name[i];
-          if (part === ".") {
-            name.splice(i, 1);
-            i -= 1;
-          } else if (part === "..") {
-            if (i === 1 && (name[2] === '..' || name[0] === '..')) {
-              //End of the line. Keep at least one non-dot
-              //path segment at the front so it can be mapped
-              //correctly to disk. Otherwise, there is likely
-              //no path mapping for a path starting with '..'.
-              //This can still fail, but catches the most reasonable
-              //uses of ..
-              break;
-            } else if (i > 0) {
-              name.splice(i - 1, 2);
-              i -= 2;
+                name = name.join("/");
             }
-          }
         }
-        //end trimDots
-
-        name = name.join("/");
-      } else if (name.indexOf('./') === 0) {
-        // No baseName, so this is ID is resolved relative
-        // to baseUrl, pull off the leading dot.
-        name = name.substring(2);
-      }
+        return name;
     }
 
-    //Apply map config if available.
-    if ((baseParts || starMap) && map) {
-      nameParts = name.split('/');
+    function makeRequire(relName, forceSync) {
+        return function () {
+            //A version of a require function that passes a moduleName
+            //value for items that may need to
+            //look up paths relative to the moduleName
+            return req.apply(undef, aps.call(arguments, 0).concat([relName, forceSync]));
+        };
+    }
 
-      for (i = nameParts.length; i > 0; i -= 1) {
-        nameSegment = nameParts.slice(0, i).join("/");
+    function makeNormalize(relName) {
+        return function (name) {
+            return normalize(name, relName);
+        };
+    }
 
-        if (baseParts) {
-          //Find the longest baseName segment match in the config.
-          //So, do joins on the biggest to smallest lengths of baseParts.
-          for (j = baseParts.length; j > 0; j -= 1) {
-            mapValue = map[baseParts.slice(0, j).join('/')];
+    function makeLoad(depName) {
+        return function (value) {
+            defined[depName] = value;
+        };
+    }
 
-            //baseName segment has  config, find if it has one for
-            //this name.
-            if (mapValue) {
-              mapValue = mapValue[nameSegment];
-              if (mapValue) {
-                //Match, update name to the new value.
-                foundMap = mapValue;
-                foundI = i;
-                break;
-              }
+    function callDep(name) {
+        if (waiting.hasOwnProperty(name)) {
+            var args = waiting[name];
+            delete waiting[name];
+            main.apply(undef, args);
+        }
+        return defined[name];
+    }
+
+    /**
+     * Makes a name map, normalizing the name, and using a plugin
+     * for normalization if necessary. Grabs a ref to plugin
+     * too, as an optimization.
+     */
+    function makeMap(name, relName) {
+        var prefix, plugin,
+            index = name.indexOf('!');
+
+        if (index !== -1) {
+            prefix = normalize(name.slice(0, index), relName);
+            name = name.slice(index + 1);
+            plugin = callDep(prefix);
+
+            //Normalize according
+            if (plugin && plugin.normalize) {
+                name = plugin.normalize(name, makeNormalize(relName));
+            } else {
+                name = normalize(name, relName);
             }
-          }
-        }
-
-        if (foundMap) {
-          break;
-        }
-
-        //Check for a star map match, but just hold on to it,
-        //if there is a shorter segment match later in a matching
-        //config, then favor over this star map.
-        if (!foundStarMap && starMap && starMap[nameSegment]) {
-          foundStarMap = starMap[nameSegment];
-          starI = i;
-        }
-      }
-
-      if (!foundMap && foundStarMap) {
-        foundMap = foundStarMap;
-        foundI = starI;
-      }
-
-      if (foundMap) {
-        nameParts.splice(0, foundI, foundMap);
-        name = nameParts.join('/');
-      }
-    }
-
-    return name;
-  }
-
-  function makeRequire(relName, forceSync) {
-    return function () {
-      //A version of a require function that passes a moduleName
-      //value for items that may need to
-      //look up paths relative to the moduleName
-      return req.apply(undef, aps.call(arguments, 0).concat([relName, forceSync]));
-    };
-  }
-
-  function makeNormalize(relName) {
-    return function (name) {
-      return normalize(name, relName);
-    };
-  }
-
-  function makeLoad(depName) {
-    return function (value) {
-      defined[depName] = value;
-    };
-  }
-
-  function callDep(name) {
-    if (hasProp(waiting, name)) {
-      var args = waiting[name];
-      delete waiting[name];
-      defining[name] = true;
-      main.apply(undef, args);
-    }
-
-    if (!hasProp(defined, name) && !hasProp(defining, name)) {
-      throw new Error('No ' + name);
-    }
-    return defined[name];
-  }
-
-  //Turns a plugin!resource to [plugin, resource]
-  //with the plugin being undefined if the name
-  //did not have a plugin prefix.
-  function splitPrefix(name) {
-    var prefix,
-      index = name ? name.indexOf('!') : -1;
-    if (index > -1) {
-      prefix = name.substring(0, index);
-      name = name.substring(index + 1, name.length);
-    }
-    return [prefix, name];
-  }
-
-  /**
-   * Makes a name map, normalizing the name, and using a plugin
-   * for normalization if necessary. Grabs a ref to plugin
-   * too, as an optimization.
-   */
-  makeMap = function (name, relName) {
-    var plugin,
-      parts = splitPrefix(name),
-      prefix = parts[0];
-
-    name = parts[1];
-
-    if (prefix) {
-      prefix = normalize(prefix, relName);
-      plugin = callDep(prefix);
-    }
-
-    //Normalize according
-    if (prefix) {
-      if (plugin && plugin.normalize) {
-        name = plugin.normalize(name, makeNormalize(relName));
-      } else {
-        name = normalize(name, relName);
-      }
-    } else {
-      name = normalize(name, relName);
-      parts = splitPrefix(name);
-      prefix = parts[0];
-      name = parts[1];
-      if (prefix) {
-        plugin = callDep(prefix);
-      }
-    }
-
-    //Using ridiculous property names for space reasons
-    return {
-      f: prefix ? prefix + '!' + name : name, //fullName
-      n: name,
-      pr: prefix,
-      p: plugin
-    };
-  };
-
-  function makeConfig(name) {
-    return function () {
-      return (config && config.config && config.config[name]) || {};
-    };
-  }
-
-  handlers = {
-    require: function (name) {
-      return makeRequire(name);
-    },
-    exports: function (name) {
-      var e = defined[name];
-      if (typeof e !== 'undefined') {
-        return e;
-      } else {
-        return (defined[name] = {});
-      }
-    },
-    module: function (name) {
-      return {
-        id: name,
-        uri: '',
-        exports: defined[name],
-        config: makeConfig(name)
-      };
-    }
-  };
-
-  main = function (name, deps, callback, relName) {
-    var cjsModule, depName, ret, map, i,
-      args = [],
-      usingExports;
-
-    //Use name if no relName
-    relName = relName || name;
-
-    //Call the callback to define the module, if necessary.
-    if (typeof callback === 'function') {
-
-      //Pull out the defined dependencies and pass the ordered
-      //values to the callback.
-      //Default to [require, exports, module] if no deps
-      deps = !deps.length && callback.length ? ['require', 'exports', 'module'] : deps;
-      for (i = 0; i < deps.length; i += 1) {
-        map = makeMap(deps[i], relName);
-        depName = map.f;
-
-        //Fast path CommonJS standard dependencies.
-        if (depName === "require") {
-          args[i] = handlers.require(name);
-        } else if (depName === "exports") {
-          //CommonJS module spec 1.1
-          args[i] = handlers.exports(name);
-          usingExports = true;
-        } else if (depName === "module") {
-          //CommonJS module spec 1.1
-          cjsModule = args[i] = handlers.module(name);
-        } else if (hasProp(defined, depName) ||
-          hasProp(waiting, depName) ||
-          hasProp(defining, depName)) {
-          args[i] = callDep(depName);
-        } else if (map.p) {
-          map.p.load(map.n, makeRequire(relName, true), makeLoad(depName), {});
-          args[i] = defined[depName];
         } else {
-          throw new Error(name + ' missing ' + depName);
+            name = normalize(name, relName);
         }
-      }
 
-      ret = callback.apply(defined[name], args);
+        //Using ridiculous property names for space reasons
+        return {
+            f: prefix ? prefix + '!' + name : name, //fullName
+            n: name,
+            p: plugin
+        };
+    }
 
-      if (name) {
-        //If setting exports via "module" is in play,
-        //favor that over return value and exports. After that,
-        //favor a non-undefined return value over exports use.
-        if (cjsModule && cjsModule.exports !== undef &&
-          cjsModule.exports !== defined[name]) {
-          defined[name] = cjsModule.exports;
-        } else if (ret !== undef || !usingExports) {
-          //Use the return value from the function.
-          defined[name] = ret;
+    main = function (name, deps, callback, relName) {
+        var args = [],
+            usingExports,
+            cjsModule, depName, i, ret, map;
+
+        //Use name if no relName
+        if (!relName) {
+            relName = name;
         }
-      }
-    } else if (name) {
-      //May just be an object definition for the module. Only
-      //worry about defining if have a module name.
-      defined[name] = callback;
+
+        //Call the callback to define the module, if necessary.
+        if (typeof callback === 'function') {
+
+            //Default to require, exports, module if no deps if
+            //the factory arg has any arguments specified.
+            if (!deps.length && callback.length) {
+                deps = ['require', 'exports', 'module'];
+            }
+
+            //Pull out the defined dependencies and pass the ordered
+            //values to the callback.
+            for (i = 0; i < deps.length; i++) {
+                map = makeMap(deps[i], relName);
+                depName = map.f;
+
+                //Fast path CommonJS standard dependencies.
+                if (depName === "require") {
+                    args[i] = makeRequire(name);
+                } else if (depName === "exports") {
+                    //CommonJS module spec 1.1
+                    args[i] = defined[name] = {};
+                    usingExports = true;
+                } else if (depName === "module") {
+                    //CommonJS module spec 1.1
+                    cjsModule = args[i] = {
+                        id: name,
+                        uri: '',
+                        exports: defined[name]
+                    };
+                } else if (defined.hasOwnProperty(depName) || waiting.hasOwnProperty(depName)) {
+                    args[i] = callDep(depName);
+                } else if (map.p) {
+                    map.p.load(map.n, makeRequire(relName, true), makeLoad(depName), {});
+                    args[i] = defined[depName];
+                } else {
+                    throw name + ' missing ' + depName;
+                }
+            }
+
+            ret = callback.apply(defined[name], args);
+
+            if (name) {
+                //If setting exports via "module" is in play,
+                //favor that over return value and exports. After that,
+                //favor a non-undefined return value over exports use.
+                if (cjsModule && cjsModule.exports !== undef) {
+                    defined[name] = cjsModule.exports;
+                } else if (!usingExports) {
+                    //Use the return value from the function.
+                    defined[name] = ret;
+                }
+            }
+        } else if (name) {
+            //May just be an object definition for the module. Only
+            //worry about defining if have a module name.
+            defined[name] = callback;
+        }
+    };
+
+    requirejs = req = function (deps, callback, relName, forceSync) {
+        if (typeof deps === "string") {
+
+            //Just return the module wanted. In this scenario, the
+            //deps arg is the module name, and second arg (if passed)
+            //is just the relName.
+            //Normalize module name, if it contains . or ..
+            return callDep(makeMap(deps, callback).f);
+        } else if (!deps.splice) {
+            //deps is a config object, not an array.
+            //Drop the config stuff on the ground.
+            if (callback.splice) {
+                //callback is an array, which means it is a dependency list.
+                //Adjust args if there are dependencies
+                deps = callback;
+                callback = arguments[2];
+            } else {
+                deps = [];
+            }
+        }
+
+        //Simulate async callback;
+        if (forceSync) {
+            main(undef, deps, callback, relName);
+        } else {
+            setTimeout(function () {
+                main(undef, deps, callback, relName);
+            }, 15);
+        }
+
+        return req;
+    };
+
+    /**
+     * Just drops the config on the floor, but returns req in case
+     * the config return value is used.
+     */
+    req.config = function () {
+        return req;
+    };
+
+    /**
+     * Export require as a global, but only if it does not already exist.
+     */
+    if (!require) {
+        require = req;
     }
-  };
 
-  requirejs = require = req = function (deps, callback, relName, forceSync, alt) {
-    if (typeof deps === "string") {
-      if (handlers[deps]) {
-        //callback in this case is really relName
-        return handlers[deps](callback);
-      }
-      //Just return the module wanted. In this scenario, the
-      //deps arg is the module name, and second arg (if passed)
-      //is just the relName.
-      //Normalize module name, if it contains . or ..
-      return callDep(makeMap(deps, callback).f);
-    } else if (!deps.splice) {
-      //deps is a config object, not an array.
-      config = deps;
-      if (callback.splice) {
-        //callback is an array, which means it is a dependency list.
-        //Adjust args if there are dependencies
-        deps = callback;
-        callback = relName;
-        relName = null;
-      } else {
-        deps = undef;
-      }
-    }
+    define = function (name, deps, callback) {
 
-    //Support require(['a'])
-    callback = callback || function () {};
+        //This module may not have dependencies
+        if (!deps.splice) {
+            //deps is not an array, so probably means
+            //an object literal or factory function for
+            //the value. Adjust args.
+            callback = deps;
+            deps = [];
+        }
 
-    //If relName is a function, it is an errback handler,
-    //so remove it.
-    if (typeof relName === 'function') {
-      relName = forceSync;
-      forceSync = alt;
-    }
+        if (define.unordered) {
+            waiting[name] = [name, deps, callback];
+        } else {
+            main(name, deps, callback);
+        }
+    };
 
-    //Simulate async callback;
-    if (forceSync) {
-      main(undef, deps, callback, relName);
-    } else {
-      //Using a non-zero value because of concern for what old browsers
-      //do, and latest browsers "upgrade" to 4 if lower value is used:
-      //http://www.whatwg.org/specs/web-apps/current-work/multipage/timers.html#dom-windowtimers-settimeout:
-      //If want a value immediately, use require('id') instead -- something
-      //that works in almond on the global level, but not guaranteed and
-      //unlikely to work in other AMD implementations.
-      setTimeout(function () {
-        main(undef, deps, callback, relName);
-      }, 4);
-    }
-
-    return req;
-  };
-
-  /**
-   * Just drops the config on the floor, but returns req in case
-   * the config return value is used.
-   */
-  req.config = function (cfg) {
-    config = cfg;
-    return req;
-  };
-
-  define = function (name, deps, callback) {
-
-    //This module may not have dependencies
-    if (!deps.splice) {
-      //deps is not an array, so probably means
-      //an object literal or factory function for
-      //the value. Adjust args.
-      callback = deps;
-      deps = [];
-    }
-
-    if (!hasProp(defined, name) && !hasProp(waiting, name)) {
-      waiting[name] = [name, deps, callback];
-    }
-  };
-
-  define.amd = {
-    jQuery: true
-  };
-
-  // BEGIN Mass Relevance Patch
-  // We know we're shimming the module loader, so we can safely expose these functions
-  window.define = define;
-  window.require = require;
-  window.requirejs = requirejs;
-  // END Mass Relevance Patch
+    define.amd = {
+        jQuery: true
+    };
 }());
+
 define('globals',{
   host: 'tweetriver.com'
 , timeout: 10e3
@@ -722,6 +587,116 @@ define('helpers',['globals'], function(globals) {
   return exports;
 });
 
+define('meta_poller',['helpers'], function(helpers) {
+
+  function MetaPoller(object, opts) {
+    var self = this
+      , fetch = function() {
+          if(enabled) {
+            object.meta(self.opts, function(data) { // success
+              if(enabled) { // being very thorough in making sure to stop polling when told
+                helpers.step_through(data, self._listeners, self);
+
+                if(enabled) { // poller can be stopped in any of the above iterators
+                  again();
+                }
+              }
+            }, function() { // error
+              again();
+            });
+          }
+        }
+      , again = function() {
+          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
+        }
+      , enabled = false
+      , tmo;
+
+    this._listeners = [];
+
+    this.opts = opts || {};
+    
+    this.opts.frequency = (this.opts.frequency || 30) * 1000;
+
+    this.start = function() {
+      if(!enabled) { // guard against multiple pollers
+        enabled = true;
+        fetch();
+      }
+      return this;
+    };
+    this.stop = function() {
+      clearTimeout(tmo);
+      enabled = false;
+      return this;
+    };
+  }
+
+  MetaPoller.prototype.data = function(fn) {
+    this._listeners.push(fn);
+    return this;
+  };
+  // alias #each
+  MetaPoller.prototype.each = MetaPoller.prototype.data;
+
+  return MetaPoller;
+});
+
+
+define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
+  var _enc = encodeURIComponent;
+
+  function Account(user) {
+    this.user = user;
+  }
+  Account.prototype.meta_url = function() {
+    return helpers.api_url('/'+ _enc(this.user) +'.json');
+  };
+  Account.prototype.meta = function() {
+    var opts, fn, error;
+    if(typeof(arguments[0]) === 'function') {
+      fn = arguments[0];
+      error = arguments[1];
+      opts = {};
+    }
+    else if(typeof(arguments[0]) === 'object') {
+      opts = arguments[0];
+      fn = arguments[1];
+      error = arguments[2];
+    }
+    else {
+      throw new Error('incorrect arguments');
+    }
+
+    var params = this.buildMetaParams(opts);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
+
+    return this;
+  };
+  Account.prototype.buildMetaParams = function(opts) {
+    opts = opts || {};
+
+    var params = [];
+    if(opts.quick_stats) {
+      params.push(['quick_stats', '1']);
+    }
+    if(opts.streams) {
+      var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
+      params.push(['streams', streams.join(',')]);
+    }
+
+    return params;
+  };
+  Account.prototype.metaPoller = function(opts) {
+    return new MetaPoller(this, opts);
+  };
+  Account.prototype.toString = function() {
+    return this.user;
+  };
+
+  return Account;
+});
+
 define('poller_queue',['helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
@@ -835,7 +810,6 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.network = opts.network || null;
-    this.timeline_search = !!opts.timeline_search;
     this.enabled = false;
     this.alive = true;
     this.alive_instance = 0;
@@ -957,69 +931,12 @@ define('poller',['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       replies: this.replies,
       geo_hint: this.geo_hint,
       keywords: this.keywords,
-      network: this.network,
-      timeline_search: this.tiemline_search
+      network: this.network
     }, opts || {});
   };
 
   return Poller;
 });
-
-define('meta_poller',['helpers'], function(helpers) {
-
-  function MetaPoller(object, opts) {
-    var self = this
-      , fetch = function() {
-          if(enabled) {
-            object.meta(self.opts, function(data) { // success
-              if(enabled) { // being very thorough in making sure to stop polling when told
-                helpers.step_through(data, self._listeners, self);
-
-                if(enabled) { // poller can be stopped in any of the above iterators
-                  again();
-                }
-              }
-            }, function() { // error
-              again();
-            });
-          }
-        }
-      , again = function() {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-        }
-      , enabled = false
-      , tmo;
-
-    this._listeners = [];
-
-    this.opts = opts || {};
-    
-    this.opts.frequency = (this.opts.frequency || 30) * 1000;
-
-    this.start = function() {
-      if(!enabled) { // guard against multiple pollers
-        enabled = true;
-        fetch();
-      }
-      return this;
-    };
-    this.stop = function() {
-      clearTimeout(tmo);
-      enabled = false;
-      return this;
-    };
-  }
-
-  MetaPoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
-    return this;
-  };
-  // alias #each
-  MetaPoller.prototype.each = MetaPoller.prototype.data;
-
-  return MetaPoller;
-});
-
 
 define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
   var _enc = encodeURIComponent;
@@ -1074,9 +991,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
     }
     if(opts.network) {
       params.push(['network', opts.network]);
-    }
-    if(opts.timeline_search) {
-      params.push(['timeline_search', '1']);
     }
     return params;
   };
@@ -1149,60 +1063,6 @@ define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, 
 
   return Stream;
 
-});
-
-define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
-  var _enc = encodeURIComponent;
-
-  function Account(user) {
-    this.user = user;
-  }
-  Account.prototype.meta_url = function() {
-    return helpers.api_url('/'+ _enc(this.user) +'.json');
-  };
-  Account.prototype.meta = function() {
-    var opts, fn, error;
-    if(typeof(arguments[0]) === 'function') {
-      fn = arguments[0];
-      error = arguments[1];
-      opts = {};
-    }
-    else if(typeof(arguments[0]) === 'object') {
-      opts = arguments[0];
-      fn = arguments[1];
-      error = arguments[2];
-    }
-    else {
-      throw new Error('incorrect arguments');
-    }
-
-    var params = this.buildMetaParams(opts);
-    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
-
-    return this;
-  };
-  Account.prototype.buildMetaParams = function(opts) {
-    opts = opts || {};
-
-    var params = [];
-    if(opts.quick_stats) {
-      params.push(['quick_stats', '1']);
-    }
-    if(opts.streams) {
-      var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
-      params.push(['streams', streams.join(',')]);
-    }
-
-    return params;
-  };
-  Account.prototype.metaPoller = function(opts) {
-    return new MetaPoller(this, opts);
-  };
-  Account.prototype.toString = function() {
-    return this.user;
-  };
-
-  return Account;
 });
 
 define('context',['helpers'], function(helpers) {

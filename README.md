@@ -111,10 +111,18 @@ Shorthand
 
 # Change log
 
+## v0.11.1
+
+* Cast all `fix_date` inputs to strings to resolve IE issues (ec390e725d)
+
+## v0.11.0
+
+* CORS support. Cross domain requests to API when browser supports it instead of JSONP. (259ed3563a)
+
 ## v0.10.0
 
-* Filter stream to a single network
-* Allow port and host overrides on the massrel module
+* Filter stream to a single network (3f945b85c5)
+* Allow port and host overrides on the massrel module (0be2bbedbf)
 
 ## v0.9.11
 

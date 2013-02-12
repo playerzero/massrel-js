@@ -21,7 +21,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     });
 
     var params = this.buildParams(opts);
-    helpers.jsonp_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -52,6 +52,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.network) {
       params.push(['network', opts.network]);
     }
+    if(opts.timeline_search) {
+      params.push(['timeline_search', '1']);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {
@@ -78,7 +81,7 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.jsonp_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
