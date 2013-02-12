@@ -51,8 +51,13 @@ define('massrel', [
   return massrel;
 });
 
-// Go ahead and export the 'massrel' module to 'vendor/massrel', as well, since 
-// most places expect it to live there.
-define('vendor/massrel', ['massrel'], function(massrel) {
-  return massrel;
-});
+// If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
+if (typeof window.define === 'function') {
+  window.define('massrel', function() {
+    return massreljs.require('massrel');
+  });
+
+  window.define('vendor/massrel', function() {
+    return massreljs.require('massrel');
+  });
+}

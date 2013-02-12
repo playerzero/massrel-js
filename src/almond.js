@@ -8,10 +8,7 @@
 /*jslint sloppy: true */
 /*global setTimeout: false */
 
-// BEGIN Mass Relevance Patch
-// removed `requirejs`, `require`, `define` so we don't always blindly expose them
-// END Mass Relevance Patch
-
+var requirejs, require, define;
 (function (undef) {
   var main, req, makeMap, handlers,
     defined = {},
@@ -19,19 +16,7 @@
     config = {},
     defining = {},
     hasOwn = Object.prototype.hasOwnProperty,
-    aps = [].slice,
-    // BEGIN Mass Relevance Patch
-    // Only expose these if we actually need to shim the module loader
-    requirejs, require, define;
-    // BEGIN Mass Relevance Patch
-
-
-  // BEGIN Mass Relevance Patch
-  // If there's another AMD loader, use that one, rather than shimming the module loader w/ almond.
-  if (typeof window.define === 'function') {
-    return;
-  }
-  // END Mass Relevance Patch
+    aps = [].slice;
 
   function hasProp(obj, prop) {
     return hasOwn.call(obj, prop);
@@ -414,11 +399,4 @@
   define.amd = {
     jQuery: true
   };
-
-  // BEGIN Mass Relevance Patch
-  // We know we're shimming the module loader, so we can safely expose these functions
-  window.define = define;
-  window.require = require;
-  window.requirejs = requirejs;
-  // END Mass Relevance Patch
 }());
