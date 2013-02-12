@@ -43,11 +43,6 @@ define('massrel', [
   massrel.helpers = helpers;
   massrel.intents = intents;
 
-  // require/AMD methods
-  massrel.define = define;
-  massrel.require = require;
-  massrel.requirejs = requirejs;
-
   return massrel;
 });
 
