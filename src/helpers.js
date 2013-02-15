@@ -78,7 +78,7 @@ define(['globals'], function(globals) {
       req.open('GET', url+'?'+exports.to_qs(params));
       req.onerror = fail;
       req.onprogress = function(){ };
-      req.ontimeout = function(){ };
+      req.ontimeout = fail;
       req.onload = function() {
         success(req.responseText);
       };
