@@ -42,8 +42,12 @@ define(['globals'], function(globals) {
   exports.req.supportsJSON = 'JSON' in window;
   exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
     var req;
+    var fulfilled = false;
+    var timeout;
 
     var success = function(responseText) {
+      fulfilled = true;
+
       var data;
       var problems = false;
       try {
@@ -65,6 +69,7 @@ define(['globals'], function(globals) {
     };
 
     var fail = function(text) {
+      fulfilled = true;
       if(typeof error === 'function') {
         error(text);
       }
@@ -75,7 +80,14 @@ define(['globals'], function(globals) {
     // but without CORS
     if(window.XDomainRequest) {
       req = new XDomainRequest();
+    }
+    else if(window.XMLHttpRequest) {
+      req = new XMLHttpRequest();
+    }
+
+    if(req) {
       req.open('GET', url+'?'+exports.to_qs(params));
+      req.timeout = globals.timeout;
       req.onerror = fail;
       req.onprogress = function(){ };
       req.ontimeout = fail;
@@ -83,23 +95,19 @@ define(['globals'], function(globals) {
         success(req.responseText);
       };
       req.send(null);
-    }
-    else if(window.XMLHttpRequest) {
-      req = new XMLHttpRequest();
 
-      req.open('GET', url+'?'+exports.to_qs(params), true);
-      req.onerror = fail;
-      req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-          if(req.status >= 200 && req.status < 400) {
-            success(req.responseText);
-          }
-          else {
-            fail(new Error('Response returned with non-OK status'));
-          }
+      timeout = setTimeout(function() {
+        if(!fulfilled) {
+         req.onerror = function() {};
+         req.onprogress = function() {};
+         req.ontimeout = function() {};
+         req.onload = function() {};
+         if(req.abort) {
+           req.abort();
+         };
+         fail();
         }
-      };
-      req.send(null);
+      }, globals.timeout);
     }
     else {
       fail(new Error('CORS not supported'));
@@ -284,6 +292,13 @@ define(['globals'], function(globals) {
   exports.poll_interval = function(interval) {
     var min = globals.min_poll_interval;
     return Math.max(interval || min, min);
+  };
+
+  exports.poll_backoff = function(interval, consecutive_errors) {
+    var max = globals.max_backoff_interval;
+    consecutive_errors = Math.max(consecutive_errors - 1, 0);
+    interval = interval * Math.pow(globals.backoff_rate, consecutive_errors);
+    return Math.min(interval || max, max);
   };
 
   return exports;
