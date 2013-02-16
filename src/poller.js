@@ -1,4 +1,4 @@
-define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
+define(['helpers', 'globals', 'poller_queue'], function(helpers, globals, PollerQueue) {
 
   function Poller(stream, opts) {
     this.stream = stream;
@@ -91,10 +91,10 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
           helpers.step_through(statuses, self._enumerators, self);
         }
 
-        self.failure_mode = false;
+        Poller.failure_mode = self.failure_mode = false;
         self._t = setTimeout(poll, helpers.poll_interval(self.frequency));
       }, function(status) {
-        self.failure_mode = true;
+        Poller.failure_mode = self.failure_mode = true;
         self.consecutive_errors += 1;
 
         // figure out how long to delay
@@ -167,7 +167,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     return params;
   };
   Poller.prototype.cursorable = function() {
-    return !(this.failure_mode || this.hail_mary_mode);
+    return !(Poller.failure_mode || this.failure_mode || this.hail_mary_mode);
   };
   Poller.prototype.filter = function(statuses) {
     return this.filter_newer(statuses);
