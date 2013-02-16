@@ -12,7 +12,7 @@ define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
   };
 
   // alias
-  ComparePoller.prototype.each = MetaPoller.prototype.data;
+  ComparePoller.prototype.each = ComparePoller.prototype.data;
 
   return ComparePoller;
 });
