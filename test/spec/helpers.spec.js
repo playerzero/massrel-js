@@ -431,4 +431,26 @@ describe('helpers', function() {
     });
   });
 
+  describe('constrain polling delay', function() {
+  
+    it('don\'t let a value smaller than minimum', function() {
+      var old_min = massrel.min_poll_interval;
+      massrel.min_poll_interval = 24e3;
+      var delay = massrel.helpers.poll_interval(massrel.min_poll_interval - 1e3);
+      expect(delay).toEqual(massrel.min_poll_interval);
+      massrel.min_poll_interval = old_min;
+    });
+
+    it('backoff based on value', function() {
+      var delay;
+
+      delay = massrel.helpers.poll_backoff(1, 0);
+      expect(delay).toEqual(1);
+
+      delay = massrel.helpers.poll_backoff(1, 2);
+      expect(delay).toBeGreaterThan(1);
+    });
+
+  });
+
 });
