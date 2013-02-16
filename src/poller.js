@@ -19,7 +19,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.network = opts.network || null;
     this.timeline_search = !!opts.timeline_search;
-    this.hail_mary_mode = !!opts.hail_mary;
+    this.hail_mary_mode = !!opts.hail_mary_mode;
     this.failure_mode = false;
     this.enabled = false;
     this.alive = true;
