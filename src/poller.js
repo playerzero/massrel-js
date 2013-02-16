@@ -100,9 +100,8 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
         // figure out how long to delay
         // before attempting another poll
         var delay = helpers.poll_interval(self.frequency);
-        delay = helpers.backoff_interval(delay);
-        setTimeout(function() { self.poke(); }, delay);
-        self.poke();
+        delay = helpers.poll_backoff(delay, self.consecutive_errors);
+        self._t = setTimeout(function() { self.poke(); }, delay);
       });
 
     }
@@ -158,7 +157,7 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
       geo_hint: this.geo_hint,
       keywords: this.keywords,
       network: this.network,
-      timeline_search: this.tiemline_search
+      timeline_search: this.timeline_search
     }, opts || {});
 
     if(!this.cursorable()) {
@@ -222,6 +221,8 @@ define(['helpers', 'poller_queue'], function(helpers, PollerQueue) {
         statuses.splice(this.limit, statuses.length - limit);
       }
     }
+
+    return statuses;
   };
 
   return Poller;
