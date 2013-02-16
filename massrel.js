@@ -723,6 +723,94 @@ massreljs.define('helpers',['globals'], function(globals) {
   return exports;
 });
 
+massreljs.define('generic_poller',['helpers'], function(helpers) {
+
+  function GenericPoller(object, opts) {
+    var self = this,
+        fetch = function() {
+          if(enabled) {
+            self.fetch(object, self.opts, again, function(data) { // success
+              // reset errors count
+              self.consecutive_errors = 0;
+              GenericPoller.failure_mode = self.failure_mode = false;
+
+              if(enabled) { // being very thorough in making sure to stop polling when told
+
+                // call any filters that have been added to augment data
+                for(var i = 0, len = self._filters.length; i < len; i++) {
+                  data = self._filters[i].call(self, data);
+                }
+
+                // call each listener with the data
+                // wrapping the data in [], the strep_through method
+                // will not enumerate through each item directly
+                helpers.step_through([data],  self._listeners, self);
+    
+                if(enabled) { // poller can be stopped in any of the above iterators
+                  again();
+                }
+              }
+            }, function() { // error
+              self.consecutive_errors += 1;
+              GenericPoller.failure_mode = self.failure_mode = true;
+              again(true);
+            });
+          }
+        },
+        again = function(error) {
+          var delay = helpers.poll_interval(self.frequency * 1000);
+          if(error) {
+            delay = helpers.poll_backoff(delay, self.consecutive_errors);
+          }
+          tmo = setTimeout(fetch, delay);
+        },
+        enabled = false,
+        tmo;
+
+    this._listeners = [];
+    this._filters = [];
+    this.opts = opts || {};
+    this.frequency = (this.opts.frequency || 30);
+    this.consecutive_errors = 0;
+    this.failure_mode = false;
+
+    this.start = function() {
+      if(!enabled) { // guard against multiple pollers
+        enabled = true;
+        fetch();
+      }
+      return this;
+    };
+    this.stop = function() {
+      clearTimeout(tmo);
+      enabled = false;
+      return this;
+    };
+  }
+
+  GenericPoller.prototype.fetch = function(object, opts, callback, error) {
+    object.load(opts, callback, error);
+    return this;
+  };
+
+  GenericPoller.prototype.data = function(fn) {
+    this._listeners.push(fn);
+    return this;
+  };
+
+  GenericPoller.prototype.filter = function(fn) {
+    this._filters.push(fn);
+    return this;
+  };
+
+  // global failure flag
+  // once one poller is in failure mode
+  // we want to make all others switch to
+  GenericPoller.failure_mode = false;
+
+  return GenericPoller;
+});
+
 massreljs.define('poller_queue',['helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
@@ -817,138 +905,108 @@ massreljs.define('poller_queue',['helpers'], function(helpers) {
   return PollerQueue;
 });
 
-massreljs.define('poller',['helpers', 'globals', 'poller_queue'], function(helpers, globals, PollerQueue) {
+massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericPoller, PollerQueue) {
 
   function Poller(stream, opts) {
-    this.stream = stream;
-    this._callbacks = [];
-    this._enumerators = [];
-    this._bound_enum = false;
-    this._t = null;
+    GenericPoller.call(this, stream, opts);
 
-    opts = opts || {};
-    this.limit = opts.limit || null;
-    this.since_id = opts.since_id || null;
-    this.start_id = opts.start_id || null;
+    // alias object as streams
+    this.stream = this.object;
+
+    // add filter
+    this.filter(this.filter_newer);
+
+    var opts = this.opts;
     this.newest_timestamp = opts.newest_timestamp || null;
-    this.replies = !!opts.replies;
-    this.geo_hint = !!opts.geo_hint;
-    this.keywords = opts.keywords || null;
-    this.frequency = (opts.frequency || 30) * 1000;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
-    this.network = opts.network || null;
-    this.timeline_search = !!opts.timeline_search;
     this.hail_mary_mode = !!opts.hail_mary_mode;
-    this.failure_mode = false;
-    this.enabled = false;
-    this.alive = true;
-    this.alive_instance = 0;
-    this.consecutive_errors = 0;
   }
-  Poller.prototype.poke = function(fn) {
-    // this method should not be called externally...
-    // it basically restarts the poll loop if it stopped for network errors
-    // we call this if a request takes longer than 10sec
-    if(!this.alive && this.enabled) {
-      this._t = null;
-      this.start();
-    }
-    return this;
-  };
-  Poller.prototype.batch = function(fn) {
-    this._callbacks.push(fn);
-    return this;
-  };
-  Poller.prototype.each = function(fn) {
-    this._enumerators.push(fn);
-    return this;
-  };
-  Poller.prototype.start = function() {
-    if(this._t) {
-      return this;
-    }
-    this.enabled = true;
-    var instance_id = this.alive_instance = this.alive_instance + 1;
 
+  helpers.extend(Poller.prototype, GenericPoller.prototype);
+
+  // fetch data for Stream
+  Poller.prototype.fetch = function(object, opts, skip, callback, errback) {
     var self = this;
-    function poll() {
-      self.alive = false;
+    var load_opts = {
+      // prevents start_id from being include in query
+      start_id: null
+    };
 
-      if(!self.enabled || instance_id !== self.alive_instance) { return; }
+    // if in "stay realtime" mode then
+    // then poller should use "since_id"
+    //
+    // "since_id" gets statuses from the newest item in a stream
+    // to "since_id" (exclusive) or until "limit" is reached.
+    // statuses will be skipped in order to stay realtime
+    //
+    // "from_id" gets statuses from the provided id newer until
+    // the newest status in stream is found or until "limit" is reached.
+    // all statuses in a stream will be downloaded but it is likely
+    // to not stay realtime
+    var newer_id = this.stay_realtime ? 'since_id' : 'from_id';
+    load_opts[newer_id] = self.since_id;
 
-      var load_opts = {};
-      if(self.stay_realtime) {
-        load_opts.since_id = self.since_id;
-      }
-      else {
-        load_opts.from_id = self.since_id;
-      }
-
-      self.stream.load(self.params(load_opts), function(statuses) {
-        self.alive = true;
-        self.consecutive_errors = 0;
-
-        // filter statuses
-        if(statuses && statuses.length > 0) {
-          statuses = self.filter(statuses);
-        }
-
-        if(statuses && statuses.length > 0) {
-          self.since_id = statuses[0].entity_id;
-          self.newest_timestamp = statuses[0].queued_at;
-
-          if(!self.start_id) { // grab last item ID if it has not been set
-            self.start_id = statuses[statuses.length - 1].entity_id;
-          }
-
-          // invoke all batch handlers on this poller
-          for(var i = 0, len = self._callbacks.length; i < len; i++) {
-            self._callbacks[i].call(self, statuses); // we might need to pass in a copy of statuses array
-          }
-
-          // invoke all enumerators on this poller
-          helpers.step_through(statuses, self._enumerators, self);
-        }
-
-        Poller.failure_mode = self.failure_mode = false;
-        self._t = setTimeout(poll, helpers.poll_interval(self.frequency));
-      }, function(status) {
-        Poller.failure_mode = self.failure_mode = true;
-        self.consecutive_errors += 1;
-
-        // figure out how long to delay
-        // before attempting another poll
-        var delay = helpers.poll_interval(self.frequency);
-        delay = helpers.poll_backoff(delay, self.consecutive_errors);
-        self._t = setTimeout(function() { self.poke(); }, delay);
-      });
-
+    // create load options
+    load_opts = helpers.extend(load_opts, opts);
+    
+    // remove since_id if the poller
+    // is in a mode that prevents cursing
+    // the via the API
+    if(!this.cursorable()) {
+      delete load_opts.since_id;
     }
 
-    poll();
+    object.load(load_opts, function(statuses) {
+      // only invode hanlders is there are any statuses
+      // this is for legacy reasons
+      if(statuses && statuses.length > 0) {
+        self.since_id = statuses[0].entity_id;
 
+        if(!self.start_id) { // grab last item ID if it has not been set
+          self.start_id = statuses[statuses.length - 1].entity_id;
+        }
+      }
+      callback.apply(self, arguments);
+    }, errback);
     return this;
   };
-  Poller.prototype.stop = function() {
-    clearTimeout(this._t);
-    this._t = null;
-    this.enabled = false;
-    return this;
+
+  // Poller#batch callback will be invoked when there
+  // is an array of statuses that is > 0
+  // and be invoked with the entire array of statuses
+  Poller.prototype.batch = function(fn) {
+    return this.data(Poller.createEnumerator(fn, false));
   };
-  Poller.prototype.queue = function(fn) {
+
+  // Poller#each callback will be invoked when there
+  // is an array of statuses that is > 0
+  // and be invoked once for each item in the array
+  // from oldest status to newest statuse
+  Poller.prototype.each = function(fn) {
+    return this.data(Poller.createEnumerator(fn, true));
+  };
+
+  // creates a new queue with the poller
+  Poller.prototype.queue = function() {
     var queue = new PollerQueue(this);
     queue.next(fn);
     return this;
   };
+
+  // gets "olders" statuses at bottom of stream
+  // and knows how to cursor down without getting duplicates
   Poller.prototype.more = function(fn, error) {
     //TODO: build in a lock, so multiple "more" calls
     //are called sequentially instead of in parallel
 
-    var self = this
-      , fetch = function() {
-          self.stream.load(self.params({
-            start_id: self.start_id
-          }), function(statuses) {
+    var self = this,
+        fetch = function() {
+          self.object.fetch(helpers.extend({
+            start_id: self.start_id,
+
+            // prevent since_id from being included in query
+            since_id: null
+          }, self.opts), function(statuses) {
             if(statuses.length > 0) {
               self.start_id = statuses[statuses.length - 1].entity_id;
               if(!self.since_id) {
@@ -969,32 +1027,50 @@ massreljs.define('poller',['helpers', 'globals', 'poller_queue'], function(helpe
 
     return this;
   };
-  Poller.prototype.params = function(opts) {
-    var params = helpers.extend({
-      limit: this.limit,
-      replies: this.replies,
-      geo_hint: this.geo_hint,
-      keywords: this.keywords,
-      network: this.network,
-      timeline_search: this.timeline_search
-    }, opts || {});
 
-    if(!this.cursorable()) {
-      delete params.since_id;
-    }
-
-    return params;
-  };
+  // the poller is cursorable if no special
+  // mode is in place
   Poller.prototype.cursorable = function() {
     return !(Poller.failure_mode || this.failure_mode || this.hail_mary_mode);
   };
-  Poller.prototype.filter = function(statuses) {
-    return this.filter_newer(statuses);
-  };
+
   Poller.prototype.filter_newer = function(statuses) {
     statuses = Poller.filter_newer(statuses, this.newest_timestamp);
+    if(statuses && statuses.length > 0) {
+      this.newest_timestamp = statuses[0].queued_at;
+    }
     return statuses;
   };
+
+
+  // legacy method that used to "kick start"
+  // a poller is there were network isssues
+  // I handle this at the request level now
+  // but leave as noop (basically) for now
+  Poller.prototype.poke = function() { return this; };
+
+  // creates an handler that will
+  // invoke the given handler once for each tweet in the response
+  // it will also only invoke given handler is there are 1 or more statuses (for legacy reasons)
+  Poller.createEnumerator = function(fn, enumerateEach) {
+    if(enumerateEach) {
+      return function(statuses) {
+        if(statuses && statuses.length > 0) {
+          // strep through will invote the handler (fn)
+          // from the oldest tweet (data.last) to the newest (data.first)
+          helpers.step_through(statuses, [fn], this);
+        }
+      };
+    }
+    else {
+      return function(statuses) {
+        if(statuses && statuses.length > 0) {
+          fn.call(this, statuses);
+        }
+      }
+    }
+  };
+
   Poller.filter_newer = function(statuses, newest_timestamp) {
     var sortable_prop = 'queued_at';
     if(statuses && statuses.length > 0) {
@@ -1047,61 +1123,24 @@ massreljs.define('poller',['helpers', 'globals', 'poller_queue'], function(helpe
   return Poller;
 });
 
-massreljs.define('meta_poller',['helpers'], function(helpers) {
+massreljs.define('meta_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
-  function MetaPoller(object, opts) {
-    var self = this
-      , fetch = function() {
-          if(enabled) {
-            object.meta(self.opts, function(data) { // success
-              if(enabled) { // being very thorough in making sure to stop polling when told
-                helpers.step_through(data, self._listeners, self);
-
-                if(enabled) { // poller can be stopped in any of the above iterators
-                  again();
-                }
-              }
-            }, function() { // error
-              again();
-            });
-          }
-        }
-      , again = function() {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-        }
-      , enabled = false
-      , tmo;
-
-    this._listeners = [];
-
-    this.opts = opts || {};
-    
-    this.opts.frequency = (this.opts.frequency || 30) * 1000;
-
-    this.start = function() {
-      if(!enabled) { // guard against multiple pollers
-        enabled = true;
-        fetch();
-      }
-      return this;
-    };
-    this.stop = function() {
-      clearTimeout(tmo);
-      enabled = false;
-      return this;
-    };
+  function MetaPoller() {
+    GenericPoller.apply(this, arguments);
   }
 
-  MetaPoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
+  helpers.extend(MetaPoller.prototype, GenericPoller.prototype);
+
+  MetaPoller.prototype.fetch = function(object, options, skip, callback, errback) {
+    object.meta(options, callback, errback);
     return this;
   };
-  // alias #each
+
+  // alias
   MetaPoller.prototype.each = MetaPoller.prototype.data;
 
   return MetaPoller;
 });
-
 
 massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
   var _enc = encodeURIComponent;
@@ -1346,59 +1385,21 @@ massreljs.define('context',['helpers'], function(helpers) {
   return Context;
 });
 
-massreljs.define('compare_poller',['helpers'], function(helpers) {
-  function ComparePoller(object, opts) {
-    var self = this,
-        fetch = function () {
-          if (enabled) {
-            object.load(self.opts, function(data) {
-              if (enabled) {
-                helpers.step_through(data, self._listeners, self);
-                
-                if (enabled) {
-                  again();
-                }
-              }
-            }, function() {
-              again();
-            });
-          }
-        },
-        again = function () {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-        },
-        enabled = false,
-        tmo;
-        
-    self._listeners = [];
-    
-    self.opts = opts || {};
-    self.opts.frequency = (self.opts.frequency || 30) * 1000;
-    
-    self.start = function () {
-      if (!enabled) {
-        enabled = true;
-        fetch();
-      }
-      
-      return this;
-    };
-    
-    self.stop = function () {
-      clearTimeout(tmo);
-      enabled = false;
-      
-      return this;
-    };
+massreljs.define('compare_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+
+  function ComparePoller() {
+    GenericPoller.apply(this, arguments);
   }
-  
-  ComparePoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
+
+  helpers.extend(ComparePoller.prototype, GenericPoller.prototype);
+
+  ComparePoller.prototype.fetch = function(object, options, skip, callback, errback) {
+    object.load(options, callback, errback);
     return this;
   };
-  
-  // alias each
-  ComparePoller.prototype.each = ComparePoller.prototype.data;
+
+  // alias
+  ComparePoller.prototype.each = MetaPoller.prototype.data;
 
   return ComparePoller;
 });
