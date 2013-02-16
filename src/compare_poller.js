@@ -1,56 +1,18 @@
-define(['helpers'], function(helpers) {
-  function ComparePoller(object, opts) {
-    var self = this,
-        fetch = function () {
-          if (enabled) {
-            object.load(self.opts, function(data) {
-              if (enabled) {
-                helpers.step_through(data, self._listeners, self);
-                
-                if (enabled) {
-                  again();
-                }
-              }
-            }, function() {
-              again();
-            });
-          }
-        },
-        again = function () {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-        },
-        enabled = false,
-        tmo;
-        
-    self._listeners = [];
-    
-    self.opts = opts || {};
-    self.opts.frequency = (self.opts.frequency || 30) * 1000;
-    
-    self.start = function () {
-      if (!enabled) {
-        enabled = true;
-        fetch();
-      }
-      
-      return this;
-    };
-    
-    self.stop = function () {
-      clearTimeout(tmo);
-      enabled = false;
-      
-      return this;
-    };
+define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+
+  function ComparePoller() {
+    GenericPoller.apply(this, arguments);
   }
-  
-  ComparePoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
+
+  helpers.extend(ComparePoller.prototype, GenericPoller.prototype);
+
+  ComparePoller.prototype.fetch = function(object, options, skip, callback, errback) {
+    object.load(options, callback, errback);
     return this;
   };
-  
-  // alias each
-  ComparePoller.prototype.each = ComparePoller.prototype.data;
+
+  // alias
+  ComparePoller.prototype.each = MetaPoller.prototype.data;
 
   return ComparePoller;
 });
