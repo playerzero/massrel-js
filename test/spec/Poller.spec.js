@@ -46,6 +46,7 @@ describe('Poller', function() {
         expect(poller.since_id).toEqual('123');
         expect(poller.start_id).toEqual('456');
         expect(poller.newest_timestamp).toEqual(987);
+        poller.stop();
         done();
       });
       poller.start();
@@ -79,11 +80,11 @@ describe('Poller', function() {
         expect(expected.entity_id).toEqual(status.entity_id);
         i = i + 1;
         if(i == 2) {
+          poller.stop();
           done();
         }
       });
       poller.start();
-      poller.stop();
     });
   });
 
@@ -288,18 +289,27 @@ describe('Poller', function() {
 
   it('use correct params when making request', function() {
     var testParam = function(opts, key, val) {
-      var poller = new massrel.Poller({}, opts);
-      var params = poller.params({});
-      expect(params[key]).toEqual(val);
+      var stream = new massrel.Stream('a/b');
+      var poller = new massrel.Poller(stream, opts);
+      var params = stream.buildParams(poller.opts);
+      if(params.length > 0) {
+        expect(key).toEqual(params[0][0]);
+        expect(val).toEqual(params[0][1]);
+      }
+      else {
+        expect(key).toEqual(undefined);
+        expect(val).toEqual(undefined);
+      }
+
     };
 
     testParam({ limit: 2 }, 'limit', 2);
-    testParam({ replies: true }, 'replies', true);
-    testParam({ geo_hint: true }, 'geo_hint', true);
+    testParam({ replies: true }, 'replies', '1');
+    testParam({ geo_hint: true }, 'geo_hint', '1');
     testParam({ keywords: 'abc' }, 'keywords', 'abc');
     testParam({ network: 'massrelevance' }, 'network', 'massrelevance');
-    testParam({ timeline_search: true }, 'timeline_search', true);
-    testParam({ random: 'blah' }, 'random', undefined);
+    testParam({ timeline_search: true }, 'timeline_search', '1');
+    testParam({ random: 'blah' }, undefined, undefined);
   });
 
 });
