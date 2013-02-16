@@ -838,7 +838,7 @@ massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQ
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.network = opts.network || null;
     this.timeline_search = !!opts.timeline_search;
-    this.hail_mary_mode = !!opts.hail_mary;
+    this.hail_mary_mode = !!opts.hail_mary_mode;
     this.failure_mode = false;
     this.enabled = false;
     this.alive = true;
@@ -919,9 +919,8 @@ massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQ
         // figure out how long to delay
         // before attempting another poll
         var delay = helpers.poll_interval(self.frequency);
-        delay = helpers.backoff_interval(delay);
-        setTimeout(function() { self.poke(); }, delay);
-        self.poke();
+        delay = helpers.poll_backoff(delay, self.consecutive_errors);
+        self._t = setTimeout(function() { self.poke(); }, delay);
       });
 
     }
@@ -977,7 +976,7 @@ massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQ
       geo_hint: this.geo_hint,
       keywords: this.keywords,
       network: this.network,
-      timeline_search: this.tiemline_search
+      timeline_search: this.timeline_search
     }, opts || {});
 
     if(!this.cursorable()) {
@@ -1041,6 +1040,8 @@ massreljs.define('poller',['helpers', 'poller_queue'], function(helpers, PollerQ
         statuses.splice(this.limit, statuses.length - limit);
       }
     }
+
+    return statuses;
   };
 
   return Poller;

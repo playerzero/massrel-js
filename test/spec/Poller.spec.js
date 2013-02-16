@@ -11,7 +11,7 @@ describe('Poller', function() {
 
     waitsFor(function() {
       return fulfilled;
-    }, 15e3);
+    }, 7e3);
 
     stream.load = function(params, cb, errback) {
       setTimeout(function() {
@@ -201,6 +201,90 @@ describe('Poller', function() {
       
     });
   });
+
+  it('#filter should called with data', function() {
+    testPoll(function(stream, done) {
+      var poller = new massrel.Poller(stream, {
+        newest_timestamp: 654
+      });
+      poller.batch(function(statuses) {
+        expect(statuses.length).toEqual(1);
+        expect(statuses[0].queued_at).toEqual(987);
+        poller.stop();
+        done();
+      });
+      poller.start();
+    });
+  });
+
+  it('filter newer should remove older items', function() {
+    var newer;
+    var items = [
+      { queued_at: 987 },
+      { queued_at: 123 }
+    ];
+
+    newer = massrel.Poller.filter_newer(items, 123);
+    expect(newer.length).toEqual(1);
+    expect(newer[0].queued_at).toEqual(987);
+
+    newer = massrel.Poller.filter_newer(items, 1000);
+    expect(newer.length).toEqual(0);
+
+    newer = massrel.Poller.filter_newer(items, 0);
+    expect(newer.length).toEqual(2);
+    expect(newer[0].queued_at).toEqual(987);
+    expect(newer[1].queued_at).toEqual(123);
+  });
+
+  it('hail mary mode should not poll with since_id', function() {
+    testPoll(function(stream, done) {
+      stream.load = function(params) {
+        expect(params.since_id).toEqual(undefined);
+        poller.stop();
+        done();
+      };
+
+      var poller = new massrel.Poller(stream, {
+        since_id: '1',
+        hail_mary_mode: true
+      });
+
+      poller.start();
+    });
+  });
+
+  it('failure mode should not poll with since_id', function() {
+    var min = massrel.min_poll_interval;
+    massrel.min_poll_interval = 0;
+
+    testPoll(function(stream, done) {
+      var i = 0;
+      stream.load = function(params, cb, errback) {
+        if(i == 0) {
+          expect(params.since_id).toEqual('1');
+          setTimeout(function() { errback(); }, 0);
+        }
+        else {
+          expect(poller.failure_mode).toEqual(true);
+          expect(params.since_id).toEqual(undefined);
+          poller.stop();
+          massrel.min_poll_interval = min;
+          done();
+        }
+
+        i = i + 1;
+      };
+
+      var poller = new massrel.Poller(stream, {
+        since_id: '1',
+        frequency: 0.1
+      });
+
+      poller.start();
+    });
+  });
+
 
   it('use correct params when making request', function() {
     var testParam = function(opts, key, val) {
