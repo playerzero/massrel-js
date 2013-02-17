@@ -1399,7 +1399,7 @@ massreljs.define('compare_poller',['helpers', 'generic_poller'], function(helper
   };
 
   // alias
-  ComparePoller.prototype.each = MetaPoller.prototype.data;
+  ComparePoller.prototype.each = ComparePoller.prototype.data;
 
   return ComparePoller;
 });
