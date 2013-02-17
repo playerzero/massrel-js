@@ -146,8 +146,8 @@ describe('helpers', function() {
       testCors(false, true, false);
     });
 
-    it('make a request (browser must support CORS)', function() {
-      if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
+    if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
+      it('make a request (browser must support CORS)', function() {
         var fulfilled = false;
         var callback = jasmine.createSpy('success');
         var fail = jasmine.createSpy('success');
@@ -168,66 +168,67 @@ describe('helpers', function() {
           expect(callback).toHaveBeenCalled();
           expect(fail).not.toHaveBeenCalled();
         });
-      }
-    });
+      });
+    }
 
   });
 
-  describe('making CORS requests', function() {
+  if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
+    describe('making CORS requests', function() {
 
-    var request = function(url, cb) {
-      var fulfilled = false;
-      var responseData;
+      var request = function(url, cb) {
+        var fulfilled = false;
+        var responseData;
 
-      waitsFor(function() {
-        return fulfilled;
-      }, 15e3);
+        waitsFor(function() {
+          return fulfilled;
+        }, 15e3);
 
-      var response = function(success) {
-        fulfilled = true;
-        responseData = success;
+        var response = function(success) {
+          fulfilled = true;
+          responseData = success;
+        };
+
+        runs(function() {
+          cb(responseData);
+        });
+
+        massrel.helpers.req.xdr(url, [], '_', this, function() {
+          response(true)
+        }, function() {
+          response(false);
+        });
       };
 
-      runs(function() {
-        cb(responseData);
+      it('Success', function() {
+        request('http://tweetriver.com/bdainton/kindle.json?limit=1', function(success) {
+          expect(success).toEqual(true);
+        });
       });
 
-      massrel.helpers.req.xdr(url, [], '_', this, function() {
-        response(true)
-      }, function() {
-        response(false);
+      it('Does not exist', function() {
+        request('http://tweetriver.com/notareal/stream.json', function(success) {
+          expect(success).toEqual(false);
+        });
       });
-    };
 
-    it('Success', function() {
-      request('http://tweetriver.com/bdainton/kindle.json?limit=1', function(success) {
-        expect(success).toEqual(true);
+      it('Server error', function() {
+        request('http://tweetriver.com/bdainton/kindle/meta.json?num_days=0', function(success) {
+          expect(success).toEqual(false);
+        });
       });
+
+      //it('Timeout error (depends on local server)', function() {
+      //  var old_timeout = massrel.timeout;
+      //  massrel.timeout = 2e3;
+      //  request('http://localhost:5000/?t=5&', function(success) {
+      //    expect(success).toEqual(false);
+      //    massrel.timeout = old_timeout;
+      //  });
+      //});
+
     });
-
-    it('Does not exist', function() {
-      request('http://tweetriver.com/notareal/stream.json', function(success) {
-        expect(success).toEqual(false);
-      });
-    });
-
-    it('Server error', function() {
-      request('http://tweetriver.com/bdainton/kindle/meta.json?num_days=0', function(success) {
-        expect(success).toEqual(false);
-      });
-    });
-
-    //it('Timeout error (depends on local server)', function() {
-    //  var old_timeout = massrel.timeout;
-    //  massrel.timeout = 2e3;
-    //  request('http://localhost:5000/?t=5&', function(success) {
-    //    expect(success).toEqual(false);
-    //    massrel.timeout = old_timeout;
-    //  });
-    //});
-
-  });
-
+  }
 
   describe('building a query string', function() {
     var to_qs = massrel.helpers.to_qs;

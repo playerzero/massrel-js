@@ -155,8 +155,7 @@ describe('Poller', function() {
           var delta = timestamp - last_timestamp;
           var expected_delay = massrel.helpers.poll_backoff(freq * 1000, poller.consecutive_errors);
 
-          expect(Math.abs(delta - expected_delay)).toBeLessThan(20)
-          expect(Math.round(delta / expected_delay)).toBe(1)
+          expect(Math.round(delta / expected_delay)).toBe(1);
           if(last_delta) {
             expect(Math.round(delta / last_delta)).toBe(massrel.backoff_rate);
           }
