@@ -124,7 +124,7 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
   // the poller is cursorable if no special
   // mode is in place
   Poller.prototype.cursorable = function() {
-    return !(Poller.failure_mode || this.failure_mode || this.hail_mary_mode);
+    return !(GenericPoller.failure_mode || this.failure_mode || this.hail_mary_mode);
   };
 
   Poller.prototype.filter_newer = function(statuses) {
