@@ -450,9 +450,11 @@ describe('helpers', function() {
 
       delay = massrel.helpers.poll_backoff(1, 2);
       expect(delay).toBeGreaterThan(1);
+    });
 
+    it('don\'t shorten delay if user input is larger than max', function() {
       var input = massrel.max_backoff_interval * 2;
-      delay = massrel.helpers.poll_backoff(input, 2);
+      var delay = massrel.helpers.poll_backoff(input, 2);
       expect(delay).toEqual(input);
     });
 
