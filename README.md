@@ -111,6 +111,16 @@ Shorthand
 
 # Change log
 
+## v0.13.0
+
+* Implement `GenericPoller` that all other pollers inherit from. Handles
+  polling delay backoff when errors happen (b99c01e4fa)
+* Add hail mary mode to `Poller` which will make stream requests
+  without `since_id` and do request diffs client side (b99c01e4fa)
+* Override default host when massrel[host] URL param is used
+  (087fe37eab)
+* Refactor `helpers.parse_params` (bcbf443e9a)
+
 ## v0.12.0
 
 * Moved back to single built file, rather than internal/external builds.
