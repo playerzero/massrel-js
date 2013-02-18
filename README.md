@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.13.1
+
+* Refactored CORS req so IE10 will use XHR2 object
+* Bug fix for backoff shortening delay if greater than backoff max
+
 ## v0.13.0
 
 * Implement `GenericPoller` that all other pollers inherit from. Handles
