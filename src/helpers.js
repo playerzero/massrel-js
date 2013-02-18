@@ -301,5 +301,32 @@ define(['globals'], function(globals) {
     return Math.min(interval || max, max);
   };
 
+  // returns a function that can be used to wrap other functions
+  // this prevents a function wrapped from being invoked too many
+  // times.
+  exports.callback_group = function(max_call_count) {
+    max_call_count = max_call_count || 1;
+    var call_count = 0;
+    var active = true;
+    var wrapper = function(callback, context) {
+      return function() {
+        if(active) {
+          if(call_count <= max_call_count) {
+            return callback.apply(context || this, arguments);
+          }
+          else {
+            throw new Error('Callback group max call count exceeded');
+          }
+        }
+      };
+    };
+
+    wrapper.deactivate = function() {
+      active = false;
+    };
+
+    return wrapper;
+  };
+
   return exports;
 });

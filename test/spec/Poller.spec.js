@@ -89,28 +89,32 @@ describe('Poller', function() {
   });
 
   it('count consecutive errors', function() {
+    var old_min = massrel.min_poll_interval;
+    massrel.min_poll_interval = 0;
     testPoll(function(stream, done) {
-      var poller = new massrel.Poller(stream);
+      var poller = new massrel.Poller(stream, {
+        frequency: 0.0001
+      });
+
+      var i = 0;
+      stream.load = function(params, cb, errback) {
+        errback();
+        i = i + 1;
+        if(i == 2) {
+          expect(poller.consecutive_errors).toEqual(2);
+          stream.load = function(params, cb) {
+            cb([]);
+            // should reset once a successful poll happens
+            expect(poller.consecutive_errors).toEqual(0);
+            poller.stop();
+            massrel.min_poll_interval = old_min;
+            done();
+          };
+        }
+      };
+
       poller.start();
-      poller.stop();
-      poller.start();
-      poller.stop();
 
-      setTimeout(function() {
-        expect(poller.consecutive_errors).toEqual(2);
-
-        stream.load = function(params, cb) {
-          cb([]);
-          // should reset once a successful poll happens
-          expect(poller.consecutive_errors).toEqual(0);
-          poller.stop();
-          done();
-        };
-
-        poller.start();
-
-        done();
-      }, 100);
     }, true);
   });
 

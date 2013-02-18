@@ -6,8 +6,8 @@ define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
   helpers.extend(ComparePoller.prototype, GenericPoller.prototype);
 
-  ComparePoller.prototype.fetch = function(object, options, skip, callback, errback) {
-    object.load(options, callback, errback);
+  ComparePoller.prototype.fetch = function(object, options, cycle) {
+    object.load(options, cycle.callback, cycle.errback);
     return this;
   };
 

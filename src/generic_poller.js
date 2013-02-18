@@ -1,10 +1,14 @@
-define(['helpers'], function(helpers) {
+define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle) {
 
   function GenericPoller(object, opts) {
     var self = this,
         fetch = function() {
           if(enabled) {
-            self.fetch(object, self.opts, again, function(data) { // success
+            var cg = helpers.callback_group();
+            var inner_again = cg(again);
+
+            // success callback
+            var success = function(data) {
               // reset errors count
               self.consecutive_errors = 0;
               GenericPoller.failure_mode = self.failure_mode = false;
@@ -22,14 +26,22 @@ define(['helpers'], function(helpers) {
                 helpers.step_through([data],  self._listeners, self);
     
                 if(enabled) { // poller can be stopped in any of the above iterators
-                  again();
+                  inner_again();
                 }
               }
-            }, function() { // error
+            };
+
+            // error callback
+            var fail = function() {
               self.consecutive_errors += 1;
               GenericPoller.failure_mode = self.failure_mode = true;
-              again(true);
-            });
+              inner_again(true);
+            };
+
+            cycle = new GenericPollerCycle(inner_again, success, fail);
+
+            // fetch data
+            self.fetch(object, self.opts, cycle);
           }
         },
         again = function(error) {
@@ -39,6 +51,7 @@ define(['helpers'], function(helpers) {
           }
           tmo = setTimeout(fetch, delay);
         },
+        cycle = null, // keep track of last cycle
         enabled = false,
         tmo;
 
@@ -46,6 +59,7 @@ define(['helpers'], function(helpers) {
     this._filters = [];
     this.opts = opts || {};
     this.frequency = (this.opts.frequency || 30);
+    this.alive_count = 0;
     this.consecutive_errors = 0;
     this.failure_mode = false;
 
@@ -57,14 +71,18 @@ define(['helpers'], function(helpers) {
       return this;
     };
     this.stop = function() {
+      if(cycle) {
+        cycle.disable();
+        cycle = null;
+      }
       clearTimeout(tmo);
       enabled = false;
       return this;
     };
   }
 
-  GenericPoller.prototype.fetch = function(object, opts, callback, error) {
-    object.load(opts, callback, error);
+  GenericPoller.prototype.fetch = function(object, opts, cycle) {
+    object.load(opts, cycle.callback, cycle.errback);
     return this;
   };
 

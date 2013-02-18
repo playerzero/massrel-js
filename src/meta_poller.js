@@ -6,8 +6,8 @@ define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
   helpers.extend(MetaPoller.prototype, GenericPoller.prototype);
 
-  MetaPoller.prototype.fetch = function(object, options, skip, callback, errback) {
-    object.meta(options, callback, errback);
+  MetaPoller.prototype.fetch = function(object, options, cycle) {
+    object.meta(options, cycle.callback, cycle.errback);
     return this;
   };
 

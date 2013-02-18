@@ -1,4 +1,4 @@
-;(function() {
+;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
 massreljs = {};
@@ -720,16 +720,70 @@ massreljs.define('helpers',['globals'], function(globals) {
     return Math.min(interval || max, max);
   };
 
+  // returns a function that can be used to wrap other functions
+  // this prevents a function wrapped from being invoked too many
+  // times.
+  exports.callback_group = function(max_call_count) {
+    max_call_count = max_call_count || 1;
+    var call_count = 0;
+    var active = true;
+    var wrapper = function(callback, context) {
+      return function() {
+        if(active) {
+          if(call_count <= max_call_count) {
+            return callback.apply(context || this, arguments);
+          }
+          else {
+            throw new Error('Callback group max call count exceeded');
+          }
+        }
+      };
+    };
+
+    wrapper.deactivate = function() {
+      active = false;
+    };
+
+    return wrapper;
+  };
+
   return exports;
 });
 
-massreljs.define('generic_poller',['helpers'], function(helpers) {
+massreljs.define('generic_poller_cycle',['helpers'], function(helpers) {
+
+  function GenericPollerCycle(skip, callback, errback) {
+    this.cg = helpers.callback_group();
+    this.skip = this.cg(skip);
+    this.callback = this.cg(callback);
+    this.errback = this.cg(errback);
+    this._enabled = true;
+  };
+
+  GenericPollerCycle.prototype.enabled = function() {
+    return this._enabled;
+  };
+
+  GenericPollerCycle.prototype.disable = function() {
+    this.cg.deactivate();
+    this._enabled = false;
+  };
+
+  return GenericPollerCycle;
+
+});
+
+massreljs.define('generic_poller',['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle) {
 
   function GenericPoller(object, opts) {
     var self = this,
         fetch = function() {
           if(enabled) {
-            self.fetch(object, self.opts, again, function(data) { // success
+            var cg = helpers.callback_group();
+            var inner_again = cg(again);
+
+            // success callback
+            var success = function(data) {
               // reset errors count
               self.consecutive_errors = 0;
               GenericPoller.failure_mode = self.failure_mode = false;
@@ -747,14 +801,22 @@ massreljs.define('generic_poller',['helpers'], function(helpers) {
                 helpers.step_through([data],  self._listeners, self);
     
                 if(enabled) { // poller can be stopped in any of the above iterators
-                  again();
+                  inner_again();
                 }
               }
-            }, function() { // error
+            };
+
+            // error callback
+            var fail = function() {
               self.consecutive_errors += 1;
               GenericPoller.failure_mode = self.failure_mode = true;
-              again(true);
-            });
+              inner_again(true);
+            };
+
+            cycle = new GenericPollerCycle(inner_again, success, fail);
+
+            // fetch data
+            self.fetch(object, self.opts, cycle);
           }
         },
         again = function(error) {
@@ -764,6 +826,7 @@ massreljs.define('generic_poller',['helpers'], function(helpers) {
           }
           tmo = setTimeout(fetch, delay);
         },
+        cycle = null, // keep track of last cycle
         enabled = false,
         tmo;
 
@@ -771,6 +834,7 @@ massreljs.define('generic_poller',['helpers'], function(helpers) {
     this._filters = [];
     this.opts = opts || {};
     this.frequency = (this.opts.frequency || 30);
+    this.alive_count = 0;
     this.consecutive_errors = 0;
     this.failure_mode = false;
 
@@ -782,14 +846,18 @@ massreljs.define('generic_poller',['helpers'], function(helpers) {
       return this;
     };
     this.stop = function() {
+      if(cycle) {
+        cycle.disable();
+        cycle = null;
+      }
       clearTimeout(tmo);
       enabled = false;
       return this;
     };
   }
 
-  GenericPoller.prototype.fetch = function(object, opts, callback, error) {
-    object.load(opts, callback, error);
+  GenericPoller.prototype.fetch = function(object, opts, cycle) {
+    object.load(opts, cycle.callback, cycle.errback);
     return this;
   };
 
@@ -925,7 +993,7 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
   helpers.extend(Poller.prototype, GenericPoller.prototype);
 
   // fetch data for Stream
-  Poller.prototype.fetch = function(object, opts, skip, callback, errback) {
+  Poller.prototype.fetch = function(object, opts, cycle) {
     var self = this;
     var load_opts = {
       // prevents start_id from being include in query
@@ -957,17 +1025,19 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
     }
 
     object.load(load_opts, function(statuses) {
-      // only invode hanlders is there are any statuses
-      // this is for legacy reasons
-      if(statuses && statuses.length > 0) {
-        self.since_id = statuses[0].entity_id;
+      if(cycle.enabled()) { // only update cursors if poller cycle enabled
+        // only invode hanlders is there are any statuses
+        // this is for legacy reasons
+        if(statuses && statuses.length > 0) {
+          self.since_id = statuses[0].entity_id;
 
-        if(!self.start_id) { // grab last item ID if it has not been set
-          self.start_id = statuses[statuses.length - 1].entity_id;
+          if(!self.start_id) { // grab last item ID if it has not been set
+            self.start_id = statuses[statuses.length - 1].entity_id;
+          }
         }
+        cycle.callback(statuses);
       }
-      callback.apply(self, arguments);
-    }, errback);
+    }, cycle.errback);
     return this;
   };
 
@@ -1031,7 +1101,7 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
   // the poller is cursorable if no special
   // mode is in place
   Poller.prototype.cursorable = function() {
-    return !(Poller.failure_mode || this.failure_mode || this.hail_mary_mode);
+    return !(GenericPoller.failure_mode || this.failure_mode || this.hail_mary_mode);
   };
 
   Poller.prototype.filter_newer = function(statuses) {
@@ -1131,8 +1201,8 @@ massreljs.define('meta_poller',['helpers', 'generic_poller'], function(helpers, 
 
   helpers.extend(MetaPoller.prototype, GenericPoller.prototype);
 
-  MetaPoller.prototype.fetch = function(object, options, skip, callback, errback) {
-    object.meta(options, callback, errback);
+  MetaPoller.prototype.fetch = function(object, options, cycle) {
+    object.meta(options, cycle.callback, cycle.errback);
     return this;
   };
 
@@ -1393,8 +1463,8 @@ massreljs.define('compare_poller',['helpers', 'generic_poller'], function(helper
 
   helpers.extend(ComparePoller.prototype, GenericPoller.prototype);
 
-  ComparePoller.prototype.fetch = function(object, options, skip, callback, errback) {
-    object.load(options, callback, errback);
+  ComparePoller.prototype.fetch = function(object, options, cycle) {
+    object.load(options, cycle.callback, cycle.errback);
     return this;
   };
 
@@ -1539,6 +1609,8 @@ massreljs.define('massrel', [
        , 'helpers'
        , 'stream'
        , 'account'
+       , 'generic_poller'
+       , 'generic_poller_cycle'
        , 'poller'
        , 'meta_poller'
        , 'poller_queue'
@@ -1551,6 +1623,8 @@ massreljs.define('massrel', [
        , helpers
        , Stream
        , Account
+       , GenericPoller
+       , GenericPollerCycle
        , Poller
        , MetaPoller
        , PollerQueue
@@ -1570,6 +1644,8 @@ massreljs.define('massrel', [
   // public API
   massrel.Stream = Stream;
   massrel.Account = Account;
+  massrel.GenericPoller = GenericPoller;
+  massrel.GenericPollerCycle = GenericPollerCycle;
   massrel.Poller = Poller;
   massrel.MetaPoller = MetaPoller;
   massrel.PollerQueue = PollerQueue;
@@ -1590,4 +1666,4 @@ massreljs.define('massrel', [
 // call massrel module
 massreljs.require('massrel');
 
-})();
+})(window);

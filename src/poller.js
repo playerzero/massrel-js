@@ -18,7 +18,7 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
   helpers.extend(Poller.prototype, GenericPoller.prototype);
 
   // fetch data for Stream
-  Poller.prototype.fetch = function(object, opts, skip, callback, errback) {
+  Poller.prototype.fetch = function(object, opts, cycle) {
     var self = this;
     var load_opts = {
       // prevents start_id from being include in query
@@ -50,17 +50,19 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
     }
 
     object.load(load_opts, function(statuses) {
-      // only invode hanlders is there are any statuses
-      // this is for legacy reasons
-      if(statuses && statuses.length > 0) {
-        self.since_id = statuses[0].entity_id;
+      if(cycle.enabled()) { // only update cursors if poller cycle enabled
+        // only invode hanlders is there are any statuses
+        // this is for legacy reasons
+        if(statuses && statuses.length > 0) {
+          self.since_id = statuses[0].entity_id;
 
-        if(!self.start_id) { // grab last item ID if it has not been set
-          self.start_id = statuses[statuses.length - 1].entity_id;
+          if(!self.start_id) { // grab last item ID if it has not been set
+            self.start_id = statuses[statuses.length - 1].entity_id;
+          }
         }
+        cycle.callback(statuses);
       }
-      callback.apply(self, arguments);
-    }, errback);
+    }, cycle.errback);
     return this;
   };
 

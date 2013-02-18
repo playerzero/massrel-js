@@ -3,6 +3,8 @@ define('massrel', [
        , 'helpers'
        , 'stream'
        , 'account'
+       , 'generic_poller'
+       , 'generic_poller_cycle'
        , 'poller'
        , 'meta_poller'
        , 'poller_queue'
@@ -15,6 +17,8 @@ define('massrel', [
        , helpers
        , Stream
        , Account
+       , GenericPoller
+       , GenericPollerCycle
        , Poller
        , MetaPoller
        , PollerQueue
@@ -34,6 +38,8 @@ define('massrel', [
   // public API
   massrel.Stream = Stream;
   massrel.Account = Account;
+  massrel.GenericPoller = GenericPoller;
+  massrel.GenericPollerCycle = GenericPollerCycle;
   massrel.Poller = Poller;
   massrel.MetaPoller = MetaPoller;
   massrel.PollerQueue = PollerQueue;
