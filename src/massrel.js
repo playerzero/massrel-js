@@ -49,6 +49,13 @@ define('massrel', [
   massrel.helpers = helpers;
   massrel.intents = intents;
 
+  // change default host if "massrel[host]"
+  // URL param is set
+  var params = helpers.parse_params();
+  if(params['massrel[host]']) {
+    massrel.host = params['massrel[host]'];
+  }
+
   // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
   if(typeof window.define === 'function') {
     window.define('massrel', massrel);
