@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.5
+
+* Warn if too many requests made in a minute (1050d4f16b)
+
 ## v0.13.2
 
 * Allow override of default stream poller options for initial poll (13eca5e698)
