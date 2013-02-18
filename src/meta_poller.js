@@ -1,55 +1,18 @@
-define(['helpers'], function(helpers) {
+define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
-  function MetaPoller(object, opts) {
-    var self = this
-      , fetch = function() {
-          if(enabled) {
-            object.meta(self.opts, function(data) { // success
-              if(enabled) { // being very thorough in making sure to stop polling when told
-                helpers.step_through(data, self._listeners, self);
-
-                if(enabled) { // poller can be stopped in any of the above iterators
-                  again();
-                }
-              }
-            }, function() { // error
-              again();
-            });
-          }
-        }
-      , again = function() {
-          tmo = setTimeout(fetch, helpers.poll_interval(self.opts.frequency));
-        }
-      , enabled = false
-      , tmo;
-
-    this._listeners = [];
-
-    this.opts = opts || {};
-    
-    this.opts.frequency = (this.opts.frequency || 30) * 1000;
-
-    this.start = function() {
-      if(!enabled) { // guard against multiple pollers
-        enabled = true;
-        fetch();
-      }
-      return this;
-    };
-    this.stop = function() {
-      clearTimeout(tmo);
-      enabled = false;
-      return this;
-    };
+  function MetaPoller() {
+    GenericPoller.apply(this, arguments);
   }
 
-  MetaPoller.prototype.data = function(fn) {
-    this._listeners.push(fn);
+  helpers.extend(MetaPoller.prototype, GenericPoller.prototype);
+
+  MetaPoller.prototype.fetch = function(object, options, cycle) {
+    object.meta(options, cycle.callback, cycle.errback);
     return this;
   };
-  // alias #each
+
+  // alias
   MetaPoller.prototype.each = MetaPoller.prototype.data;
 
   return MetaPoller;
 });
-
