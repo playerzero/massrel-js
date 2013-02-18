@@ -259,24 +259,24 @@ define(['globals'], function(globals) {
     return date;
   };
 
-  exports.parse_params = function() {
-    raw = {};
-    queryString = window.location.search.substring(1);
-    if (queryString.charAt(0) == '?') queryString = queryString.substring(1);
-    if (queryString.length > 0){
+  exports.parse_params = function(queryString) {
+    queryString = queryString || window.location.search.substring(1);
+    var raw = {};
+    if (queryString.charAt(0) === '?') {
+      queryString = queryString.substring(1);
+    }
+    if (queryString.length > 0) {
       queryString = queryString.replace(/\+/g, ' ');
       var queryComponents = queryString.split(/[&;]/g);
       for (var index = 0; index < queryComponents.length; index ++){
         var keyValuePair = queryComponents[index].split('=');
-        var key          = decodeURIComponent(keyValuePair[0]);
-        var value        = keyValuePair.length > 1
-                         ? decodeURIComponent(keyValuePair[1])
-                         : '';
+        var key = decodeURIComponent(keyValuePair[0]);
+        var value = keyValuePair.length > 1 ? decodeURIComponent(keyValuePair[1]) : '';
         if (!(key in raw)) {
           raw[key] = value;
         } else {
           var existing_val = raw[key];
-          if (typeof existing_val != 'string') {
+          if (typeof existing_val !== 'string') {
             raw[key].push(value);
           } else {
             raw[key] = [];
