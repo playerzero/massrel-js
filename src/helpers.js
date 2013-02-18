@@ -296,9 +296,15 @@ define(['globals'], function(globals) {
 
   exports.poll_backoff = function(interval, consecutive_errors) {
     var max = globals.max_backoff_interval;
-    consecutive_errors = Math.max(consecutive_errors - 1, 0);
-    interval = interval * Math.pow(globals.backoff_rate, consecutive_errors);
-    return Math.min(interval || max, max);
+    // use the input interval if is already greater than the backoff
+    // max, otherwise apply the backoff
+    if(interval < max) {
+      consecutive_errors = Math.max(consecutive_errors - 1, 0);
+      interval = interval * Math.pow(globals.backoff_rate, consecutive_errors);
+      interval = Math.min(interval || max, max);
+    }
+
+    return interval;
   };
 
   // returns a function that can be used to wrap other functions

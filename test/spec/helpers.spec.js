@@ -450,6 +450,10 @@ describe('helpers', function() {
 
       delay = massrel.helpers.poll_backoff(1, 2);
       expect(delay).toBeGreaterThan(1);
+
+      var input = massrel.max_backoff_interval * 2;
+      delay = massrel.helpers.poll_backoff(input, 2);
+      expect(delay).toEqual(input);
     });
 
   });
