@@ -111,7 +111,7 @@ Shorthand
 
 # Change log
 
-## v0.13.5
+## v0.13.3
 
 * Warn if too many requests made in a minute (1050d4f16b)
 
