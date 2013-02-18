@@ -156,6 +156,34 @@ describe('Poller', function() {
     });
   });
 
+  it('use initial opts during first poll', function() {
+    var old_min = massrel.min_poll_interval;
+    massrel.min_poll_interval = 0;
+    testPoll(function(stream, done) {
+      var poller = new massrel.Poller(stream, {
+        limit: 10,
+        frequency: 0.01,
+        initial: {
+          limit: 30
+        },
+      });
+      stream.load = function(params, cb) {
+        if(poller.first) {
+          expect(params.limit).toEqual(30);
+          cb();
+        }
+        else {
+          expect(params.limit).toEqual(10);
+          poller.stop();
+          massrel.min_poll_interval = old_min;
+          done();
+        }
+      };
+
+      poller.start();
+    });
+  });
+
 
   it('use correct params when making request', function() {
     var testParam = function(opts, key, val) {
