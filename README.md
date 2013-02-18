@@ -205,15 +205,3 @@ Shorthand
 * first versioned package
 * overhall system to use jburke/r.js & almond for build system
 
-# TO DO
-
-* tests
-* conversations/reply-to in status UI
-* better abstraction to update relative time in status periodically
-* include optional param to show author location in status UI
-* break out *jsonp_factory* to be a replaceable io transport, so we can use XHR or CORS easily in future
-* ~~use HTTPS urls when on a secure page~~
-* change anchor text to use entitites given in in JSON (/entities/urls)
-* better date handling (is8601 and twitter formmated date conversion not very thorough)
-* build out Account API (e.g. Account#streams instead of just Account#meta)
-* ~~abstract Poller class to handle of data besides streams api (meta anyone?)~~ (this was solved by creating a new type `MetaPoller`)
