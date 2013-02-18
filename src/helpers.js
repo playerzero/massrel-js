@@ -38,7 +38,8 @@ define(['globals'], function(globals) {
   };
 
   exports.req = {};
-  exports.req.supportsCors = (('XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest()) || 'XDomainRequest' in window);
+  exports.req.supportsXhr2 = 'XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest();
+  exports.req.supportsCors = (exports.req.supportsXhr2 || 'XDomainRequest' in window);
   exports.req.supportsJSON = 'JSON' in window;
   exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
     var req;
@@ -75,14 +76,12 @@ define(['globals'], function(globals) {
       }
     };
 
-    // check XDomainRequest presence first
-    // because newer IE's support XHR object
-    // but without CORS
-    if(window.XDomainRequest) {
-      req = new XDomainRequest();
-    }
-    else if(window.XMLHttpRequest) {
+    // IE9 supports xhr, but not with xhr2 (w/ CORS)
+    if(window.XMLHttpRequest && exports.req.supportsXhr2) {
       req = new XMLHttpRequest();
+    }
+    else if(window.XDomainRequest) {
+      req = new XDomainRequest();
     }
 
     if(req) {
@@ -94,6 +93,7 @@ define(['globals'], function(globals) {
       req.onload = function() {
         success(req.responseText);
       };
+
       req.send(null);
 
       timeout = setTimeout(function() {
