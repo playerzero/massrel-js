@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.2
+
+* Allow override of default stream poller options for initial poll (13eca5e698)
+
 ## v0.13.1
 
 * Refactored CORS req so IE10 will use XHR2 object
