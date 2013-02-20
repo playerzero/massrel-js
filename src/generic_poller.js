@@ -9,9 +9,13 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
 
             // success callback
             var success = function(data) {
-              // reset errors count
+              // reset failure mode counts
+              self.consecutive_successes += 1;
               self.consecutive_errors = 0;
-              GenericPoller.failure_mode = self.failure_mode = false;
+
+              if(helpers.disable_failure_mode(self.consecutive_successes)) {
+                GenericPoller.failure_mode = self._failure_mode = false;
+              }
 
               if(enabled) { // being very thorough in making sure to stop polling when told
 
@@ -33,8 +37,11 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
 
             // error callback
             var fail = function() {
+              self.consecutive_successes = 0;
               self.consecutive_errors += 1;
-              GenericPoller.failure_mode = self.failure_mode = true;
+              if(helpers.enable_failure_mode(self.consecutive_errors)) {
+                GenericPoller.failure_mode = self._failure_mode = true;
+              }
               inner_again(true);
             };
 
@@ -59,9 +66,9 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
     this._filters = [];
     this.opts = opts || {};
     this.frequency = (this.opts.frequency || 30);
-    this.alive_count = 0;
+    this.consecutive_successes = 0;
     this.consecutive_errors = 0;
-    this.failure_mode = false;
+    this._failure_mode = false;
 
     this.start = function() {
       if(!enabled) { // guard against multiple pollers
@@ -94,6 +101,10 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
   GenericPoller.prototype.filter = function(fn) {
     this._filters.push(fn);
     return this;
+  };
+
+  GenericPoller.prototype.failure_mode = function() {
+    return GenericPoller.failure_mode || this._failure_mode;
   };
 
   // global failure flag

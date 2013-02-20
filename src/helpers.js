@@ -370,5 +370,13 @@ define(['globals'], function(globals) {
     return wrapper;
   };
 
+  exports.disable_failure_mode = function(consecutive_successes) {
+    return consecutive_successes > globals.disable_failure_mode_after_successes;
+  };
+
+  exports.enable_failure_mode = function(consecutive_errors) {
+    return consecutive_errors > globals.enable_failure_mode_after_errors;
+  };
+
   return exports;
 });
