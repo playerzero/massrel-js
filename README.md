@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.5
+
+* Add missing param to Poller#queue (955cebec5b)
+
 ## v0.13.4
 
 * Switch to anonymous define for external AMD loaders (55d7840e96)
