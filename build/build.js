@@ -14,10 +14,6 @@
 
   namespace: 'massreljs',
 
-  skipModuleInsertion: true,
+  skipModuleInsertion: true
 
-  wrap: {
-    startFile: "../src/wrap.start.js",
-    endFile: "../src/wrap.end.js"
-  }
 })

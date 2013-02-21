@@ -1712,15 +1712,14 @@ massreljs.define('massrel', [
     massrel.host = params['massrel[host]'];
   }
 
-  // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
-  if(typeof window.define === 'function') {
-    window.define('massrel', massrel);
-    window.define('vendor/massrel', massrel);
-  }
-
   return massrel;
 });
 // call massrel module
-massreljs.require('massrel');
+var massrel = massreljs.require('massrel');
+
+// If there's an external AMD loader defined, define this library in that context.
+if (typeof define === 'function' && define.amd) {
+  define(massrel);
+}
 
 })(window);

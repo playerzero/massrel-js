@@ -56,11 +56,5 @@ define('massrel', [
     massrel.host = params['massrel[host]'];
   }
 
-  // If there's already an AMD loader defined, export 'massrel' and 'vendor/massrel' to be consumed in that context.
-  if(typeof window.define === 'function') {
-    window.define('massrel', massrel);
-    window.define('vendor/massrel', massrel);
-  }
-
   return massrel;
 });
