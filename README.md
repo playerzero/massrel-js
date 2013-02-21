@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.4
+
+* Switch to anonymous define for external AMD loaders (55d7840e96)
+
 ## v0.13.3
 
 * Warn if too many requests made in a minute (1050d4f16b)
