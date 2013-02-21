@@ -3,5 +3,15 @@
   "version": "0.13.5",
   "main": "./massrel.js",
   "dependencies": {
-  }
+  },
+  "ignore": [
+    "build",
+    "examples",
+    "lib",
+    "misc",
+    "pkg",
+    "src",
+    "templates",
+    "test"
+  ]
 }
