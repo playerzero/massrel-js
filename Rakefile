@@ -7,12 +7,14 @@ task :build do
   massrel_js = `cat wrap.start.js ../massrel.js wrap.end.js`
   massrel_js_file = File.open(File.join(File.dirname(__FILE__), 'massrel.js'), 'w')
   massrel_js_file.write(massrel_js)
+  massrel_js_file.close
 
   sh "node ../build/r.js -o ../build/build.js out=../massrel.min.js"
   # Can't use r.js wrap because it tries to replace define
   massrel_min_js = `cat wrap.start.js ../massrel.min.js wrap.end.js`
   massrel_min_js_file = File.open(File.join(File.dirname(__FILE__), 'massrel.min.js'), 'w')
   massrel_min_js_file.write(massrel_min_js)
+  massrel_min_js_file.close
 end
 
 task :package, [:version] => [:pkg, :build] do |t, args|
