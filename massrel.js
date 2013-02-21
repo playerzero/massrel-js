@@ -1065,7 +1065,7 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
       delete opts.initial;
     }
     load_opts = helpers.extend(load_opts, opts);
-    
+
     // remove since_id if the poller
     // is in a mode that prevents cursing
     // the via the API
@@ -1107,7 +1107,7 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
   };
 
   // creates a new queue with the poller
-  Poller.prototype.queue = function() {
+  Poller.prototype.queue = function(fn) {
     var queue = new PollerQueue(this);
     queue.next(fn);
     return this;
