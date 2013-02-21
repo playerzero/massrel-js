@@ -1,0 +1,7 @@
+{
+  "name": "massrel-js",
+  "version": "0.13.3",
+  "main": "./massrel.js",
+  "dependencies": {
+  }
+}
