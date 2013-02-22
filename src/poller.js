@@ -103,7 +103,7 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
 
     var self = this,
         fetch = function() {
-          self.object.fetch(helpers.extend({
+          self.object.load(helpers.extend({
             start_id: self.start_id,
 
             // prevent since_id from being included in query
@@ -114,7 +114,6 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
               if(!self.since_id) {
                 self.since_id = statuses[0].entity_id;
               }
-
             }
             fn.call(self, statuses);
           }, function() {

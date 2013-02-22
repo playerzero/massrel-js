@@ -184,6 +184,49 @@ describe('Poller', function() {
     });
   });
 
+  it('#more should get older items', function() {
+   var old_min = massrel.min_poll_interval;
+    massrel.min_poll_interval = 0;
+
+    testPoll(function(stream, done) {
+      var poller = new massrel.Poller(stream, {
+        limit: 2,
+        frequency: 0.01
+      });
+
+      poller.batch(function(statuses) {
+        // ensure start_id is set
+        // with the last item in the stream's value
+        var start_id = statuses[1].entity_id;
+        expect(poller.start_id).toBe(start_id);
+        poller.stop();
+
+        stream.load = function(opts, callback) {
+          expect(opts.start_id).toBe(start_id);
+
+          // using null bc I know that is what it is set, but test
+          // really just needs to test to make sure since_id is not
+          // set at all
+          expect(opts.since_id).toBe(null);
+
+          callback([]);
+        };
+
+        poller.more(function() {
+          // callback should be called
+          // if there is a timeout it is
+          // because done did not be called
+          done();
+        });
+
+      });
+
+
+
+      poller.start();
+    });
+  });
+
 
   it('use correct params when making request', function() {
     var testParam = function(opts, key, val) {

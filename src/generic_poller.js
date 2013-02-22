@@ -57,6 +57,7 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
 
     this._listeners = [];
     this._filters = [];
+    this.object = object;
     this.opts = opts || {};
     this.frequency = (this.opts.frequency || 30);
     this.alive_count = 0;
