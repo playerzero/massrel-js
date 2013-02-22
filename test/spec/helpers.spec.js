@@ -113,12 +113,12 @@ describe('helpers', function() {
     
     var testCors = function(useCors, supportsCors, supportsJSON) {
       var old_req = massrel.helpers.req;
-      massrel.helpers.req = {
+      massrel.helpers.req = massrel.helpers.extend({
         xdr: jasmine.createSpy('fakeXdr'),
         jsonp: jasmine.createSpy('jsonp'),
         supportsCors: supportsCors,
         supportsJSON: supportsJSON
-      };
+      }, old_req);
 
       massrel.helpers.request_factory('http://tweetriver.com/test/');
 
