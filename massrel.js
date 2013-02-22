@@ -577,11 +577,13 @@ massreljs.define('helpers',['globals'], function(globals) {
   // times and warn dev if more than "max"
   // requests have happened in the last minute
   exports.req.counts = [];
-  exports.req.counter = function() {
+  exports.req.total_counts = 0;
+  exports.req.counter = function(throw_error) {
     var now = +(new Date());
     var max = globals.max_reqs_per_min;
     var counts = exports.req.counts;
     var one_minute = 60e3;
+    exports.req.total_counts = exports.req.total_counts + 1;
 
     // this catches a case if "max" value
     // has changed since last counter call
@@ -592,8 +594,12 @@ massreljs.define('helpers',['globals'], function(globals) {
     if(counts.length === max) {
       var diff = now - counts[0];
       if(diff < one_minute) {
-        if(window.console && console.warn) {
-          console.warn('Warn: requested more than '+max+' times in the last minute');
+        var text = 'Warn: requested more than '+max+' times in the last minute ('+exports.req.total_counts+' reqs total)';
+        if(throw_error) {
+          throw new Error(text);
+        }
+        else if(window.console && console.warn) {
+          console.warn(text);
         }
       }
     }
@@ -875,6 +881,7 @@ massreljs.define('generic_poller',['helpers', 'generic_poller_cycle'], function(
 
     this._listeners = [];
     this._filters = [];
+    this.object = object;
     this.opts = opts || {};
     this.frequency = (this.opts.frequency || 30);
     this.alive_count = 0;
@@ -1121,7 +1128,7 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
 
     var self = this,
         fetch = function() {
-          self.object.fetch(helpers.extend({
+          self.object.load(helpers.extend({
             start_id: self.start_id,
 
             // prevent since_id from being included in query
@@ -1132,7 +1139,6 @@ massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], functio
               if(!self.since_id) {
                 self.since_id = statuses[0].entity_id;
               }
-
             }
             fn.call(self, statuses);
           }, function() {
