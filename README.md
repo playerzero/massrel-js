@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.13.6
+
+* Fix broken Poller#more and add tests (c4550cbf6a)
+* Minor changes to the request counter
+
 ## v0.13.5
 
 * Add missing param to Poller#queue (955cebec5b)
