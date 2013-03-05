@@ -1,5 +1,5 @@
   /*!
-   * massrel/stream-js v0.13.6
+   * massrel/stream-js 0.13.6
    *
    * Copyright 2012 Mass Relevance
    *
