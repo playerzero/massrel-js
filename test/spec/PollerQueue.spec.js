@@ -98,39 +98,6 @@ describe('PollerQueue', function() {
     waits(max_timeout+200);
   });
 
-  it('use historical data if no new data is added', function() {
-    var poller = createFakePoller(1, 1000);
-    var queue = new massrel.PollerQueue(poller, {
-      history_size: 10,
-      history_timeout: 0.1
-    });
-
-    var count = 0;
-    var count_with_recycled = 0;
-    function cb(item, next) {
-      count++;
-      if(item.__recycled) {
-        poller.enabled = false;
-        count_with_recycled++;
-      }
-      next();
-    }
-
-    queue.next(cb);
-
-    poller._pump();
-    waits(400);
-    setTimeout(function() {
-      expect(count).toBe(2);
-      expect(count_with_recycled).toBe(1);
-      expect(queue.enqueued).toBe(0);
-      expect(count).toBe(queue.count);
-      expect(queue.reused).toBe(1);
-      expect(queue.total).toBe(2);
-    }, 300);
-
-  });
-
   it('total should only be zero if no data is in it', function() {
     var limit = Math.floor(20 * Math.random());
     var poller = createFakePoller(limit, 1000);
