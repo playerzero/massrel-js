@@ -60,7 +60,9 @@ define(['helpers'], function(helpers) {
 
   intents.user = function(screen_name_or_id, options) {
     options = options || {};
-    if(!isNaN(parseInt(screen_name_or_id, 10))) {
+
+    // if it's an integer number, treat it as an id, else as a screen name
+    if(/^\d+$/.test(screen_name_or_id + '')) {
       options.user_id = screen_name_or_id;
     }
     else {

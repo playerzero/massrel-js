@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.7
+
+* Fix the way intents#user parses `screen_name_or_id` when it contains a number
+
 ## v0.13.6
 
 * Fix broken Poller#more and add tests (c4550cbf6a)
