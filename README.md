@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.8
+
+* Improve Facebook network detection
+
 ## v0.13.7
 
 * Fix the way intents#user parses `screen_name_or_id` when it contains a number
