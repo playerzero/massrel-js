@@ -29,10 +29,8 @@ define(['helpers'], function(helpers) {
       // source: twitter
       context.source.twitter = context.known = true;
     }
-    if(status.facebook_id) {
-      // source: facebook
-      context.source.facebook = true;
-      context.known = (typeof(status.message) === 'string');
+    if(status.network === 'facebook') {
+      context.source.facebook = context.known = true;
     }
     else if(status.network === 'google_plus') {
       context.source.google = context.known = true;
