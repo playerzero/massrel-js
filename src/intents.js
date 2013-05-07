@@ -28,6 +28,11 @@ define(['helpers'], function(helpers) {
       options.original_referer = intents.original_referer;
     }
 
+    //make sure the original referer has http:// or https:// at the beginning, otherwise twitter will ignore it
+    if (options.original_referer.indexOf('http://') !== 0 && options.original_referer.indexOf('https://') !== 0) {
+      options.original_referer = 'http://' + options.original_referer;
+    }
+
     var params = [];
     for(var k in options) {
       params.push([k, options[k]]);
