@@ -111,6 +111,14 @@ Shorthand
 
 # Change log
 
+## v0.13.10
+
+* Fix bug in 0.13.10
+
+## v0.13.9
+
+* Fix original\_referer in tweet intent
+
 ## v0.13.8
 
 * Improve Facebook network detection
