@@ -1461,6 +1461,7 @@ massreljs.define('context',['helpers'], function(helpers) {
       twitter: false,
       google: false,
       instagram: false,
+      rss: false,
       message: false
     };
     this.known = false;
@@ -1491,6 +1492,10 @@ massreljs.define('context',['helpers'], function(helpers) {
     }
     else if(status.network === 'instagram') {
       context.source.instagram = context.known = true;
+    }
+    else if(status.network === 'rss') {
+      // source: internal message
+      context.source.rss = context.known = true;
     }
     else if(status.network === 'massrelevance') {
       // source: internal message

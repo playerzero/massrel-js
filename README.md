@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.11
+
+* Add RSS to Context
+
 ## v0.13.10
 
 * Fix bug in 0.13.10
