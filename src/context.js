@@ -30,7 +30,7 @@ define(['helpers'], function(helpers) {
       // source: twitter
       context.source.twitter = context.known = true;
     }
-    if(status.network === 'facebook') {
+    else if(status.network === 'facebook') {
       context.source.facebook = context.known = true;
     }
     else if(status.network === 'google_plus') {
