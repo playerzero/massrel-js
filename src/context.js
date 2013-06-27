@@ -6,6 +6,7 @@ define(['helpers'], function(helpers) {
     this.source = {
       facebook: false,
       twitter: false,
+      getglue: false,
       google: false,
       instagram: false,
       rss: false,
@@ -33,6 +34,9 @@ define(['helpers'], function(helpers) {
     }
     else if (status.network === 'facebook') {
       context.source.facebook = context.known = true;
+    }
+    else if (status.network === 'getglue') {
+      context.source.getglue = context.known = true;
     }
     else if (status.network === 'google_plus') {
       context.source.google = context.known = true;
