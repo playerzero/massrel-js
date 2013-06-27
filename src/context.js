@@ -10,7 +10,7 @@ define(['helpers'], function(helpers) {
       google: false,
       instagram: false,
       rss: false,
-      message: false
+      message: false // from the 'massrelevance' network
     };
 
     this.known = false;
@@ -28,30 +28,17 @@ define(['helpers'], function(helpers) {
 
     context.intents = opts.intents;
 
-    // determine status source
-    if (status.id_str && status.text && status.entities) {
-      context.source.twitter = context.known = true;
+    // flag the source in the map if it's a known source
+    if (typeof context.source[status.network] !== 'undefined') {
+      context.source[status.network] = context.known = true;
     }
-    else if (status.network === 'facebook') {
-      context.source.facebook = context.known = true;
-    }
-    else if (status.network === 'getglue') {
-      context.source.getglue = context.known = true;
-    }
-    else if (status.network === 'google_plus') {
-      context.source.google = context.known = true;
-    }
-    else if (status.network === 'instagram') {
-      context.source.instagram = context.known = true;
-    }
-    else if (status.network === 'rss') {
-      context.source.rss = context.known = true;
-    }
-    else if (status.network === 'massrelevance') {
-      // source: internal message
+
+    // handle the 'massrelevance' network type
+    if (status.network === 'massrelevance') {
       context.source.message = context.known = true;
     }
 
+    // for twitter, pull the retweeted status up and use it as the main status
     if (context.source.twitter && status.retweeted_status && opts.retweeted_by) {
       context.retweet = true;
       context.retweeted_by_user = status.user;
