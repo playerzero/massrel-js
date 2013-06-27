@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.13.12
+
+* Add GetGlue to Context
+
 ## v0.13.11
 
 * Add RSS to Context
