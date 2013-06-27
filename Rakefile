@@ -30,7 +30,7 @@ task :package, [:version] => [:pkg, :build] do |t, args|
   /*!
    * massrel/stream-js #{version}
    *
-   * Copyright 2012 Mass Relevance
+   * Copyright 2013 Mass Relevance
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this work except in compliance with the License.
