@@ -1576,7 +1576,7 @@ massreljs.define('context',['helpers'], function(helpers) {
       else if (this.source.google && this.status.object.attachments.length && this.status.object.attachments[0].objectType === 'photo') {
         ret = {url: this.status.object.attachments[0].fullImage.url};
       }
-      else if (this.source.instagram && this.status.images) {
+      else if (this.source.instagram && this.status.type === 'image') {
         ret = {url: this.status.images.standard_resolution.url};
       }
     }
