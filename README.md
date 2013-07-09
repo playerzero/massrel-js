@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v0.14.2
+
+* Add helpers.always
+* Add Context.getPhotoUrl
+
 ## v0.13.11
 
 * Add RSS to Context
