@@ -376,5 +376,37 @@ define(['globals'], function(globals) {
     return wrapper;
   };
 
+  /*
+   * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
+   * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
+   * this is very similar to $.when, except that $.when will reject the promise if any of the deferreds are rejected
+   */
+  exports.always = function(deferreds) {
+    var deferred = new $.Deferred();
+    if (deferreds === undefined) {
+      deferred.resolve();
+      return deferred.promise();
+    }
+
+    if (deferreds.length === undefined) {
+      deferreds = [deferreds];
+    }
+
+    var remaining = deferreds.length;
+
+    var callback = function() {
+      remaining--;
+      if (remaining === 0) {
+        deferred.resolve();
+      }
+    };
+    
+    $.each(deferreds, function() {
+      this.always(callback);
+    });
+
+    return deferred.promise();
+  };
+
   return exports;
 });

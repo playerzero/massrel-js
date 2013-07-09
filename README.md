@@ -111,9 +111,14 @@ Shorthand
 
 # Change log
 
-## v0.13.12
+## v0.15.0
 
-* Add GetGlue to Context
+* Add GetGlue support to Context
+
+## v0.14.2
+
+* Add helpers.always
+* Add Context.getPhotoUrl
 
 ## v0.13.11
 
