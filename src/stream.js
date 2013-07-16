@@ -103,6 +103,15 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
     if(opts.num_trends) {
       params.push(['num_trends', opts.num_trends]);
     }
+    if(opts.num_links) {
+      params.push(['num_links', opts.num_links]);
+    }
+    if(opts.num_hashtags) {
+      params.push(['num_hashtags', opts.num_hashtags]);
+    }
+    if(opts.num_contributors) {
+      params.push(['num_contributors', opts.num_contributors]);
+    }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);
     }
