@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.15.1
+
+* Add missing meta poller params
+
 ## v0.15.0
 
 * Add GetGlue support to Context
