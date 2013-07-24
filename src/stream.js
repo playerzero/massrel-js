@@ -1,4 +1,4 @@
-define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
+define(['helpers', 'poller', 'meta_poller', 'stream_activity'], function(helpers, Poller, MetaPoller, StreamActivity) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -131,6 +131,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
   };
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
+  };
+  Stream.prototype.activity = function(defaults) {
+    return new StreamActivity(this, defaults);
   };
 
   return Stream;
