@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.15.0
+   *
+   * Copyright 2013 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 ;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
@@ -1404,15 +1415,6 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers
     }
     if(opts.num_trends) {
       params.push(['num_trends', opts.num_trends]);
-    }
-    if(opts.num_links) {
-      params.push(['num_links', opts.num_links]);
-    }
-    if(opts.num_hashtags) {
-      params.push(['num_hashtags', opts.num_hashtags]);
-    }
-    if(opts.num_contributors) {
-      params.push(['num_contributors', opts.num_contributors]);
     }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);

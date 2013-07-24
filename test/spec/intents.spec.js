@@ -57,6 +57,9 @@ describe('intents helper', function() {
     });
     expect(result).toEqual('https://twitter.com/intent/user?related=howardr&user_id=12345');
 
+    result = massrel.intents.user('22jasontbradshaw');
+    expect(result).toEqual('https://twitter.com/intent/user?screen_name=22jasontbradshaw');
+
     result = massrel.intents.profile('howardr', {
       related: 'howardr'
     });

@@ -111,6 +111,39 @@ Shorthand
 
 # Change log
 
+## v0.15.1
+
+* Add missing meta poller params
+
+## v0.15.0
+
+* Add GetGlue support to Context
+
+## v0.14.2
+
+* Add helpers.always
+* Add Context.getPhotoUrl
+
+## v0.13.11
+
+* Add RSS to Context
+
+## v0.13.10
+
+* Fix bug in 0.13.10
+
+## v0.13.9
+
+* Fix original\_referer in tweet intent
+
+## v0.13.8
+
+* Improve Facebook network detection
+
+## v0.13.7
+
+* Fix the way intents#user parses `screen_name_or_id` when it contains a number
+
 ## v0.13.6
 
 * Fix broken Poller#more and add tests (c4550cbf6a)

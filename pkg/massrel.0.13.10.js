@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.13.10
+   *
+   * Copyright 2012 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 ;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
@@ -796,38 +807,6 @@ massreljs.define('helpers',['globals'], function(globals) {
     return wrapper;
   };
 
-  /*
-   * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
-   * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
-   * this is very similar to $.when, except that $.when will reject the promise if any of the deferreds are rejected
-   */
-  exports.always = function(deferreds) {
-    var deferred = new $.Deferred();
-    if (deferreds === undefined) {
-      deferred.resolve();
-      return deferred.promise();
-    }
-
-    if (deferreds.length === undefined) {
-      deferreds = [deferreds];
-    }
-
-    var remaining = deferreds.length;
-
-    var callback = function() {
-      remaining--;
-      if (remaining === 0) {
-        deferred.resolve();
-      }
-    };
-    
-    $.each(deferreds, function() {
-      this.always(callback);
-    });
-
-    return deferred.promise();
-  };
-
   return exports;
 });
 
@@ -1405,15 +1384,6 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers
     if(opts.num_trends) {
       params.push(['num_trends', opts.num_trends]);
     }
-    if(opts.num_links) {
-      params.push(['num_links', opts.num_links]);
-    }
-    if(opts.num_hashtags) {
-      params.push(['num_hashtags', opts.num_hashtags]);
-    }
-    if(opts.num_contributors) {
-      params.push(['num_contributors', opts.num_contributors]);
-    }
     if(opts.top_periods) {
       params.push(['top_periods', opts.top_periods]);
     }
@@ -1497,22 +1467,18 @@ massreljs.define('context',['helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
-
     this.source = {
       facebook: false,
       twitter: false,
-      getglue: false,
       google: false,
       instagram: false,
-      rss: false,
-      message: false // from the 'massrelevance' network
+      message: false
     };
-
     this.known = false;
     this.intents = true;
   }
 
-  Context.create = function (status, opts) {
+  Context.create = function(status, opts) {
     status = status || {}; // gracefully handle nulls
     var context = new Context(status);
 
@@ -1523,67 +1489,32 @@ massreljs.define('context',['helpers'], function(helpers) {
 
     context.intents = opts.intents;
 
-    // flag the source in the map if it's a known source
-    if (typeof context.source[status.network] !== 'undefined') {
-      context.source[status.network] = context.known = true;
+    // determine status source
+    if(status.id_str && status.text && status.entities) {
+      // source: twitter
+      context.source.twitter = context.known = true;
     }
-
-    // handle the 'massrelevance' network type
-    if (status.network === 'massrelevance') {
+    if(status.network === 'facebook') {
+      context.source.facebook = context.known = true;
+    }
+    else if(status.network === 'google_plus') {
+      context.source.google = context.known = true;
+    }
+    else if(status.network === 'instagram') {
+      context.source.instagram = context.known = true;
+    }
+    else if(status.network === 'massrelevance') {
+      // source: internal message
       context.source.message = context.known = true;
     }
 
-    // for twitter, pull the retweeted status up and use it as the main status
-    if (context.source.twitter && status.retweeted_status && opts.retweeted_by) {
+    if(context.source.twitter && status.retweeted_status && opts.retweeted_by) {
       context.retweet = true;
       context.retweeted_by_user = status.user;
       context.status =  status.retweeted_status;
     }
 
     return context;
-  };
-
-  /*
-   * attempt to extract a photo url
-   * in the case of twitter, we may return a url which is not a photo, so double-check after you hit embedly
-   */
-  Context.prototype.getPhotoUrl = function() {
-    if (this.photo_url !== undefined) {
-      //return cached result
-      return this.photo_url;
-    }
-
-    var ret = false;
-    
-    if (this.status && this.known) {
-      if (this.source.twitter) {
-        if (this.status.entities.media && this.status.entities.media.length) {
-          var media = this.status.entities.media[0];
-          ret = {
-            url: media.media_url,
-            width: media.sizes.medium.w,
-            height: media.sizes.medium.h,
-            link_url: media.url || media.expanded_url
-          };
-        }
-        else if (this.status.entities.urls && this.status.entities.urls.length) {
-          ret = {url: this.status.entities.urls[0].expanded_url || this.status.entities.urls[0].url};
-        }
-      }
-      else if (this.source.facebook && ((this.status.type && this.status.type === 'photo') || (this.status.kind && this.status.kind === 'photo'))) {
-        ret = {url: this.status.picture.replace(/_[st]./, '_n.')};
-      }
-      else if (this.source.google && this.status.object.attachments.length && this.status.object.attachments[0].objectType === 'photo') {
-        ret = {url: this.status.object.attachments[0].fullImage.url};
-      }
-      else if (this.source.instagram && this.status.type === 'image') {
-        ret = {url: this.status.images.standard_resolution.url};
-      }
-    }
-
-    //cache result for later use
-    this.photo_url = ret;
-    return ret;
   };
 
   return Context;
