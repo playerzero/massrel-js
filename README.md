@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.16.0
+
+* Add TopThingsPoller
+
 ## v0.15.1
 
 * Add missing meta poller params
