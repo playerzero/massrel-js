@@ -210,6 +210,10 @@ define(['globals'], function(globals) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   };
 
+  exports.is_number = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Number]';
+  };
+
   var root = document.getElementsByTagName('head')[0] || document.body;
   exports.load = function(url, fn) {
     var script = document.createElement('script');

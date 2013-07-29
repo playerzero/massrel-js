@@ -630,6 +630,10 @@ massreljs.define('helpers',['globals'], function(globals) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   };
 
+  exports.is_number = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Number]';
+  };
+
   var root = document.getElementsByTagName('head')[0] || document.body;
   exports.load = function(url, fn) {
     var script = document.createElement('script');
@@ -1300,7 +1304,115 @@ massreljs.define('meta_poller',['helpers', 'generic_poller'], function(helpers, 
   return MetaPoller;
 });
 
-massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
+massreljs.define('top_things_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+
+  var timestampNow = function() {
+    return Math.floor((new Date()).getTime() / 1000);
+  };
+
+  var computeResolution = function(start, finish) {
+    var res = finish - start;
+    //round to multiple of 5 minutes (300 seconds)
+    if (res % 300 !== 0) {
+      res = Math.max(1, Math.round(res / 300)) * 300;
+    }
+    return res;
+  };
+
+  var units = /[smh]/;
+  var unitMultipliers = {
+    s: 1,
+    m: 60,
+    h: 3600
+  };
+
+  var convertToSeconds = function(time) {
+    if (helpers.is_number(time)) {
+      return time;
+    }
+
+    var num = window.parseInt(time);
+    if (!num && num !== 0) {
+      return 0;
+    }
+
+    time = time.toLowerCase();
+    var unit = units.exec(time);
+    if (unit === null || unitMultipliers[unit] === undefined) {
+      return num;
+    }
+
+    return num * unitMultipliers[unit];
+  };
+
+  /*
+   * available opts:
+   *   start: integer - unix timestamp or relative time in seconds - lower bound on time of first bucket
+   *   finish: integer - unix timestamp or relative time in seconds - upper bound on time of last bucket
+   *   resolution: string|integer - the size of each bucket. must be divisble by 5 minutes. can be specified in seconds, minutes, hours. e.g. 300s, 5m, 1h
+   *   limit: integer - the maximum number of things in each bucket
+   *   thing: string - 'hashtags'|'urls'|'terms' - the thing that you want counts of
+   */
+  function TopThingsPoller(object, opts) {
+    if (opts.thing === undefined) {
+      opts.thing = 'hashtags';
+    }
+    if (opts.start !== undefined) {
+      opts.start = convertToSeconds(opts.start);
+    }
+    if (opts.finish !== undefined) {
+      opts.finish = convertToSeconds(opts.finish);
+    }
+    if (opts.resolution !== undefined) {
+      opts.resolution = convertToSeconds(opts.resolution);
+    }
+
+    GenericPoller.apply(this, arguments);
+  }
+
+  helpers.extend(TopThingsPoller.prototype, GenericPoller.prototype);
+
+  TopThingsPoller.prototype.fetch = function(object, opts, cycle) {
+    if (opts.start !== undefined && opts.start <= 0) {
+      //compute timestamp from relative time
+      opts.start = timestampNow() + opts.start;
+    }
+    if (opts.finish !== undefined && opts.finish <= 0) {
+      //compute timestamp from relative time
+      opts.finish = timestampNow() + opts.finish;
+    }
+    if (opts.resolution === undefined) {
+      opts.resolution = computeResolution(opts.start, opts.finish);
+    }
+    
+    object.topThings(opts, cycle.callback, cycle.errback);
+    return this;
+  };
+
+  //convenience method for finding the most recent non-empty bucket
+  TopThingsPoller.mostRecentBucket = function(data) {
+    if (data.data !== undefined && data.data.length > 0) {
+      //find most recent bucket with data if one exists
+      for (var i = data.data.length - 1; i >= 0; i--) {
+        if (data.data[i].things && data.data[i].things.length > 0) {
+          return data.data[i];
+        }
+      }
+      if (i === -1) {
+        return data.data[data.data.length - 1];
+      }
+    }
+    return null;
+  };
+
+  // alias
+  TopThingsPoller.prototype.each = TopThingsPoller.prototype.data;
+
+  return TopThingsPoller;
+});
+
+
+massreljs.define('stream',['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpers, Poller, MetaPoller, TopThingsPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -1316,6 +1428,9 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers
   };
   Stream.prototype.meta_url = function() {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
+  };
+  Stream.prototype.top_things_url = function(thing) {
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/top_' + thing + '.json');
   };
   Stream.prototype.load = function(opts, fn, error) {
     opts = helpers.extend(opts || {}, {
@@ -1433,6 +1548,56 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller'], function(helpers
   };
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
+  };
+
+  Stream.prototype.topThings = function() {
+    var opts, fn, error;
+    if(typeof(arguments[0]) === 'function') {
+      fn = arguments[0];
+      error = arguments[1];
+      opts = {};
+    }
+    else if(typeof(arguments[0]) === 'object') {
+      opts = arguments[0];
+      fn = arguments[1];
+      error = arguments[2];
+    }
+    else {
+      throw new Error('incorrect arguments');
+    }
+
+    var params = this.buildTopThingsParams(opts);
+    helpers.request_factory(this.top_things_url(opts.thing), params, 'top_things_', this, fn, error);
+
+    return this;
+  };
+  Stream.prototype.buildTopThingsParams = function(opts) {
+    opts = opts || {};
+    var params = [];
+    if(opts.resolution) {
+      var res;
+      if (helpers.is_number(opts.resolution)) {
+        //assume number of seconds
+        res = opts.resolution + 's';
+      }
+      else {
+        res = opts.resolution;
+      }
+      params.push(['resolution', res]);
+    }
+    if(opts.start) {
+      params.push(['start', opts.start]);
+    }
+    if(opts.finish) {
+      params.push(['finish', opts.finish]);
+    }
+    if(opts.limit) {
+      params.push(['limit', opts.limit]);
+    }
+    return params;
+  };
+  Stream.prototype.topThingsPoller = function(opts) {
+    return new TopThingsPoller(this, opts);
   };
 
   return Stream;
@@ -1754,6 +1919,7 @@ massreljs.define('massrel', [
        , 'generic_poller_cycle'
        , 'poller'
        , 'meta_poller'
+       , 'top_things_poller'
        , 'poller_queue'
        , 'context'
        , 'compare'
@@ -1768,6 +1934,7 @@ massreljs.define('massrel', [
        , GenericPollerCycle
        , Poller
        , MetaPoller
+       , TopThingsPoller
        , PollerQueue
        , Context
        , Compare
@@ -1789,6 +1956,7 @@ massreljs.define('massrel', [
   massrel.GenericPollerCycle = GenericPollerCycle;
   massrel.Poller = Poller;
   massrel.MetaPoller = MetaPoller;
+  massrel.TopThingsPoller = TopThingsPoller;
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;
