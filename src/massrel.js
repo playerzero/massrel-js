@@ -7,6 +7,7 @@ define('massrel', [
        , 'generic_poller_cycle'
        , 'poller'
        , 'meta_poller'
+       , 'top_things_poller'
        , 'poller_queue'
        , 'context'
        , 'compare'
@@ -21,6 +22,7 @@ define('massrel', [
        , GenericPollerCycle
        , Poller
        , MetaPoller
+       , TopThingsPoller
        , PollerQueue
        , Context
        , Compare
@@ -42,6 +44,7 @@ define('massrel', [
   massrel.GenericPollerCycle = GenericPollerCycle;
   massrel.Poller = Poller;
   massrel.MetaPoller = MetaPoller;
+  massrel.TopThingsPoller = TopThingsPoller;
   massrel.PollerQueue = PollerQueue;
   massrel.Context = Context;
   massrel.Compare = Compare;

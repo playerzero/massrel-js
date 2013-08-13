@@ -1,4 +1,4 @@
-define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPoller) {
+define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpers, Poller, MetaPoller, TopThingsPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -14,6 +14,9 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
   };
   Stream.prototype.meta_url = function() {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/meta.json');
+  };
+  Stream.prototype.top_things_url = function(thing) {
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/top_' + thing + '.json');
   };
   Stream.prototype.load = function(opts, fn, error) {
     opts = helpers.extend(opts || {}, {
@@ -131,6 +134,56 @@ define(['helpers', 'poller', 'meta_poller'], function(helpers, Poller, MetaPolle
   };
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
+  };
+
+  Stream.prototype.topThings = function() {
+    var opts, fn, error;
+    if(typeof(arguments[0]) === 'function') {
+      fn = arguments[0];
+      error = arguments[1];
+      opts = {};
+    }
+    else if(typeof(arguments[0]) === 'object') {
+      opts = arguments[0];
+      fn = arguments[1];
+      error = arguments[2];
+    }
+    else {
+      throw new Error('incorrect arguments');
+    }
+
+    var params = this.buildTopThingsParams(opts);
+    helpers.request_factory(this.top_things_url(opts.thing), params, 'top_things_', this, fn, error);
+
+    return this;
+  };
+  Stream.prototype.buildTopThingsParams = function(opts) {
+    opts = opts || {};
+    var params = [];
+    if(opts.resolution) {
+      var res;
+      if (helpers.is_number(opts.resolution)) {
+        //assume number of seconds
+        res = opts.resolution + 's';
+      }
+      else {
+        res = opts.resolution;
+      }
+      params.push(['resolution', res]);
+    }
+    if(opts.start) {
+      params.push(['start', opts.start]);
+    }
+    if(opts.finish) {
+      params.push(['finish', opts.finish]);
+    }
+    if(opts.limit) {
+      params.push(['limit', opts.limit]);
+    }
+    return params;
+  };
+  Stream.prototype.topThingsPoller = function(opts) {
+    return new TopThingsPoller(this, opts);
   };
 
   return Stream;

@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.16.0
+   *
+   * Copyright 2013 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 ;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
@@ -1691,11 +1702,6 @@ massreljs.define('context',['helpers'], function(helpers) {
     // flag the source in the map if it's a known source
     if (typeof context.source[status.network] !== 'undefined') {
       context.source[status.network] = context.known = true;
-    }
-
-    if (status.network === 'google_plus') {
-      context.source.google = context.known = true;
-      context.sourceName = 'google';
     }
 
     // handle the 'massrelevance' network type
