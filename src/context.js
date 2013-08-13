@@ -33,6 +33,11 @@ define(['helpers'], function(helpers) {
       context.source[status.network] = context.known = true;
     }
 
+    if (status.network === 'google_plus') {
+      context.source.google = context.known = true;
+      context.sourceName = 'google';
+    }
+
     // handle the 'massrelevance' network type
     if (status.network === 'massrelevance') {
       context.source.message = context.known = true;
