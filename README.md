@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.17.0
+
+* Add support for page_links parameter
+
 ## v0.16.1
 
 * fix google plus source detection in Context
