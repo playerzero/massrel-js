@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.16.1
+
+* fix google plus source detection in Context
+
 ## v0.16.0
 
 * Add TopThingsPoller
