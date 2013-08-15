@@ -31,6 +31,7 @@ define(['helpers'], function(helpers) {
     // flag the source in the map if it's a known source
     if (typeof context.source[status.network] !== 'undefined') {
       context.source[status.network] = context.known = true;
+      context.sourceName = status.network;
     }
 
     if (status.network === 'google_plus') {
@@ -41,6 +42,7 @@ define(['helpers'], function(helpers) {
     // handle the 'massrelevance' network type
     if (status.network === 'massrelevance') {
       context.source.message = context.known = true;
+      context.sourceName = 'message';
     }
 
     // for twitter, pull the retweeted status up and use it as the main status
