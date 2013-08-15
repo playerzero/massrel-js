@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v0.17.1
+
+* Add context.sourceName property
+
 ## v0.17.0
 
 * Add support for page_links parameter
