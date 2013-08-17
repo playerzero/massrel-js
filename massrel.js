@@ -1463,6 +1463,9 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller', 'top_things_polle
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
+    if(opts.from) {
+      params.push(['from', opts.from]);
+    }
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }

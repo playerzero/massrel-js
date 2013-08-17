@@ -42,6 +42,7 @@ describe('Stream', function() {
     testParam({ since_id: '100001', start_id: '20002' }, 'since_id', '100001');
     testParam({ replies: true }, 'replies', '1');
     testParam({ geo_hint: true }, 'geo_hint', '1');
+    testParam({ from: 'massrelevance' }, 'from', 'massrelevance');
     testParam({ keywords: 'blah, 2, 3' }, 'keywords', 'blah, 2, 3');
     testParam({ network: 'instagram' }, 'network', 'instagram');
     testParam({ timeline_search: true }, 'timeline_search', '1');
