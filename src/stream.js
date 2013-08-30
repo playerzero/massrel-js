@@ -64,6 +64,9 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpe
     if(opts.page_links) {
       params.push(['page_links', '1']);
     }
+    if(opts.klout) {
+      params.push(['klout', '1']);
+    }
     return params;
   };
   Stream.prototype.each = function(fn) {
