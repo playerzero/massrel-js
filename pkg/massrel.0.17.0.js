@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.17.0
+   *
+   * Copyright 2013 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 ;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
@@ -1463,9 +1474,6 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller', 'top_things_polle
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
-    if(opts.from) {
-      params.push(['from', opts.from]);
-    }
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
@@ -1477,9 +1485,6 @@ massreljs.define('stream',['helpers', 'poller', 'meta_poller', 'top_things_polle
     }
     if(opts.page_links) {
       params.push(['page_links', '1']);
-    }
-    if(opts.klout) {
-      params.push(['klout', '1']);
     }
     return params;
   };
@@ -1700,7 +1705,6 @@ massreljs.define('context',['helpers'], function(helpers) {
     // flag the source in the map if it's a known source
     if (typeof context.source[status.network] !== 'undefined') {
       context.source[status.network] = context.known = true;
-      context.sourceName = status.network;
     }
 
     if (status.network === 'google_plus') {
@@ -1711,7 +1715,6 @@ massreljs.define('context',['helpers'], function(helpers) {
     // handle the 'massrelevance' network type
     if (status.network === 'massrelevance') {
       context.source.message = context.known = true;
-      context.sourceName = 'message';
     }
 
     // for twitter, pull the retweeted status up and use it as the main status

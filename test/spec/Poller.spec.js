@@ -248,6 +248,7 @@ describe('Poller', function() {
     testParam({ replies: true }, 'replies', '1');
     testParam({ geo_hint: true }, 'geo_hint', '1');
     testParam({ keywords: 'abc' }, 'keywords', 'abc');
+    testParam({ from: 'massrelevance' }, 'from', 'massrelevance');
     testParam({ network: 'massrelevance' }, 'network', 'massrelevance');
     testParam({ timeline_search: true }, 'timeline_search', '1');
     testParam({ random: 'blah' }, undefined, undefined);

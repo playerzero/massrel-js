@@ -49,6 +49,9 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpe
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
+    if(opts.from) {
+      params.push(['from', opts.from]);
+    }
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
@@ -57,6 +60,12 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpe
     }
     if(opts.timeline_search) {
       params.push(['timeline_search', '1']);
+    }
+    if(opts.page_links) {
+      params.push(['page_links', '1']);
+    }
+    if(opts.klout) {
+      params.push(['klout', '1']);
     }
     return params;
   };

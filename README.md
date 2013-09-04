@@ -111,6 +111,18 @@ Shorthand
 
 # Change log
 
+## v0.18.0
+
+* 'klout' is a new stream param (55fc7f3de9)
+
+## v0.17.1
+
+* Add context.sourceName property
+
+## v0.17.0
+
+* Add support for page_links parameter
+
 ## v0.16.1
 
 * fix google plus source detection in Context
