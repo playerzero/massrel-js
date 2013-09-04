@@ -113,7 +113,7 @@ Shorthand
 
 ## v0.18.0
 
-* 'klout' is a new stream param (https://github.com/MassRelevance/massrel-js/commit/55fc7f3de9515897bc04e54d6e73fbf9a3093285)
+* 'klout' is a new stream param (55fc7f3de9)
 
 ## v0.17.1
 
