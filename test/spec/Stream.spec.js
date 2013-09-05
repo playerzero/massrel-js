@@ -115,6 +115,34 @@ describe('Stream', function() {
     massrel.helpers.request_factory = old_request_factory;
   });
 
+  it('use correct params from keyword insights options', function() {
+    var stream = new massrel.Stream('howardrauscher/test');
+    var insights = stream.keywordInsights();
+    var params;
+
+    params = insights.params();
+    expect(params.length).toEqual(0);
+
+    params = insights.params({});
+    expect(params.length).toEqual(0);
+
+    var testParam = function(opts, key, val) {
+      var params =  insights.params(opts);
+      expect(params.length).toEqual(1);
+      expect(params[0][0]).toEqual(key);
+      expect(params[0][1]).toEqual(val);
+    };
+
+    testParam({ topics: true }, 'topics', '1');
+    testParam({ start: 1234 }, 'start', 1234);
+    testParam({ start: 0 }, 'start', 0);
+    testParam({ start: -1 }, 'start', -1);
+    testParam({ finish: 1234 }, 'finish', 1234);
+    testParam({ finish: 0 }, 'finish', 0);
+    testParam({ finish: -1 }, 'finish', -1);
+    testParam({ resolution: '1m' }, 'resolution', '1m');
+  });
+
   it('will not break when #keywordInsights is called (end-to-end test)', function() {
     var stream = new massrel.Stream('massreldemo/fb-insights-demo');
     var old_request_factory = massrel.helpers.request_factory;

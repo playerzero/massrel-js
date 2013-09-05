@@ -6,7 +6,7 @@ massreljs.define('stream_keyword_insights',['helpers', 'generic_poller'], functi
     this.defaults = defaults || {};
   };
   StreamKeywordInsights.prototype.url = function() {
-    return helpers.api_url('/'+ _enc(this.stream.account) +'/'+ _enc(this.stream.stream_name) +'/keyword_insights.json');
+    return this.stream.keyword_insights_url();
   };
   StreamKeywordInsights.prototype.fetch = function(opts, fn, errback) {
     opts = helpers.extend({}, opts || {});
@@ -14,16 +14,6 @@ massreljs.define('stream_keyword_insights',['helpers', 'generic_poller'], functi
 
     var params = this.params(opts);
     helpers.request_factory(this.url(), params, '_', this, function(data) {
-      if(data && (!opts.verbose || opts.verbose === '0') && helpers.is_array(data.data)) {
-        var activity = data.data;
-        for(var i = 0, len = activity.length; i < len; i++) {
-          var start = data.start + (data.period_size * i);
-          activity[i] = helpers.extend(activity[i], {
-            start: start,
-            finish: Math.min(start + data.period_size, data.finish)
-          });
-        }
-      }
       if(typeof(fn) === 'function') {
         fn.apply(this, arguments);
       }
@@ -43,7 +33,7 @@ massreljs.define('stream_keyword_insights',['helpers', 'generic_poller'], functi
     var params = [];
 
     if(opts.topics) {
-      params.push(['topics', opts.topic]);
+      params.push(['topics', '1']);
     }
     if('start' in opts) {
       params.push(['start', opts.start]);
@@ -54,24 +44,9 @@ massreljs.define('stream_keyword_insights',['helpers', 'generic_poller'], functi
     if(opts.resolution) {
       params.push(['resolution', opts.resolution]);
     }
-    params.push(['verbose', 0]);
 
     return params;
   };
-
-  var predef = function(method, key, value) {
-    StreamKeywordInsights.prototype[method] = function() {
-      this.defaults[key] = value;
-      return this;
-    };
-  };
-
-  // resolution
-  predef('minutes', 'resolution', '1m');
-  predef('ten_minutes', 'resolution', '10m');
-  predef('hours', 'resolution', '1h');
-  predef('days', 'resolution', '1d');
-
 
   return StreamKeywordInsights;
 });
