@@ -16,6 +16,8 @@ describe('Stream', function() {
     var stream = new massrel.Stream('howardrauscher/test');
     expect(stream.stream_url()).toEqual('http://tweetriver.com/howardrauscher/test.json');
     expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/meta.json');
+    expect(stream.top_things_url('hashtags')).toEqual('http://tweetriver.com/howardrauscher/test/top_hashtags.json');
+    expect(stream.keyword_insights_url()).toEqual('http://tweetriver.com/howardrauscher/test/keyword_insights.json');
   });
 
   it('use correct params from options', function() {
@@ -113,7 +115,7 @@ describe('Stream', function() {
     massrel.helpers.request_factory = old_request_factory;
   });
 
-  it('will not break when #keywordInsights is called', function() {
+  it('will not break when #keywordInsights is called (end-to-end test)', function() {
     var stream = new massrel.Stream('massreldemo/fb-insights-demo');
     var old_request_factory = massrel.helpers.request_factory;
     var opts = {};
