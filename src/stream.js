@@ -1,4 +1,4 @@
-define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpers, Poller, MetaPoller, TopThingsPoller) {
+define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -18,6 +18,9 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpe
   Stream.prototype.top_things_url = function(thing) {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/top_' + thing + '.json');
   };
+  Stream.prototype.keyword_insights_url = function(thing) {
+    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/keyword_insights.json');
+  };  
   Stream.prototype.load = function(opts, fn, error) {
     opts = helpers.extend(opts || {}, {
       // put defaults
@@ -144,7 +147,9 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpe
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
   };
-
+  Stream.prototype.keywordInsights = function(defaults) {
+    return new StreamKeywordInsights(this, defaults);
+  };
   Stream.prototype.topThings = function() {
     var opts, fn, error;
     if(typeof(arguments[0]) === 'function') {

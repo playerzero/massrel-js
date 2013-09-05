@@ -113,6 +113,28 @@ describe('Stream', function() {
     massrel.helpers.request_factory = old_request_factory;
   });
 
-  //TODO: #load, #each, #poller, #meta
+  it('will not break when #keywordInsights is called', function() {
+    var stream = new massrel.Stream('massreldemo/fb-insights-demo');
+    var old_request_factory = massrel.helpers.request_factory;
+    var opts = {};
 
+    massrel.helpers.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
+      expect(stream.keyword_insights_url()).toEqual(url);
+      expect(stream.buildMetaParams(opts)).toEqual(params);
+    };
+
+    stream.keywordInsights(opts, function(data) { });
+
+    massrel.helpers.request_factory = old_request_factory;
+  });
+  
+  it('returns legit data when #keywordInsights fetch', function() {
+    var stream = new massrel.Stream('massreldemo/fb-insights-demo');
+
+    stream.keywordInsights().fetch({}, function(data) {
+      expect(data.data.length).toEqual(60);
+    });
+  });
+  
+  //TODO: #load, #each, #poller, #meta
 });
