@@ -213,7 +213,7 @@ describe('helpers', function() {
       });
 
       it('Server error', function() {
-        request('http://tweetriver.com/bdainton/kindle/meta.json?num_days=0', function(success) {
+        request('http://tweetriver.com/bdainton/kindle/activity.json', function(success) {
           expect(success).toEqual(false);
         });
       });
