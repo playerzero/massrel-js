@@ -10,7 +10,6 @@
     "lib",
     "misc",
     "pkg",
-    "src",
     "templates",
     "test"
   ]

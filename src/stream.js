@@ -1,4 +1,4 @@
-define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
+define(['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -20,14 +20,14 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
   };
   Stream.prototype.keyword_insights_url = function(thing) {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/keyword_insights.json');
-  };  
+  };
   Stream.prototype.load = function(opts, fn, error) {
     opts = helpers.extend(opts || {}, {
       // put defaults
     });
 
     var params = this.buildParams(opts);
-    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
+    helpers.request_factory(this.stream_url(), params, './_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -47,10 +47,10 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
       params.push(['start', opts.start_id || opts.start]);
     }
     if(opts.replies) {
-      params.push(['replies', '1']);
+      params.push(['replies', './1']);
     }
     if(opts.geo_hint) {
-      params.push(['geo_hint', '1']);
+      params.push(['geo_hint', './1']);
     }
     if(opts.from) {
       params.push(['from', opts.from]);
@@ -62,13 +62,13 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
       params.push(['network', opts.network]);
     }
     if(opts.timeline_search) {
-      params.push(['timeline_search', '1']);
+      params.push(['timeline_search', './1']);
     }
     if(opts.page_links) {
-      params.push(['page_links', '1']);
+      params.push(['page_links', './1']);
     }
     if(opts.klout) {
-      params.push(['klout', '1']);
+      params.push(['klout', './1']);
     }
     return params;
   };
@@ -96,7 +96,7 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, './meta_', this, fn, error);
 
     return this;
   };
@@ -140,7 +140,7 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
       params.push(['finish', opts.finish]);
     }
     if(opts.networks) {
-      params.push(['networks', '1']);
+      params.push(['networks', './1']);
     }
     return params;
   };
@@ -167,7 +167,7 @@ define(['helpers', 'poller', 'meta_poller', 'top_things_poller', 'stream_keyword
     }
 
     var params = this.buildTopThingsParams(opts);
-    helpers.request_factory(this.top_things_url(opts.thing), params, 'top_things_', this, fn, error);
+    helpers.request_factory(this.top_things_url(opts.thing), params, './top_things_', this, fn, error);
 
     return this;
   };

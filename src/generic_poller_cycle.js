@@ -1,4 +1,4 @@
-define(['helpers'], function(helpers) {
+define(['./helpers'], function(helpers) {
 
   function GenericPollerCycle(skip, callback, errback) {
     this.cg = helpers.callback_group();

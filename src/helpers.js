@@ -1,4 +1,4 @@
-define(['globals'], function(globals) {
+define(['./globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -22,17 +22,14 @@ define(['globals'], function(globals) {
         to_obj[prop] = from_obj[prop];
       }
     }
-    
+
     return to_obj;
   };
 
   exports.api_url = function(path, host) {
-    // A circular dependency has emerged between massrel and helpers.
-    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
-    // be easily resolved w/ require.
-    var host = host || massrel.host,
-        port = massrel.port,
-        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
+    var host = host || globals.host,
+        port = globals.port,
+        baseUrl = globals.protocol + '://' + host + (port ? ':' + port : '');
 
     return baseUrl + path;
   };
@@ -126,7 +123,7 @@ define(['globals'], function(globals) {
       else if(exports.is_array(callback) && callback.length > 0) {
         exports.step_through(data, callback, obj);
       }
-      
+
       delete globals._json_callbacks[callback_id];
 
       fulfilled = true;
@@ -167,7 +164,7 @@ define(['globals'], function(globals) {
 
     // this catches a case if "max" value
     // has changed since last counter call
-    while(counts.length > max) { 
+    while(counts.length > max) {
       counts.shift();
     }
 
@@ -230,7 +227,7 @@ define(['globals'], function(globals) {
         if (root && script.parentNode) {
           root.removeChild(script);
         }
-        
+
         if(typeof fn === 'function') {
           fn();
         }
@@ -404,7 +401,7 @@ define(['globals'], function(globals) {
         deferred.resolve();
       }
     };
-    
+
     $.each(deferreds, function() {
       this.always(callback);
     });

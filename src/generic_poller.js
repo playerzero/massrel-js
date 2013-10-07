@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle) {
+define(['./helpers', './generic_poller_cycle'], function(helpers, GenericPollerCycle) {
 
   function GenericPoller(object, opts) {
     var self = this,
@@ -24,7 +24,7 @@ define(['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle
                 // wrapping the data in [], the strep_through method
                 // will not enumerate through each item directly
                 helpers.step_through([data],  self._listeners, self);
-    
+
                 if(enabled) { // poller can be stopped in any of the above iterators
                   inner_again();
                 }

@@ -1,20 +1,20 @@
-define('massrel', [
-         'globals'
-       , 'helpers'
-       , 'stream'
-       , 'account'
-       , 'generic_poller'
-       , 'generic_poller_cycle'
-       , 'poller'
-       , 'meta_poller'
-       , 'top_things_poller'
-       , 'poller_queue'
-       , 'context'
-       , 'compare'
-       , 'compare_poller'
-       , 'intents'
+define([
+         './globals'
+       , './helpers'
+       , './stream'
+       , './account'
+       , './generic_poller'
+       , './generic_poller_cycle'
+       , './poller'
+       , './meta_poller'
+       , './top_things_poller'
+       , './poller_queue'
+       , './context'
+       , './compare'
+       , './compare_poller'
+       , './intents'
        ], function(
-         globals
+         massrel
        , helpers
        , Stream
        , Account
@@ -29,13 +29,6 @@ define('massrel', [
        , ComparePoller
        , intents
        ) {
-
-  var massrel = window.massrel;
-  if(typeof(massrel) === 'undefined') {
-    massrel = window.massrel = globals;
-  } else {
-    helpers.extend(massrel, globals);
-  }
 
   // public API
   massrel.Stream = Stream;
