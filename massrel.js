@@ -1511,10 +1511,10 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
       params.push(['start', opts.start_id || opts.start]);
     }
     if(opts.replies) {
-      params.push(['replies', './1']);
+      params.push(['replies', '1']);
     }
     if(opts.geo_hint) {
-      params.push(['geo_hint', './1']);
+      params.push(['geo_hint', '1']);
     }
     if(opts.from) {
       params.push(['from', opts.from]);
@@ -1526,13 +1526,13 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
       params.push(['network', opts.network]);
     }
     if(opts.timeline_search) {
-      params.push(['timeline_search', './1']);
+      params.push(['timeline_search', '1']);
     }
     if(opts.page_links) {
-      params.push(['page_links', './1']);
+      params.push(['page_links', '1']);
     }
     if(opts.klout) {
-      params.push(['klout', './1']);
+      params.push(['klout', '1']);
     }
     return params;
   };
@@ -1604,7 +1604,7 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
       params.push(['finish', opts.finish]);
     }
     if(opts.networks) {
-      params.push(['networks', './1']);
+      params.push(['networks', '1']);
     }
     return params;
   };
