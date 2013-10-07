@@ -252,6 +252,32 @@ describe('Poller', function() {
     testParam({ network: 'massrelevance' }, 'network', 'massrelevance');
     testParam({ timeline_search: true }, 'timeline_search', '1');
     testParam({ random: 'blah' }, undefined, undefined);
+    testParam({ timeframe: { start: 60 } }, 'timeframe[start]', 60);
+    testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
+  });
+
+  it('not continually poll when using timeframe params', function() {
+    testPoll(function(stream, done) {
+      var poller = new massrel.Poller(stream, {
+        timeframe: {
+          start: new Date()
+        }
+      });
+
+      var stop = poller.stop;
+      var stopped = false;
+      poller.stop = function() {
+        stopped = true;
+        return stop.apply(poller, arguments);
+      };
+      poller.batch(function() {
+        setTimeout(function() {
+          expect(stopped).toEqual(true);
+          done();
+        }, 0);
+      });
+      poller.start();
+    });
   });
 
 });
