@@ -1,4 +1,4 @@
-massreljs.define('stream_keyword_insights',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
   var _enc = encodeURIComponent;
 
   function StreamKeywordInsights(stream, defaults) {

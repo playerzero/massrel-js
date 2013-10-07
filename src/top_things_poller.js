@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
 
   var timestampNow = function() {
     return Math.floor((new Date()).getTime() / 1000);
@@ -78,7 +78,7 @@ define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
     if (opts.resolution === undefined) {
       opts.resolution = computeResolution(opts.start, opts.finish);
     }
-    
+
     object.topThings(opts, cycle.callback, cycle.errback);
     return this;
   };

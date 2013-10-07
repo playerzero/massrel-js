@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
 
   function ComparePoller() {
     GenericPoller.apply(this, arguments);

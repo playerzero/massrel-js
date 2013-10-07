@@ -1,4 +1,4 @@
-define(['helpers'], function(helpers) {
+define(['./helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
     this.poller = poller;

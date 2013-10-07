@@ -1,4 +1,4 @@
-define(['helpers'], function(helpers) {
+define(['./helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
@@ -66,7 +66,7 @@ define(['helpers'], function(helpers) {
     }
 
     var ret = false;
-    
+
     if (this.status && this.known) {
       if (this.source.twitter) {
         if (this.status.entities.media && this.status.entities.media.length) {

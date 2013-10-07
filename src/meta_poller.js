@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
 
   function MetaPoller() {
     GenericPoller.apply(this, arguments);

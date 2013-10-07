@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericPoller, PollerQueue) {
+define(['./helpers', './generic_poller', './poller_queue'], function(helpers, GenericPoller, PollerQueue) {
 
   function Poller(stream, opts) {
     GenericPoller.call(this, stream, opts);
