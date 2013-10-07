@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v1.0.1
+
+* Support src/massrel being the entry point for a require.js package
+* If included as a require.js package, does not create window.massrel
+
 ## v0.20.0
 
 * `timeframe` params
