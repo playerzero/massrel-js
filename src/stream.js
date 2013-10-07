@@ -27,7 +27,7 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     });
 
     var params = this.buildParams(opts);
-    helpers.request_factory(this.stream_url(), params, './_', this, fn || this._enumerators, error);
+    helpers.request_factory(this.stream_url(), params, '_', this, fn || this._enumerators, error);
 
     return this;
   };
@@ -96,7 +96,7 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     }
 
     var params = this.buildMetaParams(opts);
-    helpers.request_factory(this.meta_url(), params, './meta_', this, fn, error);
+    helpers.request_factory(this.meta_url(), params, 'meta_', this, fn, error);
 
     return this;
   };
@@ -167,7 +167,7 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     }
 
     var params = this.buildTopThingsParams(opts);
-    helpers.request_factory(this.top_things_url(opts.thing), params, './top_things_', this, fn, error);
+    helpers.request_factory(this.top_things_url(opts.thing), params, 'top_things_', this, fn, error);
 
     return this;
   };
