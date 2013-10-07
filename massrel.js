@@ -2038,7 +2038,7 @@ massreljs.define('massrel',[
   return massrel;
 });
 // call massrel module
-var globals = massreljs.require('massrel');
+var globals = massreljs.require('./massrel');
 
 var massrel = window.massrel;
 if(typeof(massrel) === 'undefined') {
