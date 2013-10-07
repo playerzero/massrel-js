@@ -380,6 +380,22 @@ define(['globals'], function(globals) {
     return wrapper;
   };
 
+  exports.timeParam = function(value, paramName, params) {
+    if(value) {
+      if(value.getTime) {
+        value = value.getTime() / 1000;
+      }
+      
+      value = +value;
+      if(!isNaN(value) && value > 0) {
+        // bucket to closest minute
+        value = Math.floor(value / 60) * 60;
+        params.push([paramName, value]);
+      }
+
+    }
+  };
+
   /*
    * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
    * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
