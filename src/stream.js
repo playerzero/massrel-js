@@ -70,6 +70,11 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.klout) {
       params.push(['klout', '1']);
     }
+    if(opts.timeframe) {
+      helpers.timeParam(opts.timeframe.start, 'timeframe[start]', params);
+      helpers.timeParam(opts.timeframe.finish, 'timeframe[finish]', params);
+    }
+    
     return params;
   };
   Stream.prototype.each = function(fn) {

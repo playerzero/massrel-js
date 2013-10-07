@@ -487,4 +487,30 @@ describe('helpers', function() {
 
   });
 
+  describe('timeParam', function() {
+    
+    it('add to param array correctly', function() {
+      var params = [];
+
+      massrel.helpers.timeParam(0, 'a', params);
+      expect(params.length).toEqual(0);
+
+      massrel.helpers.timeParam(-1, 'a', params);
+      expect(params.length).toEqual(0);
+
+      massrel.helpers.timeParam('a', 'a', params);
+      expect(params.length).toEqual(0);
+
+      massrel.helpers.timeParam(60, 'b', params);
+      expect(params[0][0]).toEqual('b');
+      expect(params[0][1]).toEqual(60);
+
+      var d = new Date(13811593860000);
+      massrel.helpers.timeParam(d, 'c', params);
+      expect(params[1][0]).toEqual('c');
+      expect(params[1][1]).toEqual(13811593860);
+    });
+
+  });
+
 });

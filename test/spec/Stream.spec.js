@@ -48,6 +48,8 @@ describe('Stream', function() {
     testParam({ keywords: 'blah, 2, 3' }, 'keywords', 'blah, 2, 3');
     testParam({ network: 'instagram' }, 'network', 'instagram');
     testParam({ timeline_search: true }, 'timeline_search', '1');
+    testParam({ timeframe: { start: 60 } }, 'timeframe[start]', 60);
+    testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
@@ -162,8 +164,11 @@ describe('Stream', function() {
     var stream = new massrel.Stream('massreldemo/fb-insights-demo');
 
     stream.keywordInsights().fetch({}, function(data) {
-      expect(data.data.length).toEqual(60);
+      expect(data.data.length).toEqual(1);
     });
+
+
+    waits(1500);
   });
   
   //TODO: #load, #each, #poller, #meta

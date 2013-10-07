@@ -797,6 +797,22 @@ massreljs.define('helpers',['./globals'], function(globals) {
     return wrapper;
   };
 
+  exports.timeParam = function(value, paramName, params) {
+    if(value) {
+      if(value.getTime) {
+        value = value.getTime() / 1000;
+      }
+      
+      value = +value;
+      if(!isNaN(value) && value > 0) {
+        // bucket to closest minute
+        value = Math.floor(value / 60) * 60;
+        params.push([paramName, value]);
+      }
+
+    }
+  };
+
   /*
    * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
    * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
@@ -1125,7 +1141,16 @@ massreljs.define('poller',['./helpers', './generic_poller', './poller_queue'], f
           }
         }
         cycle.callback(statuses);
+
+        // disable continuous polling if `timeframe`
+        // param is present. You can't "poll" for new
+        // data when you are in the past.
+        if(load_opts.timeframe && self.first) {
+          self.stop();
+        }
+
         self.first = false;
+
       }
     }, cycle.errback);
     return this;
@@ -1534,6 +1559,11 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     if(opts.klout) {
       params.push(['klout', '1']);
     }
+    if(opts.timeframe) {
+      helpers.timeParam(opts.timeframe.start, 'timeframe[start]', params);
+      helpers.timeParam(opts.timeframe.finish, 'timeframe[finish]', params);
+    }
+    
     return params;
   };
   Stream.prototype.each = function(fn) {
