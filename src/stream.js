@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-define(['helpers', 'poller', 'meta_poller', 'stream_activity'], function(helpers, Poller, MetaPoller, StreamActivity) {
-=======
-define(['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
->>>>>>> master
+define(['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights', './stream_activity'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights, StreamActivity) {
   var _enc = encodeURIComponent;
 
   function Stream() {
