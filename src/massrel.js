@@ -3,6 +3,8 @@ define([
        , './helpers'
        , './stream'
        , './account'
+       , './stream_keyword_insights'
+       , './stream_activity'
        , './generic_poller'
        , './generic_poller_cycle'
        , './poller'
@@ -18,6 +20,8 @@ define([
        , helpers
        , Stream
        , Account
+       , StreamKeywordInsights
+       , StreamActivity
        , GenericPoller
        , GenericPollerCycle
        , Poller
@@ -33,6 +37,8 @@ define([
   // public API
   massrel.Stream = Stream;
   massrel.Account = Account;
+  massrel.StreamKeywordInsights = StreamKeywordInsights;
+  massrel.StreamActivity = StreamActivity;
   massrel.GenericPoller = GenericPoller;
   massrel.GenericPollerCycle = GenericPollerCycle;
   massrel.Poller = Poller;

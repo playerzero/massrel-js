@@ -1,4 +1,4 @@
-define(['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
+define(['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights', './stream_activity'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights, StreamActivity) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -203,6 +203,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
   };
   Stream.prototype.topThingsPoller = function(opts) {
     return new TopThingsPoller(this, opts);
+  };
+  Stream.prototype.activity = function(defaults) {
+    return new StreamActivity(this, defaults);
   };
 
   return Stream;

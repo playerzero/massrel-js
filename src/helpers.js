@@ -377,8 +377,8 @@ define(['./globals'], function(globals) {
     return wrapper;
   };
 
-  exports.timeParam = function(value, paramName, params) {
-    if(value) {
+  exports.timeParam = function(value, paramName, params, allowZeroOrNegative) {
+    if(typeof(value) !== 'undefined') {
       if(value.getTime) {
         value = value.getTime() / 1000;
       }
@@ -387,6 +387,9 @@ define(['./globals'], function(globals) {
       if(!isNaN(value) && value > 0) {
         // bucket to closest minute
         value = Math.floor(value / 60) * 60;
+        params.push([paramName, value]);
+      }
+      else if(!isNaN(value) && allowZeroOrNegative && value <= 0) {
         params.push([paramName, value]);
       }
 
