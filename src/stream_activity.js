@@ -1,4 +1,4 @@
-define('stream_activity',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
+define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
   var _enc = encodeURIComponent;
 
   function StreamActivity(stream, defaults) {
@@ -48,12 +48,8 @@ define('stream_activity',['helpers', 'generic_poller'], function(helpers, Generi
     else if(opts.topic) {
       params.push(['topic', opts.topic]);
     }
-    if('start' in opts) {
-      params.push(['start', opts.start]);
-    }
-    if('finish' in opts) {
-      params.push(['finish', opts.finish]);
-    }
+    helpers.timeParam(opts.start, 'start', params, true);
+    helpers.timeParam(opts.finish, 'finish', params, true);
     if('periods' in opts) {
       params.push(['periods', opts.periods]);
     }
