@@ -1,3 +1,14 @@
+  /*!
+   * massrel/stream-js 0.17.1
+   *
+   * Copyright 2013 Mass Relevance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this work except in compliance with the License.
+   * You may obtain a copy of the License at:
+   *
+   *    http://www.apache.org/licenses/LICENSE-2.0
+   */
 ;(function(window, undefined) {
 
 var massreljs;(function () { if (typeof massreljs === 'undefined') {
@@ -418,7 +429,7 @@ massreljs.define('globals',{
 , jsonp_param: 'jsonp'
 });
 
-massreljs.define('helpers',['./globals'], function(globals) {
+massreljs.define('helpers',['globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -442,14 +453,17 @@ massreljs.define('helpers',['./globals'], function(globals) {
         to_obj[prop] = from_obj[prop];
       }
     }
-
+    
     return to_obj;
   };
 
   exports.api_url = function(path, host) {
-    var host = host || globals.host,
-        port = globals.port,
-        baseUrl = globals.protocol + '://' + host + (port ? ':' + port : '');
+    // A circular dependency has emerged between massrel and helpers.
+    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
+    // be easily resolved w/ require.
+    var host = host || massrel.host,
+        port = massrel.port,
+        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
 
     return baseUrl + path;
   };
@@ -543,7 +557,7 @@ massreljs.define('helpers',['./globals'], function(globals) {
       else if(exports.is_array(callback) && callback.length > 0) {
         exports.step_through(data, callback, obj);
       }
-
+      
       delete globals._json_callbacks[callback_id];
 
       fulfilled = true;
@@ -584,7 +598,7 @@ massreljs.define('helpers',['./globals'], function(globals) {
 
     // this catches a case if "max" value
     // has changed since last counter call
-    while(counts.length > max) {
+    while(counts.length > max) { 
       counts.shift();
     }
 
@@ -647,7 +661,7 @@ massreljs.define('helpers',['./globals'], function(globals) {
         if (root && script.parentNode) {
           root.removeChild(script);
         }
-
+        
         if(typeof fn === 'function') {
           fn();
         }
@@ -797,22 +811,6 @@ massreljs.define('helpers',['./globals'], function(globals) {
     return wrapper;
   };
 
-  exports.timeParam = function(value, paramName, params) {
-    if(value) {
-      if(value.getTime) {
-        value = value.getTime() / 1000;
-      }
-      
-      value = +value;
-      if(!isNaN(value) && value > 0) {
-        // bucket to closest minute
-        value = Math.floor(value / 60) * 60;
-        params.push([paramName, value]);
-      }
-
-    }
-  };
-
   /*
    * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
    * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
@@ -837,7 +835,7 @@ massreljs.define('helpers',['./globals'], function(globals) {
         deferred.resolve();
       }
     };
-
+    
     $.each(deferreds, function() {
       this.always(callback);
     });
@@ -848,7 +846,7 @@ massreljs.define('helpers',['./globals'], function(globals) {
   return exports;
 });
 
-massreljs.define('generic_poller_cycle',['./helpers'], function(helpers) {
+massreljs.define('generic_poller_cycle',['helpers'], function(helpers) {
 
   function GenericPollerCycle(skip, callback, errback) {
     this.cg = helpers.callback_group();
@@ -871,7 +869,7 @@ massreljs.define('generic_poller_cycle',['./helpers'], function(helpers) {
 
 });
 
-massreljs.define('generic_poller',['./helpers', './generic_poller_cycle'], function(helpers, GenericPollerCycle) {
+massreljs.define('generic_poller',['helpers', 'generic_poller_cycle'], function(helpers, GenericPollerCycle) {
 
   function GenericPoller(object, opts) {
     var self = this,
@@ -897,7 +895,7 @@ massreljs.define('generic_poller',['./helpers', './generic_poller_cycle'], funct
                 // wrapping the data in [], the strep_through method
                 // will not enumerate through each item directly
                 helpers.step_through([data],  self._listeners, self);
-
+    
                 if(enabled) { // poller can be stopped in any of the above iterators
                   inner_again();
                 }
@@ -978,7 +976,7 @@ massreljs.define('generic_poller',['./helpers', './generic_poller_cycle'], funct
   return GenericPoller;
 });
 
-massreljs.define('poller_queue',['./helpers'], function(helpers) {
+massreljs.define('poller_queue',['helpers'], function(helpers) {
 
   function PollerQueue(poller, opts) {
     this.poller = poller;
@@ -1072,7 +1070,7 @@ massreljs.define('poller_queue',['./helpers'], function(helpers) {
   return PollerQueue;
 });
 
-massreljs.define('poller',['./helpers', './generic_poller', './poller_queue'], function(helpers, GenericPoller, PollerQueue) {
+massreljs.define('poller',['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericPoller, PollerQueue) {
 
   function Poller(stream, opts) {
     GenericPoller.call(this, stream, opts);
@@ -1141,16 +1139,7 @@ massreljs.define('poller',['./helpers', './generic_poller', './poller_queue'], f
           }
         }
         cycle.callback(statuses);
-
-        // disable continuous polling if `timeframe`
-        // param is present. You can't "poll" for new
-        // data when you are in the past.
-        if(load_opts.timeframe && self.first) {
-          self.stop();
-        }
-
         self.first = false;
-
       }
     }, cycle.errback);
     return this;
@@ -1307,7 +1296,7 @@ massreljs.define('poller',['./helpers', './generic_poller', './poller_queue'], f
   return Poller;
 });
 
-massreljs.define('meta_poller',['./helpers', './generic_poller'], function(helpers, GenericPoller) {
+massreljs.define('meta_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
   function MetaPoller() {
     GenericPoller.apply(this, arguments);
@@ -1326,7 +1315,7 @@ massreljs.define('meta_poller',['./helpers', './generic_poller'], function(helpe
   return MetaPoller;
 });
 
-massreljs.define('top_things_poller',['./helpers', './generic_poller'], function(helpers, GenericPoller) {
+massreljs.define('top_things_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
   var timestampNow = function() {
     return Math.floor((new Date()).getTime() / 1000);
@@ -1406,7 +1395,7 @@ massreljs.define('top_things_poller',['./helpers', './generic_poller'], function
     if (opts.resolution === undefined) {
       opts.resolution = computeResolution(opts.start, opts.finish);
     }
-
+    
     object.topThings(opts, cycle.callback, cycle.errback);
     return this;
   };
@@ -1434,60 +1423,7 @@ massreljs.define('top_things_poller',['./helpers', './generic_poller'], function
 });
 
 
-massreljs.define('stream_keyword_insights',['./helpers', './generic_poller'], function(helpers, GenericPoller) {
-  var _enc = encodeURIComponent;
-
-  function StreamKeywordInsights(stream, defaults) {
-    this.stream = stream;
-    this.defaults = defaults || {};
-  };
-  StreamKeywordInsights.prototype.url = function() {
-    return this.stream.keyword_insights_url();
-  };
-  StreamKeywordInsights.prototype.fetch = function(opts, fn, errback) {
-    opts = helpers.extend({}, opts || {});
-    opts = helpers.extend(opts, this.defaults);
-
-    var params = this.params(opts);
-    helpers.request_factory(this.url(), params, '_', this, function(data) {
-      if(typeof(fn) === 'function') {
-        fn.apply(this, arguments);
-      }
-    }, errback);
-    return this;
-  };
-  StreamKeywordInsights.prototype.poller = function(opts) {
-    var poller = new GenericPoller(this, opts);
-    poller.fetch = function(object, opts, cycle) {
-      return object.fetch(opts, cycle.callback, cycle.errback);
-    };
-
-    return poller;
-  };
-  StreamKeywordInsights.prototype.params = function(opts) {
-    opts = opts || {};
-    var params = [];
-
-    if(opts.topics) {
-      params.push(['topics', '1']);
-    }
-    if('start' in opts) {
-      params.push(['start', opts.start]);
-    }
-    if('finish' in opts) {
-      params.push(['finish', opts.finish]);
-    }
-    if(opts.resolution) {
-      params.push(['resolution', opts.resolution]);
-    }
-
-    return params;
-  };
-
-  return StreamKeywordInsights;
-});
-
-massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_things_poller', './stream_keyword_insights'], function(helpers, Poller, MetaPoller, TopThingsPoller, StreamKeywordInsights) {
+massreljs.define('stream',['helpers', 'poller', 'meta_poller', 'top_things_poller'], function(helpers, Poller, MetaPoller, TopThingsPoller) {
   var _enc = encodeURIComponent;
 
   function Stream() {
@@ -1506,9 +1442,6 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
   };
   Stream.prototype.top_things_url = function(thing) {
     return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/top_' + thing + '.json');
-  };
-  Stream.prototype.keyword_insights_url = function(thing) {
-    return helpers.api_url('/'+ _enc(this.account) +'/'+ _enc(this.stream_name) +'/keyword_insights.json');
   };
   Stream.prototype.load = function(opts, fn, error) {
     opts = helpers.extend(opts || {}, {
@@ -1541,9 +1474,6 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     if(opts.geo_hint) {
       params.push(['geo_hint', '1']);
     }
-    if(opts.from) {
-      params.push(['from', opts.from]);
-    }
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
@@ -1556,14 +1486,6 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     if(opts.page_links) {
       params.push(['page_links', '1']);
     }
-    if(opts.klout) {
-      params.push(['klout', '1']);
-    }
-    if(opts.timeframe) {
-      helpers.timeParam(opts.timeframe.start, 'timeframe[start]', params);
-      helpers.timeParam(opts.timeframe.finish, 'timeframe[finish]', params);
-    }
-    
     return params;
   };
   Stream.prototype.each = function(fn) {
@@ -1641,9 +1563,7 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
   Stream.prototype.metaPoller = function(opts) {
     return new MetaPoller(this, opts);
   };
-  Stream.prototype.keywordInsights = function(defaults) {
-    return new StreamKeywordInsights(this, defaults);
-  };
+
   Stream.prototype.topThings = function() {
     var opts, fn, error;
     if(typeof(arguments[0]) === 'function') {
@@ -1698,7 +1618,7 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
 
 });
 
-massreljs.define('account',['./helpers', './meta_poller'], function(helpers, MetaPoller) {
+massreljs.define('account',['helpers', 'meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
@@ -1752,7 +1672,7 @@ massreljs.define('account',['./helpers', './meta_poller'], function(helpers, Met
   return Account;
 });
 
-massreljs.define('context',['./helpers'], function(helpers) {
+massreljs.define('context',['helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
@@ -1820,7 +1740,7 @@ massreljs.define('context',['./helpers'], function(helpers) {
     }
 
     var ret = false;
-
+    
     if (this.status && this.known) {
       if (this.source.twitter) {
         if (this.status.entities.media && this.status.entities.media.length) {
@@ -1855,7 +1775,7 @@ massreljs.define('context',['./helpers'], function(helpers) {
   return Context;
 });
 
-massreljs.define('compare_poller',['./helpers', './generic_poller'], function(helpers, GenericPoller) {
+massreljs.define('compare_poller',['helpers', 'generic_poller'], function(helpers, GenericPoller) {
 
   function ComparePoller() {
     GenericPoller.apply(this, arguments);
@@ -1874,7 +1794,7 @@ massreljs.define('compare_poller',['./helpers', './generic_poller'], function(he
   return ComparePoller;
 });
 
-massreljs.define('compare',['./helpers', './compare_poller'], function(helpers, ComparePoller) {
+massreljs.define('compare',['helpers', 'compare_poller'], function(helpers, ComparePoller) {
   function Compare(streams) {
     if(helpers.is_array(streams)) {
       // keep a copy of the array
@@ -1887,14 +1807,14 @@ massreljs.define('compare',['./helpers', './compare_poller'], function(helpers, 
       this.streams = [];
     }
   }
-
+  
   Compare.prototype.compare_url = function() {
     return helpers.api_url('/compare.json');
   };
-
+  
   Compare.prototype.buildParams = function(opts) {
     var params = [];
-
+    
     opts = opts || {};
 
     if(opts.streams) {
@@ -1903,10 +1823,10 @@ massreljs.define('compare',['./helpers', './compare_poller'], function(helpers, 
     if(opts.target || opts.target >=0) {
       params.push('target', opts.target.toString());
     }
-
+    
     return params;
   };
-
+  
   Compare.prototype.load = function(opts, fn, error) {
     if(typeof(opts) === 'function') {
       error = fn;
@@ -1920,15 +1840,15 @@ massreljs.define('compare',['./helpers', './compare_poller'], function(helpers, 
     helpers.request_factory(this.compare_url(), params, 'meta_', this, fn, error);
     return this;
   };
-
+  
   Compare.prototype.poller = function(opts) {
     return new ComparePoller(this, opts);
   };
-
+  
   return Compare;
 });
 
-massreljs.define('intents',['./helpers'], function(helpers) {
+massreljs.define('intents',['helpers'], function(helpers) {
 
   var intents = {
     base_url: 'https://twitter.com/intent/',
@@ -2011,23 +1931,23 @@ massreljs.define('intents',['./helpers'], function(helpers) {
   return intents;
 });
 
-massreljs.define('massrel',[
-         './globals'
-       , './helpers'
-       , './stream'
-       , './account'
-       , './generic_poller'
-       , './generic_poller_cycle'
-       , './poller'
-       , './meta_poller'
-       , './top_things_poller'
-       , './poller_queue'
-       , './context'
-       , './compare'
-       , './compare_poller'
-       , './intents'
+massreljs.define('massrel', [
+         'globals'
+       , 'helpers'
+       , 'stream'
+       , 'account'
+       , 'generic_poller'
+       , 'generic_poller_cycle'
+       , 'poller'
+       , 'meta_poller'
+       , 'top_things_poller'
+       , 'poller_queue'
+       , 'context'
+       , 'compare'
+       , 'compare_poller'
+       , 'intents'
        ], function(
-         massrel
+         globals
        , helpers
        , Stream
        , Account
@@ -2042,6 +1962,13 @@ massreljs.define('massrel',[
        , ComparePoller
        , intents
        ) {
+
+  var massrel = window.massrel;
+  if(typeof(massrel) === 'undefined') {
+    massrel = window.massrel = globals;
+  } else {
+    helpers.extend(massrel, globals);
+  }
 
   // public API
   massrel.Stream = Stream;
@@ -2068,14 +1995,7 @@ massreljs.define('massrel',[
   return massrel;
 });
 // call massrel module
-var globals = massreljs.require('./massrel');
-
-var massrel = window.massrel;
-if(typeof(massrel) === 'undefined') {
-  massrel = window.massrel = globals;
-} else {
-  globals.helpers.extend(massrel, globals);
-}
+var massrel = massreljs.require('massrel');
 
 // If there's an external AMD loader defined, define this library in that context.
 if (typeof define === 'function' && define.amd) {

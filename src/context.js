@@ -1,4 +1,4 @@
-define(['helpers'], function(helpers) {
+define(['./helpers'], function(helpers) {
 
   function Context(status) {
     this.status = status;
@@ -31,11 +31,18 @@ define(['helpers'], function(helpers) {
     // flag the source in the map if it's a known source
     if (typeof context.source[status.network] !== 'undefined') {
       context.source[status.network] = context.known = true;
+      context.sourceName = status.network;
+    }
+
+    if (status.network === 'google_plus') {
+      context.source.google = context.known = true;
+      context.sourceName = 'google';
     }
 
     // handle the 'massrelevance' network type
     if (status.network === 'massrelevance') {
       context.source.message = context.known = true;
+      context.sourceName = 'message';
     }
 
     // for twitter, pull the retweeted status up and use it as the main status
@@ -59,7 +66,7 @@ define(['helpers'], function(helpers) {
     }
 
     var ret = false;
-    
+
     if (this.status && this.known) {
       if (this.source.twitter) {
         if (this.status.entities.media && this.status.entities.media.length) {

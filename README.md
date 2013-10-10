@@ -111,6 +111,40 @@ Shorthand
 
 # Change log
 
+## v1.0.1
+
+* Support src/massrel being the entry point for a require.js package
+* If included as a require.js package, does not create window.massrel
+
+## v0.20.0
+
+* `timeframe` params
+
+## v0.19.0
+
+* Stream Keyword Insights API support through `Stream#keywordInsights`
+  (9269d03ef1)
+
+## v0.18.0
+
+* 'klout' is a new stream param (55fc7f3de9)
+
+## v0.17.1
+
+* Add context.sourceName property
+
+## v0.17.0
+
+* Add support for page_links parameter
+
+## v0.16.1
+
+* fix google plus source detection in Context
+
+## v0.16.0
+
+* Add TopThingsPoller
+
 ## v0.15.1
 
 * Add missing meta poller params

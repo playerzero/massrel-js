@@ -1,4 +1,4 @@
-define(['globals'], function(globals) {
+define(['./globals'], function(globals) {
   var exports = {}
     , _enc = encodeURIComponent;
 
@@ -22,17 +22,14 @@ define(['globals'], function(globals) {
         to_obj[prop] = from_obj[prop];
       }
     }
-    
+
     return to_obj;
   };
 
   exports.api_url = function(path, host) {
-    // A circular dependency has emerged between massrel and helpers.
-    // As much as it pains me to just use massrel off of window, this circular dependency isn't one that could
-    // be easily resolved w/ require.
-    var host = host || massrel.host,
-        port = massrel.port,
-        baseUrl = massrel.protocol + '://' + host + (port ? ':' + port : '');
+    var host = host || globals.host,
+        port = globals.port,
+        baseUrl = globals.protocol + '://' + host + (port ? ':' + port : '');
 
     return baseUrl + path;
   };
@@ -126,7 +123,7 @@ define(['globals'], function(globals) {
       else if(exports.is_array(callback) && callback.length > 0) {
         exports.step_through(data, callback, obj);
       }
-      
+
       delete globals._json_callbacks[callback_id];
 
       fulfilled = true;
@@ -167,7 +164,7 @@ define(['globals'], function(globals) {
 
     // this catches a case if "max" value
     // has changed since last counter call
-    while(counts.length > max) { 
+    while(counts.length > max) {
       counts.shift();
     }
 
@@ -210,6 +207,10 @@ define(['globals'], function(globals) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   };
 
+  exports.is_number = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Number]';
+  };
+
   var root = document.getElementsByTagName('head')[0] || document.body;
   exports.load = function(url, fn) {
     var script = document.createElement('script');
@@ -226,7 +227,7 @@ define(['globals'], function(globals) {
         if (root && script.parentNode) {
           root.removeChild(script);
         }
-        
+
         if(typeof fn === 'function') {
           fn();
         }
@@ -376,6 +377,22 @@ define(['globals'], function(globals) {
     return wrapper;
   };
 
+  exports.timeParam = function(value, paramName, params) {
+    if(value) {
+      if(value.getTime) {
+        value = value.getTime() / 1000;
+      }
+      
+      value = +value;
+      if(!isNaN(value) && value > 0) {
+        // bucket to closest minute
+        value = Math.floor(value / 60) * 60;
+        params.push([paramName, value]);
+      }
+
+    }
+  };
+
   /*
    * takes a list of $.Deferred objects or a single $.Deferred object and returns a promise
    * the promise will be resolved when all the deferreds are no longer pending (i.e. resolved or rejected)
@@ -400,7 +417,7 @@ define(['globals'], function(globals) {
         deferred.resolve();
       }
     };
-    
+
     $.each(deferreds, function() {
       this.always(callback);
     });

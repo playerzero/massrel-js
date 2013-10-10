@@ -1,7 +1,7 @@
 {
   "name": "massrel-js",
-  "version": "0.15.1",
-  "main": "./massrel.js",
+  "version": "1.0.1",
+  "main": "./src/massrel.js",
   "dependencies": {
   },
   "ignore": [
@@ -10,7 +10,6 @@
     "lib",
     "misc",
     "pkg",
-    "src",
     "templates",
     "test"
   ]

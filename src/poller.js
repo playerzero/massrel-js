@@ -1,4 +1,4 @@
-define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericPoller, PollerQueue) {
+define(['./helpers', './generic_poller', './poller_queue'], function(helpers, GenericPoller, PollerQueue) {
 
   function Poller(stream, opts) {
     GenericPoller.call(this, stream, opts);
@@ -67,7 +67,16 @@ define(['helpers', 'generic_poller', 'poller_queue'], function(helpers, GenericP
           }
         }
         cycle.callback(statuses);
+
+        // disable continuous polling if `timeframe`
+        // param is present. You can't "poll" for new
+        // data when you are in the past.
+        if(load_opts.timeframe && self.first) {
+          self.stop();
+        }
+
         self.first = false;
+
       }
     }, cycle.errback);
     return this;

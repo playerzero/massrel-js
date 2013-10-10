@@ -1,4 +1,4 @@
-define(['helpers', 'meta_poller'], function(helpers, MetaPoller) {
+define(['./helpers', './meta_poller'], function(helpers, MetaPoller) {
   var _enc = encodeURIComponent;
 
   function Account(user) {
