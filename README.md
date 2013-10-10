@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v1.1.0
+
+* support stream activity API through `StreamActivity` class
+
 ## v1.0.1
 
 * Support src/massrel being the entry point for a require.js package
