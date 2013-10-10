@@ -511,14 +511,17 @@ describe('helpers', function() {
       expect(params[1][1]).toEqual(13811593860);
 
       // with allowZeroOrNegative
+      params = [];
       massrel.helpers.timeParam(0, 'a', params, true);
       expect(params[0][0]).toEqual('a');
       expect(params[0][1]).toEqual(0);
 
+      params = [];
       massrel.helpers.timeParam(-1, 'a', params, true);
       expect(params[0][0]).toEqual('a');
       expect(params[0][1]).toEqual(-1);
 
+      params = [];
       massrel.helpers.timeParam('a', 'a', params, true);
       expect(params.length).toEqual(0);
 

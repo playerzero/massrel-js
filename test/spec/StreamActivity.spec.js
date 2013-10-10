@@ -96,10 +96,10 @@ describe('StreamActivity', function() {
     testParam({ topic: 'test' }, 'topic', 'test');
     // only `view` should be used if both `view` and `topic` provided
     testParam({ view: 'approved', topic: 'test' }, 'view', 'approved');
-    testParam({ start: 1 }, 'start', 1);
+    testParam({ start: 60 }, 'start', 60);
     testParam({ start: 0 }, 'start', 0);
     testParam({ start: -1 }, 'start', -1);
-    testParam({ finish: 1 }, 'finish', 1);
+    testParam({ finish: 60 }, 'finish', 60);
     testParam({ finish: 0 }, 'finish', 0);
     testParam({ finish: -1 }, 'finish', -1);
     testParam({ periods: 1 }, 'periods', 1);
