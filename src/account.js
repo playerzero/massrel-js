@@ -45,7 +45,7 @@ define(['./helpers', './meta_poller'], function(helpers, MetaPoller) {
       params.push(['start', opts.start]);
     }
     if(opts.finish) {
-      params.push(['num_minutes', opts.finish]);
+      params.push(['finish', opts.finish]);
     }
     if(opts.streams) {
       var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
