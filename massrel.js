@@ -1833,6 +1833,10 @@ massreljs.define('account',['./helpers', './meta_poller'], function(helpers, Met
     if(opts.quick_stats) {
       params.push(['quick_stats', '1']);
     }
+    if(opts.streams) {
+      var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
+      params.push(['streams', streams.join(',')]);
+    }
     if(opts.num_minutes) {
       params.push(['num_minutes', opts.num_minutes]);
     }
@@ -1843,11 +1847,7 @@ massreljs.define('account',['./helpers', './meta_poller'], function(helpers, Met
       params.push(['start', opts.start]);
     }
     if(opts.finish) {
-      params.push(['num_minutes', opts.finish]);
-    }
-    if(opts.streams) {
-      var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
-      params.push(['streams', streams.join(',')]);
+      params.push(['finish', opts.finish]);
     }
 
     return params;
