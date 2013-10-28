@@ -1833,6 +1833,18 @@ massreljs.define('account',['./helpers', './meta_poller'], function(helpers, Met
     if(opts.quick_stats) {
       params.push(['quick_stats', '1']);
     }
+    if(opts.num_minutes) {
+      params.push(['num_minutes', opts.num_minutes]);
+    }
+    if(opts.num_trends) {
+      params.push(['num_trends', opts.num_trends]);
+    }
+    if(opts.start) {
+      params.push(['start', opts.start]);
+    }
+    if(opts.finish) {
+      params.push(['num_minutes', opts.finish]);
+    }
     if(opts.streams) {
       var streams = helpers.is_array(opts.streams) ? opts.streams : [opts.streams];
       params.push(['streams', streams.join(',')]);
