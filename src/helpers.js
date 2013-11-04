@@ -1,6 +1,5 @@
 define(['./globals'], function(globals) {
-  var exports = {}
-    , _enc = encodeURIComponent;
+  var exports = {}, _enc = encodeURIComponent;
 
   exports.step_through = function(data_list, enumerators, context) {
     data_list = exports.is_array(data_list) ? data_list : [data_list];
@@ -35,7 +34,7 @@ define(['./globals'], function(globals) {
   };
 
   exports.req = {};
-  exports.req.supportsXhr2 = 'XMLHttpRequest' in window && 'withCredentials' in new XMLHttpRequest();
+  exports.req.supportsXhr2 = window.XMLHttpRequest != null  && 'withCredentials' in new XMLHttpRequest();
   exports.req.supportsCors = (exports.req.supportsXhr2 || 'XDomainRequest' in window);
   exports.req.supportsJSON = 'JSON' in window;
   exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
