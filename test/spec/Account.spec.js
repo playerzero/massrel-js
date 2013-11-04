@@ -38,6 +38,12 @@ describe('Account', function() {
     testParam({ streams: 'mystream' }, 'streams', 'mystream');
     testParam({ streams: ['mystream'] }, 'streams', 'mystream');
     testParam({ streams: ['mystream1', 'mystream2'] }, 'streams', 'mystream1,mystream2');
+    testParam({ num_minutes: 8 }, 'num_minutes', 8);
+    testParam({ num_trends: 5 }, 'num_trends', 5);
+
+    var time = (new Date()).getTime();
+    testParam({ start: time }, 'start', time);
+    testParam({ finish: time }, 'finish', time);
   });
 
   it('will not break when #meta is called (end-to-end test)', function() {
