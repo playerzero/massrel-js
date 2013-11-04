@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v1.1.1
+
+* Add additional params to `Accounts` class
+* Fix XHR2 feature test that failed in certain IE8 environments
+
 ## v1.1.0
 
 * support stream activity API through `StreamActivity` class
