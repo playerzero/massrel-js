@@ -213,7 +213,7 @@ describe('helpers', function() {
       });
 
       it('Server error', function() {
-        request('http://tweetriver.com/bdainton/kindle/activity.json', function(success) {
+        request('http://test.massrel.io/a', function(success) {
           expect(success).toEqual(false);
         });
       });
