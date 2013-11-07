@@ -58,7 +58,7 @@ describe('helpers', function() {
 
       var callback = jasmine.createSpy('success');
       var error = jasmine.createSpy('error');
-      
+
       massrel.helpers.req.jsonp('http://localhost:9876/fakeurl', params, prefix, {}, callback, error);
 
       setTimeout(function() {
@@ -105,6 +105,17 @@ describe('helpers', function() {
 
     it('uses helpers.jsonp_factory as an alias', function() {
       expect(massrel.helpers.jsonp_factory).toEqual(massrel.helpers.req.jsonp);
+    });
+
+    it('use a checksum when generating jsonp id', function() {
+      spyOn(massrel.helpers, 'urlChecksum');
+      spyOn(massrel.helpers, 'checksum');
+
+      var url = 'http://api.massrelevance.com/massrelevance/glee.json';
+      var params = [['howard', 'isawesome']];
+      massrel.helpers.req.jsonp(url, params, prefix, {}, function() {}, function() {});
+
+      expect(massrel.helpers.urlChecksum).toHaveBeenCalledWith(url, params);
     });
 
   });
@@ -527,6 +538,24 @@ describe('helpers', function() {
 
     });
 
+  });
+
+  describe('checksum', function() {
+    it('return same value for a string', function() {
+      var input = '1234';
+      var a = massrel.helpers.checksum(input);
+      var b = massrel.helpers.checksum(input);
+      expect(a).toEqual(b);
+      expect(a).toNotEqual(input);
+    });
+
+    it('urlChecksum', function() {
+      var url = 'http://www.massrelevance.com/index.html';
+      var params = [['a', 'b']];
+      spyOn(massrel.helpers, 'checksum');
+      massrel.helpers.urlChecksum(url, params);
+      expect(massrel.helpers.checksum).toHaveBeenCalledWith(url+'?'+massrel.helpers.to_qs(params));
+    });
   });
 
 });
