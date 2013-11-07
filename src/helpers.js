@@ -1,4 +1,4 @@
-define(['./globals'], function(globals) {
+define(['./globals', './vendor/fletcher_checksum'], function(globals, fletcherChecksum) {
   var exports = {}, _enc = encodeURIComponent;
 
   exports.step_through = function(data_list, enumerators, context) {
@@ -111,7 +111,9 @@ define(['./globals'], function(globals) {
   };
 
   exports.req.jsonp = function(url, params, jsonp_prefix, obj, callback, error) {
-    var callback_id = jsonp_prefix+(++json_callbacks_counter);
+    // the jsonp prefix is stupid, but
+    // going to keep it because some tests rely on it
+    var callback_id = jsonp_prefix+exports.urlChecksum(url, params);
     var fulfilled = false;
     var timeout;
 
@@ -189,8 +191,6 @@ define(['./globals'], function(globals) {
     return now;
   };
 
-
-  var json_callbacks_counter = 0;
   globals._json_callbacks = {};
   exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
      exports.req.counter();
@@ -393,6 +393,16 @@ define(['./globals'], function(globals) {
       }
 
     }
+  };
+
+  exports.checksum = function(value) {
+    return fletcherChecksum(value);
+  };
+
+  exports.urlChecksum = function(url, params) {
+    var query = exports.to_qs(params);
+    url = url+'?'+query;
+    return exports.checksum(url);
   };
 
   /*
