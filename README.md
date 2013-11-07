@@ -111,6 +111,10 @@ Shorthand
 
 # Change log
 
+## v1.2.0
+
+ * api.massrelevance.com as default API host
+
 ## v1.1.1
 
 * Add additional params to `Accounts` class
