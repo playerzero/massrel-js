@@ -39,7 +39,7 @@ describe('helpers', function() {
 
       var limit = Math.max( Math.ceil( Math.random() * 10 ), 1);
       var params = [['limit', limit]];
-      massrel.helpers.req.jsonp('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, callback, error);
+      massrel.helpers.req.jsonp('http://api.massrelevance.com/massrelevance/glee.json', params, prefix, {}, callback, error);
 
       setTimeout(function() {
         expect(callback).toHaveBeenCalled();
@@ -95,7 +95,7 @@ describe('helpers', function() {
       massrel.jsonp_param = 'callback';
 
       var params = [];
-      massrel.helpers.req.jsonp('http://tweetriver.com/massrelevance/glee.json', params, prefix, {}, function() {}, function() {});
+      massrel.helpers.req.jsonp('http://api.massrelevance.com/massrelevance/glee.json', params, prefix, {}, function() {}, function() {});
 
       expect(params.length).toEqual(1);
       expect(params[0][0]).toEqual(massrel.jsonp_param);
@@ -120,7 +120,7 @@ describe('helpers', function() {
         supportsJSON: supportsJSON
       }, old_req);
 
-      massrel.helpers.request_factory('http://tweetriver.com/test/');
+      massrel.helpers.request_factory('http://api.massrelevance.com/test/');
 
       if(useCors) {
         expect(massrel.helpers.req.xdr).toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('helpers', function() {
           return fulfilled;
         }, 15e3);
 
-        massrel.helpers.req.xdr('http://tweetriver.com/bdainton/kindle.json', [], '_', this, function() {
+        massrel.helpers.req.xdr('http://api.massrelevance.com/bdainton/kindle.json', [], '_', this, function() {
           fulfilled = true;
           callback();
         }, function() {
@@ -201,13 +201,13 @@ describe('helpers', function() {
       };
 
       it('Success', function() {
-        request('http://tweetriver.com/bdainton/kindle.json?limit=1', function(success) {
+        request('http://api.massrelevance.com/bdainton/kindle.json?limit=1', function(success) {
           expect(success).toEqual(true);
         });
       });
 
       it('Does not exist', function() {
-        request('http://tweetriver.com/notareal/stream.json', function(success) {
+        request('http://api.massrelevance.com/notareal/stream.json', function(success) {
           expect(success).toEqual(false);
         });
       });

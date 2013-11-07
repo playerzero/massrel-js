@@ -14,10 +14,10 @@ describe('Stream', function() {
 
   it('use correct RESTful urls', function() {
     var stream = new massrel.Stream('howardrauscher/test');
-    expect(stream.stream_url()).toEqual('http://tweetriver.com/howardrauscher/test.json');
-    expect(stream.meta_url()).toEqual('http://tweetriver.com/howardrauscher/test/meta.json');
-    expect(stream.top_things_url('hashtags')).toEqual('http://tweetriver.com/howardrauscher/test/top_hashtags.json');
-    expect(stream.keyword_insights_url()).toEqual('http://tweetriver.com/howardrauscher/test/keyword_insights.json');
+    expect(stream.stream_url()).toEqual('http://api.massrelevance.com/howardrauscher/test.json');
+    expect(stream.meta_url()).toEqual('http://api.massrelevance.com/howardrauscher/test/meta.json');
+    expect(stream.top_things_url('hashtags')).toEqual('http://api.massrelevance.com/howardrauscher/test/top_hashtags.json');
+    expect(stream.keyword_insights_url()).toEqual('http://api.massrelevance.com/howardrauscher/test/keyword_insights.json');
   });
 
   it('use correct params from options', function() {

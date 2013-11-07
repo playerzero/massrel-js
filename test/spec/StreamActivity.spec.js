@@ -8,7 +8,7 @@ describe('StreamActivity', function() {
 
   it('#url', function() {
     var activity = testActivity();
-    expect(activity.url()).toEqual('http://tweetriver.com/bdainton/woot/activity.json');
+    expect(activity.url()).toEqual('http://api.massrelevance.com/bdainton/woot/activity.json');
   });
 
   it('#fetch', function() {

@@ -14,7 +14,7 @@ describe('Account', function() {
 
   it('use correct RESTful urls', function() {
     var account = new massrel.Account(user);
-    expect(account.meta_url()).toEqual('http://tweetriver.com/howardr.json');
+    expect(account.meta_url()).toEqual('http://api.massrelevance.com/howardr.json');
   });
 
   it('use correct meta params from options', function() {
