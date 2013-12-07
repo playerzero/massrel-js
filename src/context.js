@@ -50,6 +50,10 @@ define(['./helpers'], function(helpers) {
       context.retweet = true;
       context.retweeted_by_user = status.user;
       context.status =  status.retweeted_status;
+      
+      if (status.massrel) {
+        context.status.massrel = status.massrel;
+      }
     }
 
     return context;
