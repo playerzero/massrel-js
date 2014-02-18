@@ -111,6 +111,11 @@ Shorthand
 
 # Change log
 
+## v1.3.0
+
+ * Add `lang` param to `Stream` object
+ * Remove queue history from `PollerQueue` (it was never used)
+
 ## v1.2.0
 
  * api.massrelevance.com as default API host
