@@ -58,6 +58,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.keywords) {
       params.push(['keywords', opts.keywords]);
     }
+    if(opts.lang) {
+      params.push(['lang', opts.lang]);
+    }
     if(opts.network) {
       params.push(['network', opts.network]);
     }
