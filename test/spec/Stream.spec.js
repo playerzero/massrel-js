@@ -50,6 +50,7 @@ describe('Stream', function() {
     testParam({ timeline_search: true }, 'timeline_search', '1');
     testParam({ timeframe: { start: 60 } }, 'timeframe[start]', 60);
     testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
+    testParam({ lang: 'en' }, 'lang', 'en');
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
