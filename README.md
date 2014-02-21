@@ -137,8 +137,6 @@ directory and run test suite.
  * Tag version in git `git tag 0.0.0 && git push origin 0.0.0` (where
    0.0.0 is version)
 
-## Release
-
 # Change log
 
 ## v1.3.0
