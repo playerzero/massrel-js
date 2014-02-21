@@ -11,7 +11,7 @@ module.exports = function(grunt) {
     '   * You may obtain a copy of the License at:',
     '   *',
     '   *    http://www.apache.org/licenses/LICENSE-2.0',
-    '   */'
+    '   */\n'
   ].join('\n');
 
   grunt.initConfig({
