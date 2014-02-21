@@ -61,7 +61,7 @@ module.exports = function(grunt) {
       }
     },
     jasmine: {
-      components: {
+      test: {
         src: [
           'build/massrel.js'
         ],
@@ -71,12 +71,37 @@ module.exports = function(grunt) {
           vendor: [
           ]
         }
+      },
+      coverage: {
+        src: [
+          'build/massrel.js'
+        ],
+        options: {
+          specs: 'test/spec/*.spec.js',
+          keepRunner : false,
+          vendor: [
+          ],
+          template: require('grunt-template-jasmine-istanbul'),
+          templateOptions: {
+            coverage: 'build/coverage/coverage.json',
+            report: [{
+              type: 'html',
+              options: {
+                dir: 'build/coverage'
+              }
+            }, {
+              type: 'text-summary'
+            }]
+          }
+        }
       }
     }
   });
 
   grunt.registerTask('default', ['build']);
-  grunt.registerTask('build', ['requirejs', 'concat:build', 'uglify', 'jasmine']);
+  grunt.registerTask('build:only', ['requirejs', 'concat:build', 'uglify']);
+  grunt.registerTask('test', ['jasmine:test']);
+  grunt.registerTask('build', ['build:only', 'test']);
   grunt.registerTask('release', ['build', 'concat:release']);
   grunt.registerTask('travis', ['build']);
 
