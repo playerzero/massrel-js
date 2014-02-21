@@ -139,6 +139,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.4.0
+
+ * Removed request counter and console warnings
+
 ## v1.3.0
 
  * Add `lang` param to `Stream` object
