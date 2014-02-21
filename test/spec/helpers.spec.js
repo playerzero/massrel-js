@@ -447,33 +447,6 @@ describe('helpers', function() {
       expect(delay).toEqual(input);
     });
 
-    it('req counter should throw error is max_reqs_per_min is reached', function() {
-      var old_val = massrel.max_reqs_per_min;
-      
-      massrel.helpers.req.counts = [];
-      massrel.max_reqs_per_min = 1;
-
-      // should be fine
-      massrel.helpers.req.counter(true);
-
-      var error = jasmine.createSpy('error');
-
-
-      try {
-        massrel.helpers.req.counter(true);
-      }
-      catch(e) {
-        error(e);
-      }
-
-      expect(error).toHaveBeenCalled();
-
-      massrel.max_reqs_per_min = old_val;
-      var input = massrel.max_backoff_interval * 2;
-      var delay = massrel.helpers.poll_backoff(input, 2);
-      expect(delay).toEqual(input);
-    });
-
   });
 
   describe('timeParam', function() {
