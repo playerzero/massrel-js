@@ -26,15 +26,15 @@ define(['./globals'], function(globals) {
   };
 
   exports.api_url = function(path, host) {
-    var host = host || globals.host,
-        port = globals.port,
+    host = host || globals.host;
+    var port = globals.port,
         baseUrl = globals.protocol + '://' + host + (port ? ':' + port : '');
 
     return baseUrl + path;
   };
 
   exports.req = {};
-  exports.req.supportsXhr2 = window.XMLHttpRequest != null  && 'withCredentials' in new XMLHttpRequest();
+  exports.req.supportsXhr2 = window.XMLHttpRequest  && 'withCredentials' in new XMLHttpRequest();
   exports.req.supportsCors = (exports.req.supportsXhr2 || 'XDomainRequest' in window);
   exports.req.supportsJSON = 'JSON' in window;
   exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
@@ -100,7 +100,7 @@ define(['./globals'], function(globals) {
          req.onload = function() {};
          if(req.abort) {
            req.abort();
-         };
+         }
          fail();
         }
       }, globals.timeout);

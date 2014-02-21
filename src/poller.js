@@ -9,7 +9,7 @@ define(['./helpers', './generic_poller', './poller_queue'], function(helpers, Ge
     // add filter
     this.filter(this.filter_newer);
 
-    var opts = this.opts;
+    opts = this.opts;
     this.newest_timestamp = opts.newest_timestamp || null;
     this.stay_realtime = 'stay_realtime' in opts ? !!opts.stay_realtime : true;
     this.hail_mary_mode = !!opts.hail_mary_mode;
@@ -177,7 +177,7 @@ define(['./helpers', './generic_poller', './poller_queue'], function(helpers, Ge
         if(statuses && statuses.length > 0) {
           fn.call(this, statuses);
         }
-      }
+      };
     }
   };
 

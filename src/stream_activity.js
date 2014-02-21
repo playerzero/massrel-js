@@ -4,7 +4,7 @@ define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
   function StreamActivity(stream, defaults) {
     this.stream = stream;
     this.defaults = defaults || {};
-  };
+  }
   StreamActivity.prototype.url = function() {
     return helpers.api_url('/'+ _enc(this.stream.account) +'/'+ _enc(this.stream.stream_name) +'/activity.json');
   };

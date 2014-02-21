@@ -52,7 +52,7 @@ define(['./helpers'], function(helpers) {
         step();
       }
     };
-  };
+  }
 
   return PollerQueue;
 });

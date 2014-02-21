@@ -16,6 +16,18 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    jshint: {
+      options: {
+        laxcomma: true
+      },
+      all: [
+        'src/*.js',
+        '!src/wrap.*.js',
+        '!src/almond.js',
+        'test/spec/*.spec.js',
+        'Gruntfile.js'
+      ]
+    },
     requirejs: {
       compile: {
         options: {
@@ -99,12 +111,13 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('default', ['build']);
-  grunt.registerTask('build:only', ['requirejs', 'concat:build', 'uglify']);
+  grunt.registerTask('build:only', ['jshint', 'requirejs', 'concat:build', 'uglify']);
   grunt.registerTask('test', ['jasmine:test']);
   grunt.registerTask('build', ['build:only', 'test']);
   grunt.registerTask('release', ['build', 'concat:release']);
   grunt.registerTask('travis', ['build']);
 
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');

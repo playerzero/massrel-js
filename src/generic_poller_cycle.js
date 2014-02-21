@@ -6,7 +6,7 @@ define(['./helpers'], function(helpers) {
     this.callback = this.cg(callback);
     this.errback = this.cg(errback);
     this._enabled = true;
-  };
+  }
 
   GenericPollerCycle.prototype.enabled = function() {
     return this._enabled;

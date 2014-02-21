@@ -180,7 +180,7 @@ describe('helpers', function() {
 
 
         massrel.helpers.req.xdr(url, [], '_', this, function() {
-          response(true)
+          response(true);
         }, function() {
           response(false);
         });
@@ -245,12 +245,13 @@ describe('helpers', function() {
     });
 
     it('escape each item of an array and put a comma between them', function() {
-      var qs = to_qs([
+      var qs;
+      qs = to_qs([
         ['key1', ['a', '#b', 'c']]
       ]);
       expect(qs).toEqual('key1=a,%23b,c');
 
-      var qs = to_qs([
+      qs = to_qs([
         ['key1', new Array(4)]
       ]);
       expect(qs).toEqual('key1=,,,');
@@ -270,7 +271,7 @@ describe('helpers', function() {
       // double encoding issue
       qs = to_qs(params);
       expect(qs).toEqual(expected);
-    })
+    });
 
   });
 
@@ -367,16 +368,17 @@ describe('helpers', function() {
       var randomItems = Math.ceil( Math.random() * 100 );
       var randomEnums = Math.ceil( Math.random() * 10 );
       var enumerators = [];
+      var i;
 
       // create enums
-      for(var i = 0; i < randomEnums; i++) {
+      for(i = 0; i < randomEnums; i++) {
         enumerators.push( jasmine.createSpy('callback '+(i+1)) );
       }
 
       massrel.helpers.step_through(new Array(randomItems), enumerators, window);
 
       // check enums
-      for(var i = 0; i < randomEnums; i++) {
+      for(i = 0; i < randomEnums; i++) {
         expect(enumerators[i].calls.count()).toEqual(randomItems);
       }
     });

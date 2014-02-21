@@ -125,7 +125,7 @@ describe('Poller', function() {
     testPoll(function(stream) {
       var i = 0;
       stream.load = function(params, cb, errback) {
-        if(i == 0) {
+        if(i === 0) {
           expect(params.since_id).toEqual('1');
           setTimeout(function() { errback(); }, 0);
         }

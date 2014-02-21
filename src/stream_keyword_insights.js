@@ -4,7 +4,7 @@ define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
   function StreamKeywordInsights(stream, defaults) {
     this.stream = stream;
     this.defaults = defaults || {};
-  };
+  }
   StreamKeywordInsights.prototype.url = function() {
     return this.stream.keyword_insights_url();
   };

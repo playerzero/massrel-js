@@ -48,7 +48,7 @@ describe('Account', function() {
 
   it('will not break when #meta is called (end-to-end test)', function() {
     var account = new massrel.Account(user);
-    var old_request_factory = massrel.helpers.request_factory
+    var old_request_factory = massrel.helpers.request_factory;
     
     var opts = {
       streams: ['mystream'],
