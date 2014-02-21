@@ -1,4 +1,7 @@
-# massrel-js [![Build Status](https://travis-ci.org/MassRelevance/massrel-js.png?branch=master)](https://travis-ci.org/MassRelevance/massrel-js)
+# massrel-js
+
+[![Build Status](https://travis-ci.org/MassRelevance/massrel-js.png?branch=master)](https://travis-ci.org/MassRelevance/massrel-js) 
+[![Dependency Status](https://gemnasium.com/MassRelevance/massrel-js.png)](https://gemnasium.com/MassRelevance/massrel-js)
 
 ## Basic examples
 
