@@ -80,6 +80,7 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['build']);
   grunt.registerTask('build', ['requirejs', 'concat:build', 'uglify', 'jasmine']);
   grunt.registerTask('release', ['build', 'concat:release']);
+  grunt.registerTask('travis', ['build']);
 
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-concat');
