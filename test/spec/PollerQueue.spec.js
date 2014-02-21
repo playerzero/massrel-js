@@ -10,7 +10,7 @@ describe('PollerQueue', function() {
       },
 
       _cbs: [],
-      _pump: function() {
+      _pump: function(done) {
         var i, len;
         var items = [];
        
@@ -23,6 +23,10 @@ describe('PollerQueue', function() {
         // push to callbacks
         for(i = 0, len = this._cbs.length; i < len; i++) {
           this._cbs[i].call(this, items);
+        }
+
+        if(done) {
+          done();
         }
       }
     };
@@ -39,7 +43,7 @@ describe('PollerQueue', function() {
     expect(queue.enqueued).toBe(limit);
   });
 
-  it('iterate through data one a time', function() {
+  it('iterate through data one a time', function(done) {
     var limit = Math.ceil(20 * Math.random());
     var poller = createFakePoller(limit, 1000);
     var queue = new massrel.PollerQueue(poller);
@@ -54,7 +58,6 @@ describe('PollerQueue', function() {
     queue.next(cb);
 
     poller._pump();
-    waits(600);
     setTimeout(function() {
       expect(count).toBe(limit);
       expect(queue.enqueued).toBe(0);
@@ -65,10 +68,12 @@ describe('PollerQueue', function() {
       expect(count).toBe(limit * 2);
       expect(queue.enqueued).toBe(0);
       expect(queue.total).toBe(count);
+
+      done();
     }, 500);
   });
 
-  it('prevent multiple iterations if step called multiple times', function() {
+  it('prevent multiple iterations if step called multiple times', function(done) {
     var max_timeout = 1000;
     var poller = createFakePoller(10, 1000);
     var queue = new massrel.PollerQueue(poller);
@@ -94,8 +99,8 @@ describe('PollerQueue', function() {
     setTimeout(function() { 
       expect(count).toBe(2);
       expect(queue.count).toBe(count);
+      done();
     }, max_timeout);
-    waits(max_timeout+200);
   });
 
   it('total should only be zero if no data is in it', function() {
@@ -108,7 +113,7 @@ describe('PollerQueue', function() {
     expect(queue.total).toBe(limit);
   });
 
-  it('count tracks of how many statuses have been iterated through', function() {
+  it('count tracks of how many statuses have been iterated through', function(done) {
     var limit = Math.ceil(20 * Math.random());
     var poller = createFakePoller(limit, 1000);
     var queue = new massrel.PollerQueue(poller);
@@ -124,11 +129,10 @@ describe('PollerQueue', function() {
 
     queue.next(cb);
 
-    poller._pump();
-    waits(100);
+    poller._pump(done);
   });
 
-  it('iterate through data from oldest (bottom) to newest (top)', function() {
+  it('iterate through data from oldest (bottom) to newest (top)', function(done) {
     var limit = Math.ceil(20 * Math.random());
     var poller = createFakePoller(limit, 1000);
     var queue = new massrel.PollerQueue(poller);
@@ -143,8 +147,7 @@ describe('PollerQueue', function() {
     }
 
     queue.next(cb);
-    poller._pump();
-    waits(100);
+    poller._pump(done);
   });
 
 });

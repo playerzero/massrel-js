@@ -2,15 +2,10 @@ describe('GenericPoller', function() {
 
   var testPoll = function(cb, error, data) {
     error = !!error;
-    var fulfilled = false;
     data = data || [
       { entity_id: '123', queued_at: 987 },
       { entity_id: '456', queued_at: 654 }
     ];
-
-    waitsFor(function() {
-      return fulfilled;
-    }, 7e3);
 
     var object = {};
     object.load = function(params, cb, errback) {
@@ -24,16 +19,14 @@ describe('GenericPoller', function() {
       }, 0);
     };
 
-    cb(object, function() {
-      fulfilled = true;
-    });
+    cb(object);
   };
 
 
-  it('count consecutive errors', function() {
+  it('count consecutive errors', function(done) {
     var old_min = massrel.min_poll_interval;
     massrel.min_poll_interval = 0;
-    testPoll(function(object, done) {
+    testPoll(function(object) {
       var poller = new massrel.GenericPoller(object, {
         frequency: 0.0001
       });
@@ -60,8 +53,8 @@ describe('GenericPoller', function() {
     }, true);
   });
 
-  it('failure mode should start once there is an error', function() {
-    testPoll(function(object, done) {
+  it('failure mode should start once there is an error', function(done) {
+    testPoll(function(object) {
       var poller = new massrel.GenericPoller(object);
       poller.start();
 
@@ -83,7 +76,7 @@ describe('GenericPoller', function() {
     }, true);
   });
 
-  it('errors should backoff intervals', function() {
+  it('errors should backoff intervals', function(done) {
     var freq = 0.1;
     var min = massrel.min_poll_interval;
     var rate = massrel.backoff_rate;
@@ -92,7 +85,7 @@ describe('GenericPoller', function() {
 
     var last_timestamp;
     var last_delta;
-    testPoll(function(object, done) {
+    testPoll(function(object) {
       var i = 0;
       object.load = function(params, cb, errback) {
         i = i + 1;
@@ -126,8 +119,8 @@ describe('GenericPoller', function() {
     }, true);
   });
 
-  it('calling #start should not cause multiple polls', function() {
-    testPoll(function(object, done) {
+  it('calling #start should not cause multiple polls', function(done) {
+    testPoll(function(object) {
       var loads = jasmine.createSpy();
       object.load = function(params, cb) {
         loads();
@@ -140,7 +133,7 @@ describe('GenericPoller', function() {
       }
 
       setTimeout(function() {
-        expect(loads.callCount).toBe(1);
+        expect(loads.calls.count()).toBe(1);
         poller.stop();
         done();
       }, 2e3);
@@ -148,8 +141,8 @@ describe('GenericPoller', function() {
     });
   });
 
-  it('#filter should called with data', function() {
-    testPoll(function(object, done) {
+  it('#filter should called with data', function(done) {
+    testPoll(function(object) {
       var poller = new massrel.GenericPoller(object);
       poller.filter(function(statuses) {
         expect(statuses.length).toEqual(2);

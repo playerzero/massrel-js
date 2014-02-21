@@ -11,10 +11,9 @@ describe('StreamActivity', function() {
     expect(activity.url()).toEqual('http://api.massrelevance.com/bdainton/woot/activity.json');
   });
 
-  it('#fetch', function() {
+  it('#fetch', function(done) {
     var activity = testActivity();
     var old_request_factory = massrel.helpers.request_factory;
-    var fulfilled = false;
 
     spyOn(activity, 'url');
     spyOn(activity, 'params');
@@ -45,10 +44,6 @@ describe('StreamActivity', function() {
       });
     };
 
-    waitsFor(function(data) {
-      return fulfilled;
-    }, 'fetch not fulfilled', 1e3);
-
     activity.fetch(options, function(data) {
       // test to make sure the data interoplation is correct
       for(var i = 0; i < 5; i++) {
@@ -56,7 +51,7 @@ describe('StreamActivity', function() {
         expect(data.activity[i].start).toEqual(start);
         expect(data.activity[i].finish).toEqual(start + period_size);
       }
-      fulfilled = true;
+      done();
     });
 
     massrel.helpers.request_factory = old_request_factory;
@@ -66,6 +61,7 @@ describe('StreamActivity', function() {
     var activity = testActivity();
 
     activity.fetch = jasmine.createSpy('fetch');
+
     var options = {
      'resolution': '10m',
      'finish': 10
@@ -73,9 +69,9 @@ describe('StreamActivity', function() {
     var poller = activity.poller(options);
     poller.start();
     expect(activity.fetch).toHaveBeenCalled();
-    expect(activity.params(activity.fetch.mostRecentCall.args[0])).toEqual(activity.params(options));
-    expect(typeof(activity.fetch.mostRecentCall.args[1])).toEqual('function');
-    expect(typeof(activity.fetch.mostRecentCall.args[2])).toEqual('function');
+    expect(activity.params(activity.fetch.calls.mostRecent().args[0])).toEqual(activity.params(options));
+    expect(typeof(activity.fetch.calls.mostRecent().args[1])).toEqual('function');
+    expect(typeof(activity.fetch.calls.mostRecent().args[2])).toEqual('function');
     poller.stop();
   });
 

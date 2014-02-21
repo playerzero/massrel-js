@@ -3,7 +3,7 @@ describe('helpers', function() {
   describe('load script', function() {
     var load = massrel.helpers.load;
     
-    it('callback is successful and work cross domain', function() {
+    it('callback is successful and work cross domain', function(done) {
       var url = 'http://pipes.yahoo.com/pipes/pipe.run?_id=c4fb5175c000f1e19e244bba36aca1e8&_render=json&_callback=loadtest';
 
       var loadtest = window.loadtest = jasmine.createSpy();
@@ -14,10 +14,9 @@ describe('helpers', function() {
       setTimeout(function() {
         expect(loadtest).toHaveBeenCalled();
         expect(callback).toHaveBeenCalled();
+        done();
       }, 1500);
     });
-
-    waits(1500);
   });
 
   describe('building jsonp requests', function() {
@@ -33,7 +32,7 @@ describe('helpers', function() {
     var params = [];
     var prefix = '_textprefix_';
 
-    it('pass data to callback', function() {
+    it('pass data to callback', function(done) {
       var callback = jasmine.createSpy('success');
       var error = jasmine.createSpy('error');
 
@@ -43,16 +42,15 @@ describe('helpers', function() {
 
       setTimeout(function() {
         expect(callback).toHaveBeenCalled();
-        expect(callback.mostRecentCall.args[0].length).toEqual(limit);
+        expect(callback.calls.mostRecent().args[0].length).toEqual(limit);
 
         expect(error).not.toHaveBeenCalled();
+        done();
       }, 1500);
 
     });
 
-    waits(1500);
-
-    it('timeout if taking too long', function() {
+    it('timeout if taking too long', function(done) {
       var timeout = massrel.timeout;
       massrel.timeout = 100;
 
@@ -64,12 +62,11 @@ describe('helpers', function() {
       setTimeout(function() {
         expect(callback).not.toHaveBeenCalled();
         expect(error).toHaveBeenCalled();
+        done();
       }, 500);
 
       massrel.timeout = timeout;
     });
-
-    waits(1000);
 
     it('add new callback to public jsonp hash', function() {
       var callbacksAfter = 0;
@@ -147,27 +144,24 @@ describe('helpers', function() {
     });
 
     if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
-      it('make a request (browser must support CORS)', function() {
-        var fulfilled = false;
+      it('make a request (browser must support CORS)', function(done) {
         var callback = jasmine.createSpy('success');
         var fail = jasmine.createSpy('success');
 
-        waitsFor(function() {
-          return fulfilled;
-        }, 15e3);
-
-        massrel.helpers.req.xdr('http://api.massrelevance.com/bdainton/kindle.json', [], '_', this, function() {
-          fulfilled = true;
-          callback();
-        }, function() {
-          fulfilled = true;
-          fail();
-        });
-
-        runs(function() {
+        var finished = function() {
           expect(callback).toHaveBeenCalled();
           expect(fail).not.toHaveBeenCalled();
+          done();
+        };
+
+        massrel.helpers.req.xdr('http://api.massrelevance.com/bdainton/kindle.json', [], '_', this, function() {
+          callback();
+          finished();
+        }, function() {
+          fail();
+          finished();
         });
+
       });
     }
 
@@ -177,21 +171,13 @@ describe('helpers', function() {
     describe('making CORS requests', function() {
 
       var request = function(url, cb) {
-        var fulfilled = false;
         var responseData;
 
-        waitsFor(function() {
-          return fulfilled;
-        }, 15e3);
-
         var response = function(success) {
-          fulfilled = true;
           responseData = success;
+          cb(responseData);
         };
 
-        runs(function() {
-          cb(responseData);
-        });
 
         massrel.helpers.req.xdr(url, [], '_', this, function() {
           response(true)
@@ -200,21 +186,24 @@ describe('helpers', function() {
         });
       };
 
-      it('Success', function() {
+      it('Success', function(done) {
         request('http://api.massrelevance.com/bdainton/kindle.json?limit=1', function(success) {
           expect(success).toEqual(true);
+          done();
         });
       });
 
-      it('Does not exist', function() {
+      it('Does not exist', function(done) {
         request('http://api.massrelevance.com/notareal/stream.json', function(success) {
           expect(success).toEqual(false);
+          done();
         });
       });
 
-      it('Server error', function() {
+      it('Server error', function(done) {
         request('http://test.massrel.io/a', function(success) {
           expect(success).toEqual(false);
+          done();
         });
       });
 
@@ -388,7 +377,7 @@ describe('helpers', function() {
 
       // check enums
       for(var i = 0; i < randomEnums; i++) {
-        expect(enumerators[i].callCount).toEqual(randomItems);
+        expect(enumerators[i].calls.count()).toEqual(randomItems);
       }
     });
   });

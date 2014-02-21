@@ -161,15 +161,13 @@ describe('Stream', function() {
     massrel.helpers.request_factory = old_request_factory;
   });
   
-  it('returns legit data when #keywordInsights fetch', function() {
+  it('returns legit data when #keywordInsights fetch', function(done) {
     var stream = new massrel.Stream('massreldemo/fb-insights-demo');
 
     stream.keywordInsights().fetch({}, function(data) {
       expect(data.data.length).toEqual(1);
+      done();
     });
-
-
-    waits(1500);
   });
   
   //TODO: #load, #each, #poller, #meta

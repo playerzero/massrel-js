@@ -1,14 +1,17 @@
 module.exports = function(grunt) {
-
   grunt.initConfig({
     jasmine: {
       components: {
         src: [
-          'massrel.js'
+          'massrel.js',
+          'misc/*.js'
         ],
         options: {
           specs: 'test/spec/*.spec.js',
-          keepRunner : true
+          keepRunner : false,
+          vendor: [
+            'lib/jquery.js'
+          ]
         }
       }
     }

@@ -2,16 +2,11 @@ describe('Poller', function() {
 
   var testPoll = function(cb, error, data) {
     error = !!error;
-    var fulfilled = false;
     var stream = {};
     data = data || [
       { entity_id: '123', queued_at: 987 },
       { entity_id: '456', queued_at: 654 }
     ];
-
-    waitsFor(function() {
-      return fulfilled;
-    }, 7e3);
 
     stream.load = function(params, cb, errback) {
       setTimeout(function() {
@@ -24,9 +19,7 @@ describe('Poller', function() {
       }, 0);
     };
 
-    cb(stream, function() {
-      fulfilled = true;
-    });
+    cb(stream);
   };
 
   it('use Stream#load for new data', function() {
@@ -39,8 +32,8 @@ describe('Poller', function() {
     poller.stop();
   });
 
-  it('correctly curse through API', function() {
-    testPoll(function(stream, done) {
+  it('correctly curse through API', function(done) {
+    testPoll(function(stream) {
       var poller = new massrel.Poller(stream);
       poller.batch(function() {
         expect(poller.since_id).toEqual('123');
@@ -53,8 +46,8 @@ describe('Poller', function() {
     });
   });
 
-  it('#batch callback called with full array', function() {
-    testPoll(function(stream, done) {
+  it('#batch callback called with full array', function(done) {
+    testPoll(function(stream) {
       var poller = new massrel.Poller(stream);
       poller.batch(function(statuses) {
         expect(statuses.length).toEqual(2);
@@ -67,8 +60,8 @@ describe('Poller', function() {
     });
   });
 
-  it('#each callback called with individual items from oldest to newest', function() {
-    testPoll(function(stream, done) {
+  it('#each callback called with individual items from oldest to newest', function(done) {
+    testPoll(function(stream) {
       var i = 0;
       var statuses = [
         { entity_id: '456' },
@@ -108,8 +101,8 @@ describe('Poller', function() {
     expect(newer[1].queued_at).toEqual(123);
   });
 
-  it('hail mary mode should not poll with since_id', function() {
-    testPoll(function(stream, done) {
+  it('hail mary mode should not poll with since_id', function(done) {
+    testPoll(function(stream) {
       stream.load = function(params) {
         expect(params.since_id).toEqual(undefined);
         poller.stop();
@@ -125,11 +118,11 @@ describe('Poller', function() {
     });
   });
 
-  it('failure mode should not poll with since_id', function() {
+  it('failure mode should not poll with since_id', function(done) {
     var min = massrel.min_poll_interval;
     massrel.min_poll_interval = 0;
 
-    testPoll(function(stream, done) {
+    testPoll(function(stream) {
       var i = 0;
       stream.load = function(params, cb, errback) {
         if(i == 0) {
@@ -156,10 +149,10 @@ describe('Poller', function() {
     });
   });
 
-  it('use initial opts during first poll', function() {
+  it('use initial opts during first poll', function(done) {
     var old_min = massrel.min_poll_interval;
     massrel.min_poll_interval = 0;
-    testPoll(function(stream, done) {
+    testPoll(function(stream) {
       var poller = new massrel.Poller(stream, {
         limit: 10,
         frequency: 0.01,
@@ -184,11 +177,11 @@ describe('Poller', function() {
     });
   });
 
-  it('#more should get older items', function() {
+  it('#more should get older items', function(done) {
    var old_min = massrel.min_poll_interval;
     massrel.min_poll_interval = 0;
 
-    testPoll(function(stream, done) {
+    testPoll(function(stream) {
       var poller = new massrel.Poller(stream, {
         limit: 2,
         frequency: 0.01
@@ -256,8 +249,8 @@ describe('Poller', function() {
     testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
   });
 
-  it('not continually poll when using timeframe params', function() {
-    testPoll(function(stream, done) {
+  it('not continually poll when using timeframe params', function(done) {
+    testPoll(function(stream) {
       var poller = new massrel.Poller(stream, {
         timeframe: {
           start: new Date()
