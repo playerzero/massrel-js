@@ -109,6 +109,36 @@ Shorthand
       setTimeout(step, 1000);
     }).start();
 
+# Build and Release
+
+## Prereqs
+
+ * Install node v0.10
+ * Install npm packages `npm install`
+ * Install grunt `npm install -g grunt-cli`
+
+## Build
+
+```
+grunt build
+```
+
+This will build `massrel.js` and `massrel.min.js` into the `build`
+directory and run test suite.
+
+## Release
+
+ * Choose version using semantic versioning
+ * Update [change log](https://github.com/MassRelevance/massrel-js#change-log)
+ * Set version in package.json
+ * Set version in component.json
+ * Run `grunt release`
+ * If tests pass, commit changes
+ * Tag version in git `git tag 0.0.0 && git push origin 0.0.0` (where
+   0.0.0 is version)
+
+## Release
+
 # Change log
 
 ## v1.3.0
