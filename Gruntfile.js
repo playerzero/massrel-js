@@ -4,7 +4,7 @@ module.exports = function(grunt) {
     '  /*!',
     '   * <%= pkg.name %> <%= pkg.version %>',
     '   *',
-    '   * Copyright <%= (new Date()).getYear() %> Mass Relevance',
+    '   * Copyright <%= (new Date()).getFullYear() %> Mass Relevance',
     '   *',
     '   * Licensed under the Apache License, Version 2.0 (the "License");',
     '   * you may not use this work except in compliance with the License.',
