@@ -63,14 +63,12 @@ module.exports = function(grunt) {
     jasmine: {
       components: {
         src: [
-          'build/massrel.js',
-          'misc/*.js'
+          'build/massrel.js'
         ],
         options: {
           specs: 'test/spec/*.spec.js',
           keepRunner : false,
           vendor: [
-            'lib/jquery.js'
           ]
         }
       }
