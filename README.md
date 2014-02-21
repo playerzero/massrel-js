@@ -1,4 +1,4 @@
-# Read Me
+# massrel-js [![Build Status](https://travis-ci.org/MassRelevance/massrel-js.png?branch=master)](https://travis-ci.org/MassRelevance/massrel-js)
 
 ## Basic examples
 
