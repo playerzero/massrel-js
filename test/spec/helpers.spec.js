@@ -160,7 +160,7 @@ describe('helpers', function() {
         }, function() {
           fail();
           finished();
-        });
+        }, 'GET');
 
       });
     }
@@ -183,7 +183,7 @@ describe('helpers', function() {
           response(true);
         }, function() {
           response(false);
-        });
+        }, 'GET');
       };
 
       it('Success', function(done) {
