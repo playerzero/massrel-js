@@ -37,10 +37,14 @@ define(['./globals'], function(globals) {
   exports.req.supportsXhr2 = window.XMLHttpRequest  && 'withCredentials' in new XMLHttpRequest();
   exports.req.supportsCors = (exports.req.supportsXhr2 || 'XDomainRequest' in window);
   exports.req.supportsJSON = 'JSON' in window;
-  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error) {
+  exports.req.xdr = function(url, params, jsonp_prefix, obj, callback, error, method, body) {
     var req;
     var fulfilled = false;
     var timeout;
+
+    if(!method) {
+      method = 'GET';
+    }
 
     var success = function(responseText) {
       fulfilled = true;
@@ -81,7 +85,7 @@ define(['./globals'], function(globals) {
     }
 
     if(req) {
-      req.open('GET', url+'?'+exports.to_qs(params));
+      req.open(method, url+'?'+exports.to_qs(params));
       req.timeout = globals.timeout;
       req.onerror = fail;
       req.onprogress = function(){ };
@@ -90,7 +94,7 @@ define(['./globals'], function(globals) {
         success(req.responseText);
       };
 
-      req.send(null);
+      req.send(body);
 
       timeout = setTimeout(function() {
         if(!fulfilled) {
@@ -152,12 +156,21 @@ define(['./globals'], function(globals) {
   var json_callbacks_counter = 0;
   globals._json_callbacks = {};
   exports.request_factory = function(url, params, jsonp_prefix, obj, callback, error) {
-     if(exports.req.supportsCors && exports.req.supportsJSON) {
-       exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
-     }
-     else {
-       exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
-     }
+    if(exports.req.supportsCors && exports.req.supportsJSON) {
+      exports.req.xdr(url, params, jsonp_prefix, obj, callback, error);
+    }
+    else {
+      exports.req.jsonp(url, params, jsonp_prefix, obj, callback, error);
+    }
+  };
+
+  exports.post_factory = function(url, params, body, jsonp_prefix, obj, callback, error) {
+    if(exports.req.supportsCors && exports.req.supportsJSON) {
+      exports.req.xdr(url, params, jsonp_prefix, obj, callback, error, "POST", body);
+    }
+    else {
+      throw "POST not supported";
+    }
   };
 
   exports.is_array = Array.isArray || function(obj) {
