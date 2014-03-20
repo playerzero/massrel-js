@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.5.0
+
+ * Added POST CORS support
+
 ## v1.4.0
 
  * Removed request counter and console warnings
