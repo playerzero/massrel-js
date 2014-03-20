@@ -170,7 +170,7 @@ describe('helpers', function() {
   if(massrel.helpers.req.supportsCors && massrel.helpers.req.supportsJSON) {
     describe('making CORS requests', function() {
 
-      var request = function(url, cb) {
+      var request = function(url, cb, method) {
         var responseData;
 
         var response = function(success) {
@@ -183,7 +183,7 @@ describe('helpers', function() {
           response(true);
         }, function() {
           response(false);
-        }, 'GET');
+        }, method || 'GET');
       };
 
       it('Success', function(done) {
@@ -206,6 +206,13 @@ describe('helpers', function() {
           done();
         });
       });
+
+      it('Can POST', function(done) {
+        request('http://api.massrelevance.com/v1/polls.json?poll=1&option=4', function(success) {
+          expect(success).toEqual(true);
+          done();
+        }, 'POST')
+      })
 
       //it('Timeout error (depends on local server)', function() {
       //  var old_timeout = massrel.timeout;
