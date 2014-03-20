@@ -211,8 +211,8 @@ describe('helpers', function() {
         request('http://api.massrelevance.com/v1/polls.json?poll=1&option=4', function(success) {
           expect(success).toEqual(true);
           done();
-        }, 'POST')
-      })
+        }, 'POST');
+      });
 
       //it('Timeout error (depends on local server)', function() {
       //  var old_timeout = massrel.timeout;
