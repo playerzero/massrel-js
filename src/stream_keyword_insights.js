@@ -44,6 +44,9 @@ define(['./helpers', './generic_poller'], function(helpers, GenericPoller) {
     if(opts.resolution) {
       params.push(['resolution', opts.resolution]);
     }
+    if(opts.countries) {
+      params.push(['countries', opts.countries]);
+    }
 
     return params;
   };
