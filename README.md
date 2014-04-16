@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.5.1
+
+ * Add additional param to `StreamKeywordInsights` class
+
 ## v1.5.0
 
  * Added POST CORS support
