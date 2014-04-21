@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.5.2
+
+ * Add additional param  for `TopThingsPoller`
+
 ## v1.5.1
 
  * Add additional param to `StreamKeywordInsights` class
