@@ -202,6 +202,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.limit) {
       params.push(['limit', opts.limit]);
     }
+    if(opts.percent) {
+      params.push(['percent', '1']);
+    }
     return params;
   };
   Stream.prototype.topThingsPoller = function(opts) {
