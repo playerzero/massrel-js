@@ -1,6 +1,6 @@
 # massrel-js
 
-[![Build Status](https://travis-ci.org/MassRelevance/massrel-js.png?branch=master)](https://travis-ci.org/MassRelevance/massrel-js) 
+[![Build Status](https://travis-ci.org/MassRelevance/massrel-js.png?branch=master)](https://travis-ci.org/MassRelevance/massrel-js)
 [![Dependency Status](https://gemnasium.com/MassRelevance/massrel-js.png)](https://gemnasium.com/MassRelevance/massrel-js)
 
 ## Basic examples
@@ -141,6 +141,14 @@ directory and run test suite.
    0.0.0 is version)
 
 # Change log
+
+## v1.6.1
+
+ * Fix version tagging problems.
+
+## v1.6.0
+
+ * Convert the Top Things Poller to work exclusively with relative time strings
 
 ## v1.5.2
 
