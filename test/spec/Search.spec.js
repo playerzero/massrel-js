@@ -14,6 +14,7 @@ describe('Search', function() {
     expect(requestFactorySpy).toHaveBeenCalled();
 
     var args = requestFactorySpy.calls.first().args;
+    expect(args[0]).toEqual('http://api.massrelevance.com/search/search.json');
     expect(args[1]).toEqual([['q', 'a']]);
     expect(args[3]).toEqual(search);
     expect(args[4]).toEqual(fn);
