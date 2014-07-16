@@ -10,7 +10,7 @@ describe('PollerQueue', function() {
       },
 
       _cbs: [],
-      _pump: function(done) {
+      _pump: function() {
         var i, len;
         var items = [];
        
@@ -23,10 +23,6 @@ describe('PollerQueue', function() {
         // push to callbacks
         for(i = 0, len = this._cbs.length; i < len; i++) {
           this._cbs[i].call(this, items);
-        }
-
-        if(done) {
-          done();
         }
       }
     };
@@ -125,11 +121,16 @@ describe('PollerQueue', function() {
       count++;
       expect(queue.count).toBe(count);
       next();
+
+      if(this.enqueued === 0) {
+        done();
+      }
     }
 
     queue.next(cb);
+    poller._pump();
 
-    poller._pump(done);
+    expect(queue.enqueued).toEqual(limit-1);
   });
 
   it('iterate through data from oldest (bottom) to newest (top)', function(done) {
@@ -144,10 +145,16 @@ describe('PollerQueue', function() {
       }
       prev_id = item.id;
       next();
+
+      if(this.enqueued === 0) {
+        done();
+      }
     }
 
     queue.next(cb);
-    poller._pump(done);
+    poller._pump();
+
+    expect(queue.enqueued).toEqual(limit-1);
   });
 
 });
