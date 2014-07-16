@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.0
+
+ * Added basic search object
+
 ## v1.6.1
 
  * Fix version tagging problems.
