@@ -15,6 +15,7 @@ define([
        , './compare'
        , './compare_poller'
        , './intents'
+       , './search'
        ], function(
          massrel
        , helpers
@@ -32,6 +33,7 @@ define([
        , Compare
        , ComparePoller
        , intents
+       , Search
        ) {
 
   // public API
@@ -50,6 +52,7 @@ define([
   massrel.ComparePoller = ComparePoller;
   massrel.helpers = helpers;
   massrel.intents = intents;
+  massrel.Search = Search;
 
   // change default host if "massrel[host]"
   // URL param is set
