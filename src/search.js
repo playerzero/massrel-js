@@ -1,5 +1,5 @@
 define(function(require) {
-  var helpers = require('helpers');
+  var helpers = require('./helpers');
 
   var Search = function(apiToken) {
     this.apiToken = apiToken;
