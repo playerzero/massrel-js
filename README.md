@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.1
+
+ * Fixed invalid require path in `search.js`
+
 ## v1.7.0
 
  * Added basic search object
