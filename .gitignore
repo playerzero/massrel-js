@@ -2,3 +2,4 @@
 .DS_Store
 build/massrel.*
 build/coverage
+node_modules
