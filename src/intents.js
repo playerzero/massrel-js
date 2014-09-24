@@ -38,8 +38,18 @@ define(['./helpers'], function(helpers) {
     // Test user agent to see if we're in a UIWebView in Twitter app and if we are and have hashtags defined, instead of
     // passing the hashtags parameter, manually append to text parameter.
     if (options.hashtags && /Twitter for iP/.test(navigator.userAgent)) {
-      options.text = ((options.text || '') + ' #' + options.hashtags.split(/\s*,\s*/).join(' #')).replace(/^\s+|\s+$/gm, '');
+      var newText = options.text ? [options.text] : [];
+
+      // manually add URL to maintain same order if url and hashtags param were both present in intent
+      if (options.url) {
+        newText.push(options.url);
+        delete options.url;
+      }
+
+      newText.push('#' + options.hashtags.split(/\s*,\s*/).join(' #').replace(/^\s+|\s+$/gm, ''));
       delete options.hashtags;
+
+      options.text = newText.join(' ');
     }
 
     var params = [];
