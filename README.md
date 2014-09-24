@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.2
+
+ * Implemented workaround for https://twittercommunity.com/t/intent-clicked-from-within-uiwebview-in-twitter-ios-app-ignores-hashtags-parameter/24096
+
 ## v1.7.1
 
  * Fixed invalid require path in `search.js`
