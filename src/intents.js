@@ -37,7 +37,8 @@ define(['./helpers'], function(helpers) {
     // https://twittercommunity.com/t/intent-clicked-from-within-uiwebview-in-twitter-ios-app-ignores-hashtags-parameter/24096
     // Test user agent to see if we're in a UIWebView in Twitter app and if we are and have hashtags defined, instead of
     // passing the hashtags parameter, manually append to text parameter.
-    if (options.hashtags && /Twitter for iP/.test(navigator.userAgent)) {
+    // UPDATE: UA is no longer reliable for UIWebViews in Twitter app, so we'll just do this workaround for all iOS.
+    if (options.hashtags && navigator.userAgent.match(/(iPod|iPhone|iPad)/) && navigator.userAgent.match(/AppleWebKit/)) {
       var newText = options.text ? [options.text] : [];
 
       // manually add URL to maintain same order if url and hashtags param were both present in intent
