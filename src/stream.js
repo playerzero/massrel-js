@@ -111,6 +111,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
   Stream.prototype.buildMetaParams = function(opts) {
     opts = opts || {};
     var params = [];
+    if(opts.all_topics) {
+      params.push(['all_topics', opts.all_topics]);
+    }
     if(opts.disregard) {
       params.push(['disregard', opts.disregard]);
     }
