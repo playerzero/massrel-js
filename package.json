@@ -1,6 +1,6 @@
 {
   "name": "massrel-js",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "scripts": {
     "test": "grunt travis --verbose"
   },

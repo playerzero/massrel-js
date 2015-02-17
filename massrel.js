@@ -1,7 +1,7 @@
   /*!
-   * massrel-js 1.7.3
+   * massrel-js 1.7.4
    *
-   * Copyright 2014 Mass Relevance
+   * Copyright 2015 Mass Relevance
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this work except in compliance with the License.
@@ -1642,6 +1642,9 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     }
     if(opts.networks) {
       params.push(['networks', '1']);
+    }
+    if(opts.activity || opts.activity === 0) {
+      params.push(['activity', opts.activity]);
     }
     return params;
   };

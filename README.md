@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.4
+
+ * Add activity parameter to meta poller
+
 ## v1.7.3
 
  * Implemented another workaround for twitter iOS webview issue identified in v1.7.2
