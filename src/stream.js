@@ -150,6 +150,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.networks) {
       params.push(['networks', '1']);
     }
+    if(opts.activity || opts.activity === 0) {
+      params.push(['activity', opts.activity]);
+    }
     return params;
   };
   Stream.prototype.metaPoller = function(opts) {
