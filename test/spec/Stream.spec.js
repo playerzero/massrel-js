@@ -90,6 +90,7 @@ describe('Stream', function() {
       expect(params[0][1]).toEqual(val);
     };
 
+    testParam({ all_topics: true}, 'all_topics', true);
     testParam({ disregard: 'word' }, 'disregard', 'word');
     testParam({ num_minutes: 8 }, 'num_minutes', 8);
     testParam({ num_hours: 10 }, 'num_hours', 10);
