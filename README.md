@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.5
+
+ * Add all_topics parameter to meta poller
+
 ## v1.7.4
 
  * Add activity parameter to meta poller
