@@ -77,6 +77,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
       helpers.timeParam(opts.timeframe.start, 'timeframe[start]', params);
       helpers.timeParam(opts.timeframe.finish, 'timeframe[finish]', params);
     }
+    if(opts.strip_links) {
+      params.push(['strip_links', '1']);
+    }
     
     return params;
   };
