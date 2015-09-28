@@ -1,5 +1,5 @@
   /*!
-   * massrel-js 1.7.5
+   * massrel-js 1.7.6
    *
    * Copyright 2015 Mass Relevance
    *
@@ -1569,6 +1569,9 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     if(opts.timeframe) {
       helpers.timeParam(opts.timeframe.start, 'timeframe[start]', params);
       helpers.timeParam(opts.timeframe.finish, 'timeframe[finish]', params);
+    }
+    if(opts.strip_links) {
+      params.push(['strip_links', '1']);
     }
     
     return params;
