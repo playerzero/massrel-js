@@ -51,6 +51,7 @@ describe('Stream', function() {
     testParam({ timeframe: { start: 60 } }, 'timeframe[start]', 60);
     testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
     testParam({ lang: 'en' }, 'lang', 'en');
+    testParam({ strip_links: true }, 'strip_links', '1');
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
@@ -161,15 +162,6 @@ describe('Stream', function() {
     stream.keywordInsights(opts, function(data) { });
 
     massrel.helpers.request_factory = old_request_factory;
-  });
-  
-  it('returns legit data when #keywordInsights fetch', function(done) {
-    var stream = new massrel.Stream('massreldemo/fb-insights-demo');
-
-    stream.keywordInsights().fetch({}, function(data) {
-      expect(data.data.length).toEqual(1);
-      done();
-    });
   });
   
   //TODO: #load, #each, #poller, #meta
