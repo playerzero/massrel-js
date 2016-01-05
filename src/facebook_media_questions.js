@@ -1,4 +1,4 @@
-define(['./helpers', './poller'], function(helpers, Poller) {
+define(['./helpers', './generic_poller'], function(helpers, Poller) {
 
   function FacebookMediaQuestionPoller() {
 

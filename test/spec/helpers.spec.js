@@ -1,8 +1,9 @@
 describe('helpers', function() {
 
-  describe('load script', function() {
+  // Yahoo has discontinued Pipes
+  xdescribe('load script', function() {
     var load = massrel.helpers.load;
-    
+
     it('callback is successful and work cross domain', function(done) {
       var url = 'http://pipes.yahoo.com/pipes/pipe.run?_id=c4fb5175c000f1e19e244bba36aca1e8&_render=json&_callback=loadtest';
 
