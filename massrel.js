@@ -1,7 +1,7 @@
   /*!
-   * massrel-js 1.7.6
+   * massrel-js 1.7.7
    *
-   * Copyright 2015 Mass Relevance
+   * Copyright 2016 Mass Relevance
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this work except in compliance with the License.
@@ -2139,6 +2139,46 @@ massreljs.define('search',['require','./helpers'],function(require) {
 
 });
 
+massreljs.define('facebook_media_questions',['./helpers', './generic_poller'], function(helpers, Poller) {
+
+  function FacebookMediaQuestionPoller() {
+
+  }
+
+  FacebookMediaQuestionPoller.prototype.url = function() {
+    return helpers.api_url('/facebook/media_question.json');
+  };
+
+  FacebookMediaQuestionPoller.prototype.buildParams = function(opts) {
+    opts = opts || {};
+    var params = [];
+    if (opts.id) {
+      params.push(['id', opts.id]);
+    }
+    if (opts.page) {
+      params.push(['page', opts.page]);
+    }
+
+    return params;
+  };
+
+  FacebookMediaQuestionPoller.prototype.load = function(opts, fn, error) {
+    opts = helpers.extend(opts || {}, {
+      // put defaults
+    });
+
+    var params = this.buildParams(opts);
+    helpers.request_factory(this.url(), params, '_', this, fn || this._enumerators, error);
+
+    return this;
+  };
+
+  FacebookMediaQuestionPoller.prototype.poller = function(opts) {
+    return new Poller(this, opts);
+  };
+
+  return FacebookMediaQuestionPoller;
+});
 massreljs.define('massrel',[
          './globals'
        , './helpers'
@@ -2157,6 +2197,7 @@ massreljs.define('massrel',[
        , './compare_poller'
        , './intents'
        , './search'
+       , './facebook_media_questions'
        ], function(
          massrel
        , helpers
@@ -2175,6 +2216,7 @@ massreljs.define('massrel',[
        , ComparePoller
        , intents
        , Search
+       , FacebookMediaQuestion
        ) {
 
   // public API
@@ -2194,6 +2236,7 @@ massreljs.define('massrel',[
   massrel.helpers = helpers;
   massrel.intents = intents;
   massrel.Search = Search;
+  massrel.FacebookMediaQuestion = FacebookMediaQuestion;
 
   // change default host if "massrel[host]"
   // URL param is set

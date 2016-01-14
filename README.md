@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.7
+
+ * Add poller for Facebook Media Polls
+
 ## v1.7.6
 
  * Add strip_links parameter to stream poller
