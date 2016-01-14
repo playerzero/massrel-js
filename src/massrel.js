@@ -16,6 +16,7 @@ define([
        , './compare_poller'
        , './intents'
        , './search'
+       , './facebook_media_questions'
        ], function(
          massrel
        , helpers
@@ -34,6 +35,7 @@ define([
        , ComparePoller
        , intents
        , Search
+       , FacebookMediaQuestion
        ) {
 
   // public API
@@ -53,6 +55,7 @@ define([
   massrel.helpers = helpers;
   massrel.intents = intents;
   massrel.Search = Search;
+  massrel.FacebookMediaQuestion = FacebookMediaQuestion;
 
   // change default host if "massrel[host]"
   // URL param is set
