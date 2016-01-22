@@ -27,6 +27,9 @@ define(['./helpers', './compare_poller'], function(helpers, ComparePoller) {
     if(opts.target || opts.target >=0) {
       params.push('target', opts.target.toString());
     }
+    if(opts.precision && opts.precision > 0) {
+      params.push(['precision', opts.precision]);
+    }
 
     return params;
   };
@@ -38,9 +41,9 @@ define(['./helpers', './compare_poller'], function(helpers, ComparePoller) {
       opts = null;
     }
     var params = this.buildParams(helpers.extend({
-      streams: this.streams
+      streams: this.streams,
+      precision: this.precision
     }, opts || {}));
-
     helpers.request_factory(this.compare_url(), params, 'meta_', this, fn, error);
     return this;
   };
