@@ -142,6 +142,11 @@ directory and run test suite.
 
 # Change log
 
+## v1.7.8
+
+ * Add target, precision to compare poller
+ * Add param tests to compare poller
+
 ## v1.7.7
 
  * Add poller for Facebook Media Polls
