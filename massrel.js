@@ -1,5 +1,5 @@
   /*!
-   * massrel-js 1.7.8
+   * massrel-js 1.8.0
    *
    * Copyright 2016 Mass Relevance
    *
@@ -2106,6 +2106,9 @@ massreljs.define('search',['require','./helpers'],function(require) {
           p = p.concat(this.buildParams(view, 'view.'+viewName+'.'));
         }
       }
+    }
+    if (this.apiToken) {
+      p.push(['api_token', this.apiToken]);
     }
 
     return p;

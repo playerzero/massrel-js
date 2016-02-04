@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.8.0
+
+ * Add API Token to search requests if supplied
+
 ## v1.7.8
 
  * Add target, precision to compare poller
