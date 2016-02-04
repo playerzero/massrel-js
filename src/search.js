@@ -36,6 +36,9 @@ define(function(require) {
         }
       }
     }
+    if (this.apiToken) {
+      p.push(['api_token', this.apiToken]);
+    }
 
     return p;
   };
