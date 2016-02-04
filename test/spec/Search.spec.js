@@ -46,6 +46,13 @@ describe('Search', function() {
     }));
   });
 
+  it('build adds api_token to params', function() {
+    var apiToken = 'abcdefghijklmnopqrstuvwxyz';
+    var s = new massrel.Search(apiToken);
+
+    expect([['api_token', apiToken]]).toEqual(s.buildQueryString({}));
+  });
+
   it('build query string', function() {
     var s = new massrel.Search();
 
