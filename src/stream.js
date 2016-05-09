@@ -81,7 +81,7 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
       params.push(['strip_links', '1']);
     }
     if(opts.nonsquare_instagram) {
-      params.push(['nonsquare_instagram', true]);
+      params.push(['nonsquare_instagram', 'true']);
     }
     
     return params;
