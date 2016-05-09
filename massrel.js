@@ -1,5 +1,5 @@
   /*!
-   * massrel-js 1.8.0
+   * massrel-js 1.8.1
    *
    * Copyright 2016 Mass Relevance
    *
@@ -1572,6 +1572,9 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     }
     if(opts.strip_links) {
       params.push(['strip_links', '1']);
+    }
+    if(opts.nonsquare_instagram) {
+      params.push(['nonsquare_instagram', 'true']);
     }
     
     return params;
