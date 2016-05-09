@@ -52,6 +52,7 @@ describe('Stream', function() {
     testParam({ timeframe: { finish: 60 } }, 'timeframe[finish]', 60);
     testParam({ lang: 'en' }, 'lang', 'en');
     testParam({ strip_links: true }, 'strip_links', '1');
+    testParam({ nonsquare_instagram: true }, 'nonsquare_instagram', 'true');
   });
 
   it('will not break when #load is called (end-to-end test)', function() {
