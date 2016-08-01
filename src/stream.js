@@ -83,7 +83,16 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.nonsquare_instagram) {
       params.push(['nonsquare_instagram', 'true']);
     }
-    
+    if(opts.products) {
+      if (helpers.is_array(opts.products)) {
+        for (var i = 0; i < opts.products.length; i += 1) {
+          params.push(['products[]', opts.products[i]]);
+        }
+      } else {
+        params.push(['products[]', opts.products]);
+      }
+    }
+
     return params;
   };
   Stream.prototype.each = function(fn) {

@@ -55,6 +55,32 @@ describe('Stream', function() {
     testParam({ nonsquare_instagram: true }, 'nonsquare_instagram', 'true');
   });
 
+  it('builds correct products params with single url', function () {
+    var stream = new massrel.Stream('howardrauscher/test');
+    var params = stream.buildParams({ products: ['http://spredfast.com/1']});
+    expect(params.length).toEqual(1);
+    expect(params[0][0]).toEqual('products[]');
+    expect(params[0][1]).toEqual('http://spredfast.com/1');
+  });
+
+  it('builds correct products params with multiple urls', function () {
+    var stream = new massrel.Stream('howardrauscher/test');
+    var params = stream.buildParams({ products: ['http://spredfast.com/1', 'http://spredfast.com/2']});
+    expect(params.length).toEqual(2);
+    expect(params[0][0]).toEqual('products[]');
+    expect(params[0][1]).toEqual('http://spredfast.com/1');
+    expect(params[1][0]).toEqual('products[]');
+    expect(params[1][1]).toEqual('http://spredfast.com/2');
+  });
+
+  it('builds correct products params with single url no array', function () {
+    var stream = new massrel.Stream('howardrauscher/test');
+    var params = stream.buildParams({ products: 'http://spredfast.com/1'});
+    expect(params.length).toEqual(1);
+    expect(params[0][0]).toEqual('products[]');
+    expect(params[0][1]).toEqual('http://spredfast.com/1');
+  });
+
   it('will not break when #load is called (end-to-end test)', function() {
     var stream = new massrel.Stream('howardr/test');
     var old_request_factory = massrel.helpers.request_factory;
