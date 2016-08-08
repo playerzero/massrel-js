@@ -1,5 +1,5 @@
   /*!
-   * massrel-js 1.8.1
+   * massrel-js 1.8.2
    *
    * Copyright 2016 Mass Relevance
    *
@@ -1576,7 +1576,16 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     if(opts.nonsquare_instagram) {
       params.push(['nonsquare_instagram', 'true']);
     }
-    
+    if(opts.products) {
+      if (helpers.is_array(opts.products)) {
+        for (var i = 0; i < opts.products.length; i += 1) {
+          params.push(['products[]', opts.products[i]]);
+        }
+      } else {
+        params.push(['products[]', opts.products]);
+      }
+    }
+
     return params;
   };
   Stream.prototype.each = function(fn) {

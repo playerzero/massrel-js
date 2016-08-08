@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.8.2
+
+ * Add products parameter to stream
+
 ## v1.8.1
  
  * Add nonsquare_instagram parameter to stream
