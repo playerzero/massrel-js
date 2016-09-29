@@ -53,6 +53,7 @@ describe('Stream', function() {
     testParam({ lang: 'en' }, 'lang', 'en');
     testParam({ strip_links: true }, 'strip_links', '1');
     testParam({ nonsquare_instagram: true }, 'nonsquare_instagram', 'true');
+    testParam({ tweet_mode: 'extended' }, 'tweet_mode', 'extended');
   });
 
   it('builds correct products params with single url', function () {
