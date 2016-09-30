@@ -92,6 +92,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
         params.push(['products[]', opts.products]);
       }
     }
+    if(opts.tweet_mode) {
+      params.push(['tweet_mode', opts.tweet_mode]);
+    }
 
     return params;
   };
