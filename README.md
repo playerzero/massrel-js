@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+$$ v1.8.4
+
+ * Add tweet_mode parameter to Top Things
+
 ## v1.8.3
 
  * Add tweet_mode parameter to stream
