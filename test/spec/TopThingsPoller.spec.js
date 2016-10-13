@@ -50,4 +50,9 @@ describe('TopThingsPoller', function () {
     testParam({ resolution: 10 }, 'resolution', '10s');
     testParam({ resolution: 9999999999 }, 'resolution', '9999999999s');
   });
+
+  it('should pass `tweet_mode` params through unmodified', function () {
+    testParam({ tweet_mode: 'extended' }, 'tweet_mode', 'extended');
+    testParam({ tweet_mode: 'test' }, 'tweet_mode', 'test');
+  });
 });
