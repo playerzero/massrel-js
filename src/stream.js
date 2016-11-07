@@ -174,6 +174,9 @@ define(['./helpers', './poller', './meta_poller', './top_things_poller', './stre
     if(opts.activity || opts.activity === 0) {
       params.push(['activity', opts.activity]);
     }
+    if(opts.tweet_mode) {
+      params.push(['tweet_mode', opts.tweet_mode]);
+    }
     return params;
   };
   Stream.prototype.metaPoller = function(opts) {
