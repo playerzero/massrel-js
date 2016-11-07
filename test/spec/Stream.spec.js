@@ -129,6 +129,7 @@ describe('Stream', function() {
     testParam({ top_count: 4 }, 'top_count', 4);
     testParam({ networks: true }, 'networks', '1');
     testParam({ activity: 0 }, 'activity', 0);
+    testParam({ tweet_mode: 'extended' }, 'tweet_mode', 'extended');
 
     var time = (new Date()).getTime();
     testParam({ finish: time }, 'finish', time);
