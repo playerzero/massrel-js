@@ -1,5 +1,5 @@
   /*!
-   * massrel-js 1.8.4
+   * massrel-js 1.8.5
    *
    * Copyright 2016 Mass Relevance
    *
@@ -1666,6 +1666,9 @@ massreljs.define('stream',['./helpers', './poller', './meta_poller', './top_thin
     }
     if(opts.activity || opts.activity === 0) {
       params.push(['activity', opts.activity]);
+    }
+    if(opts.tweet_mode) {
+      params.push(['tweet_mode', opts.tweet_mode]);
     }
     return params;
   };

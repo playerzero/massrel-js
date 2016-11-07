@@ -142,7 +142,11 @@ directory and run test suite.
 
 # Change log
 
-$$ v1.8.4
+## v1.8.5
+
+ * Add tweet_mode parameter to meta poller
+
+## v1.8.4
 
  * Add tweet_mode parameter to Top Things
 
