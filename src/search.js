@@ -39,6 +39,9 @@ define(function(require) {
     if (this.apiToken) {
       p.push(['api_token', this.apiToken]);
     }
+    if (params.network) {
+      p.push(['network', params.network]);
+    }
 
     return p;
   };

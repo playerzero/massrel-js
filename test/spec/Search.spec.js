@@ -30,6 +30,10 @@ describe('Search', function() {
       q: 'a'
     }));
 
+    expect([['network', 'twitter']]).toEqual(s.buildQueryString({
+      network: 'twitter'
+    }));
+
     expect([['filter.start', '-1h'], ['filter.finish', '0']]).toEqual(s.buildQueryString({
       filters: {
         start: '-1h',
