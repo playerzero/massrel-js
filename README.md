@@ -142,6 +142,10 @@ directory and run test suite.
 
 # Change log
 
+## v1.8.6
+
+ * Add network parameter to Search poller
+
 ## v1.8.5
 
  * Add tweet_mode parameter to meta poller

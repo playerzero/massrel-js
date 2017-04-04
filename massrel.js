@@ -1,7 +1,7 @@
   /*!
-   * massrel-js 1.8.5
+   * massrel-js 1.8.6
    *
-   * Copyright 2016 Mass Relevance
+   * Copyright 2017 Mass Relevance
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this work except in compliance with the License.
@@ -2130,6 +2130,9 @@ massreljs.define('search',['require','./helpers'],function(require) {
     }
     if (this.apiToken) {
       p.push(['api_token', this.apiToken]);
+    }
+    if (params.network) {
+      p.push(['network', params.network]);
     }
 
     return p;
